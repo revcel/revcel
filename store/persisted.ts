@@ -1,0 +1,94 @@
+import { mmkvStorage } from '@/lib/storage'
+import { create } from 'zustand'
+import { createJSONStorage, persist } from 'zustand/middleware'
+
+export interface Connection {
+    id: string
+    apiToken: string
+    currentTeamId: string | null
+}
+
+interface PersistedStoreState {
+    connections: Connection[]
+    currentConnection: Connection | null
+    switchConnection: ({
+        connectionId,
+        teamId,
+    }: {
+        connectionId: string
+        teamId?: string
+    }) => void
+    removeConnection: (connectionId: string) => void
+    addConnection: (connection: Connection) => void
+
+    acknowledgments: {
+        swipeLeftProject: boolean
+        swipeLeftBrowser: boolean
+        swipeLeftv0: boolean
+    }
+    acknowledge: (type: keyof PersistedStoreState['acknowledgments']) => void
+}
+
+export const usePersistedStore = create<PersistedStoreState>()(
+    persist(
+        (set, get) => ({
+            connections: [],
+            currentConnection: null,
+            removeConnection: (connectionId: string) => {
+                const newConnections = get().connections.filter((c) => c.id !== connectionId)
+
+                set({
+                    connections: newConnections,
+                    currentConnection: newConnections[0] || null,
+                })
+            },
+            addConnection: (connection: Connection) => {
+                set((state) => ({ connections: [...state.connections, connection] }))
+            },
+            switchConnection: ({
+                connectionId,
+                teamId,
+            }: { connectionId: string; teamId?: string }) => {
+                const state = get()
+
+                const connection = state.connections.find((c) => c.id === connectionId)
+                if (!connection) return
+
+                const newConnection = {
+                    ...connection,
+                    currentTeamId: teamId || connection.currentTeamId,
+                }
+
+                const newConnections = state.connections.map((c) =>
+                    c.id === newConnection.id ? newConnection : c
+                )
+
+                set({
+                    connections: newConnections,
+                    currentConnection: newConnection,
+                })
+
+                // queryClient.invalidateQueries()
+            },
+
+            acknowledgments: {
+                swipeLeftProject: false,
+                swipeLeftBrowser: false,
+                swipeLeftv0: false,
+            },
+            acknowledge(type: keyof PersistedStoreState['acknowledgments']) {
+                set((state) => ({
+                    acknowledgments: {
+                        ...state.acknowledgments,
+                        [type]: true,
+                    },
+                }))
+            },
+        }),
+        {
+            name: 'rev-persisted-store',
+            storage: createJSONStorage(() => mmkvStorage),
+            version: 1,
+        }
+    )
+)

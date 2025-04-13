@@ -1,0 +1,70 @@
+{
+    "expo": {
+        "name": "Rev",
+        "slug": "revcel",
+        "owner": "ffglobal",
+        "version": "1.2.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "scheme": "revcel",
+        "userInterfaceStyle": "dark",
+        "newArchEnabled": true,
+        "ios": {
+            "bundleIdentifier": "com.revcel.mobile",
+            "teamId": "8FT82R3S6A",
+            "supportsTablet": true,
+            "config": {
+                "usesNonExemptEncryption": false
+            }
+        },
+        "android": {
+            "package": "com.revcel.mobile",
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/icon.png",
+                "backgroundColor": "#0A0A0A"
+            },
+            "googleServicesFile": "./google-services.json"
+        },
+        "plugins": [
+            "expo-router",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/icon.png",
+                    "resizeMode": "contain",
+                    "backgroundColor": "#0A0A0A",
+                    "imageWidth": 200
+                }
+            ],
+            [
+                "react-native-edge-to-edge",
+                {
+                    "android": {
+                        "parentTheme": "Material3.Dynamic",
+                        "enforceNavigationBarContrast": false
+                    }
+                }
+            ],
+            "./plugins/withEdgeToEdgeFix",
+            [
+                "@sentry/react-native/expo",
+                {
+                    "url": "https://sentry.io/",
+                    "project": "rev",
+                    "organization": "ff-global"
+                }
+            ]
+        ],
+        "experiments": {
+            "typedRoutes": true
+        },
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "f18535c2-8200-452d-96a0-caae9300af05"
+            }
+        }
+    }
+}
