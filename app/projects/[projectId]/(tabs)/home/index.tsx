@@ -3,6 +3,7 @@ import DeploymentCard from '@/components/DeploymentCard'
 import EmptyListComponent from '@/components/EmptyListComponent'
 import ProjectFirewallCard from '@/components/ProjectFirewallCard'
 import ProjectQuickActions from '@/components/ProjectQuickActions'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -11,7 +12,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { Alert, RefreshControl, TouchableOpacity, View } from 'react-native'
+import { Alert, RefreshControl, View } from 'react-native'
 
 export default function ProjectHomeScreen() {
     const { projectId, connectionId, teamId } = useLocalSearchParams<{
@@ -69,7 +70,7 @@ export default function ProjectHomeScreen() {
             navigation.setOptions({
                 title: project.name || 'Project',
                 headerRight: () => (
-                    <TouchableOpacity
+                    <HeaderTouchableOpacity
                         style={{
                             backgroundColor: COLORS.gray200,
                             justifyContent: 'center',
@@ -89,7 +90,7 @@ export default function ProjectHomeScreen() {
                         }}
                     >
                         <Ionicons name="close" size={18} color={COLORS.gray1000} />
-                    </TouchableOpacity>
+                    </HeaderTouchableOpacity>
                 ),
             })
         }

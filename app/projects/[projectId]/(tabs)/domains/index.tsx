@@ -1,6 +1,7 @@
 import { removeDomain } from '@/api/mutations'
 import { fetchTeamProjectDomainConfig, fetchTeamProjectDomains } from '@/api/queries'
 import EmptyListComponent from '@/components/EmptyListComponent'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { useBrowser } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { COLORS } from '@/theme/colors'
@@ -46,7 +47,7 @@ export default function Domains() {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity
+                <HeaderTouchableOpacity
                     style={{
                         height: 32,
                         width: 32,
@@ -57,7 +58,7 @@ export default function Domains() {
                     }}
                 >
                     <Ionicons name="add-circle-sharp" size={32} color={COLORS.success} />
-                </TouchableOpacity>
+                </HeaderTouchableOpacity>
             ),
         })
     }, [navigation, projectId])

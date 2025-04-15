@@ -3,6 +3,7 @@ import ApiStatus from '@/components/ApiStatus'
 import BottomGradient from '@/components/BottomGradient'
 import DeploymentCard from '@/components/DeploymentCard'
 import ProjectCard from '@/components/ProjectCard'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { storage } from '@/lib/storage'
@@ -264,7 +265,7 @@ export default function HomeScreen() {
                         }
                     }}
                 >
-                    <TouchableOpacity
+                    <HeaderTouchableOpacity
                         style={{
                             width: 20,
                             height: 20,
@@ -291,11 +292,11 @@ export default function HomeScreen() {
                                 flex: 1,
                             }}
                         /> */}
-                    </TouchableOpacity>
+                    </HeaderTouchableOpacity>
                 </ContextMenu>
             ),
             headerRight: () => (
-                <TouchableOpacity
+                <HeaderTouchableOpacity
                     onPress={async () => {
                         const useWebkit = false
 
@@ -355,7 +356,7 @@ export default function HomeScreen() {
                     }}
                 >
                     <Image source={require('@/assets/v0.png')} style={{ width: 32, height: 16 }} />
-                </TouchableOpacity>
+                </HeaderTouchableOpacity>
             ),
         })
     }, [
