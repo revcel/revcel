@@ -1,6 +1,7 @@
 import { fetchTeamDeployment, fetchTeamDeploymentBuildMetadata } from '@/api/queries'
 import BottomGradient from '@/components/BottomGradient'
 import EmptyListComponent from '@/components/EmptyListComponent'
+import { SelectableText } from '@/components/SelectableText'
 import { formatDeploymentShortId } from '@/lib/format'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -161,23 +162,7 @@ export default function DeploymentLogs() {
                 }}
             />
             {viewMode === 'copy' ? (
-                <TextInput
-                    style={{
-                        color: COLORS.gray1000,
-                        fontFamily: 'monospace',
-                        paddingHorizontal: 16,
-                        lineHeight: 25,
-                    }}
-                    multiline={true}
-                    editable={false}
-                    scrollEnabled={true}
-                    value={combinedLogText}
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    autoCorrect={false}
-                    autoFocus={true}
-                    importantForAutofill="no"
-                />
+                <SelectableText text={combinedLogText} />
             ) : (
                 <FlashList
                     data={filteredLogs}
