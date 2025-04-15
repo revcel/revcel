@@ -54,22 +54,27 @@ export default function v0Screen() {
                     </View>
                 )}
             />
-
-            <View
-                style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    opacity: loaded ? 0 : 1,
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                }}
-            >
-                <ActivityIndicator size="large" color={COLORS.success} />
-            </View>
+            {/* 
+                This view is causing issues with touch events, it is is always above of the rest of this screen. 
+                Setting only opacity wont work as view itself is still "there" just not visible. 
+                We have to remove this view when loaded or try to set pointerEvents="none" 
+            */}
+            {!loaded && (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                    }}
+                >
+                    <ActivityIndicator size="large" color={COLORS.success} />
+                </View>
+            )}
         </SafeAreaView>
     )
 }

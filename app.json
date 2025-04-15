@@ -22,8 +22,7 @@
             "adaptiveIcon": {
                 "foregroundImage": "./assets/icon.png",
                 "backgroundColor": "#0A0A0A"
-            },
-            "googleServicesFile": "./google-services.json"
+            }
         },
         "plugins": [
             "expo-router",
