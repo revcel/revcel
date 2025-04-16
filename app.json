@@ -15,6 +15,11 @@
             "supportsTablet": true,
             "config": {
                 "usesNonExemptEncryption": false
+            },
+            "entitlements": {
+                "com.apple.security.application-groups": [
+                    "group.com.revcel.mobile"
+                ]
             }
         },
         "android": {
@@ -22,8 +27,7 @@
             "adaptiveIcon": {
                 "foregroundImage": "./assets/icon.png",
                 "backgroundColor": "#0A0A0A"
-            },
-            "googleServicesFile": "./google-services.json"
+            }
         },
         "plugins": [
             "expo-router",
@@ -53,7 +57,8 @@
                     "project": "rev",
                     "organization": "ff-global"
                 }
-            ]
+            ],
+            "@bacons/apple-targets"
         ],
         "experiments": {
             "typedRoutes": true
