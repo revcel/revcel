@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Platform, RefreshControl, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Platform, RefreshControl, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function DeploymentLogs() {
@@ -82,20 +82,6 @@ export default function DeploymentLogs() {
                     headerShown: true,
                     headerLargeTitle: true,
                     title: `Logs (${formatDeploymentShortId(deploymentQuery.data)})`,
-                    // headerRight: () => (
-                    //     <TouchableOpacity
-                    //         onPress={() => {
-                    //             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                    //             setIsExpanded((prev) => !prev)
-                    //         }}
-                    //     >
-                    //         <Ionicons
-                    //             name={isExpanded ? 'chevron-expand-outline' : 'expand-outline'}
-                    //             size={24}
-                    //             color={COLORS.gray1000}
-                    //         />
-                    //     </TouchableOpacity>
-                    // ),
                     headerRight: () => (
                         <ContextMenu
                             dropdownMenuMode={true}
@@ -186,13 +172,13 @@ export default function DeploymentLogs() {
                                       flex: 1,
                                   },
                               }
-                            : Platform.OS === 'android'
-                              ? {
-                                    contentContainerStyle: {
-                                        paddingBottom: 20,
-                                    },
-                                }
-                              : undefined
+                            : Platform.select({
+                                  android: {
+                                      contentContainerStyle: {
+                                          paddingBottom: 40,
+                                      },
+                                  },
+                              })
                     }
                     ListEmptyComponent={emptyListComponent}
                     ItemSeparatorComponent={() => (

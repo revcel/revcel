@@ -42,17 +42,6 @@ export default function v0Screen() {
                 }}
                 scrollEnabled={true}
                 nestedScrollEnabled={true}
-                renderLoading={() => (
-                    <View
-                        style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <ActivityIndicator size="large" color={COLORS.success} />
-                    </View>
-                )}
             />
             {/* 
                 This view is causing issues with touch events, it is is always above of the rest of this screen. 

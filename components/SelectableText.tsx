@@ -1,9 +1,9 @@
-import { COLORS } from "@/theme/colors"
-import { useEffect, useRef } from "react"
-import { Platform, TextInput, Text, ScrollView } from "react-native"
+import { COLORS } from '@/theme/colors'
+import { useRef } from 'react'
+import { Platform, ScrollView, Text, TextInput } from 'react-native'
 
 type SelectableTextProps = {
-    text: string,
+    text: string
     // Set this prop to true if you would like to view logs starting from the bottom.
     shouldScrollToBottom?: boolean
 }
@@ -11,10 +11,7 @@ type SelectableTextProps = {
 // On android setting editable prop on TextInput will also disable text selection.
 // If we do not need this TextInput to be editable we can try to use Text component with selectable prop so user can select and copy text.
 // I'm leaving old implementation for iOS in case it was working as expected.
-export function SelectableText({ 
-    text,
-    shouldScrollToBottom
-}: SelectableTextProps) {
+export function SelectableText({ text, shouldScrollToBottom }: SelectableTextProps) {
     const isAndroid = Platform.OS === 'android'
     const scrollViewRef = useRef<ScrollView>(null)
 
@@ -25,7 +22,7 @@ export function SelectableText({
 
         scrollViewRef.current.scrollToEnd({ animated: false })
     }
-    
+
     const styles = {
         color: COLORS.gray1000,
         fontFamily: 'monospace',
@@ -34,15 +31,17 @@ export function SelectableText({
     }
 
     return isAndroid ? (
-        <ScrollView 
+        <ScrollView
             ref={scrollViewRef}
             onContentSizeChange={scrollToBottom}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={Platform.select({
+                android: {
+                    paddingBottom: 40,
+                },
+            })}
         >
-            <Text
-                selectable                 
-                style={styles}
-            >
+            <Text selectable={true} style={styles}>
                 {text}
             </Text>
         </ScrollView>
