@@ -1,5 +1,6 @@
 import { fetchTeamProjectEnvironment } from '@/api/queries'
 import EmptyListComponent from '@/components/EmptyListComponent'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { COLORS } from '@/theme/colors'
 import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
 import { Ionicons } from '@expo/vector-icons'
@@ -31,7 +32,7 @@ export default function Environment() {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity
+                <HeaderTouchableOpacity
                     style={{
                         height: 32,
                         width: 32,
@@ -61,7 +62,7 @@ export default function Environment() {
                     }}
                 >
                     <Ionicons name="add-circle-sharp" size={32} color={COLORS.success} />
-                </TouchableOpacity>
+                </HeaderTouchableOpacity>
             ),
             headerSearchBarOptions: {
                 placeholder: 'Search',

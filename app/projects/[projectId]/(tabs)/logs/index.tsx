@@ -1,5 +1,6 @@
 import { fetchProjectLogs } from '@/api/queries'
 import EmptyListComponent from '@/components/EmptyListComponent'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { COLOR_FOR_REQUEST_STATUS } from '@/lib/constants'
 import { queryClient } from '@/lib/query'
 import { useStore } from '@/store/default'
@@ -45,7 +46,7 @@ export default function Logs() {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <TouchableOpacity
+                <HeaderTouchableOpacity
                     style={{
                         backgroundColor: COLORS.gray200,
                         justifyContent: 'center',
@@ -66,7 +67,7 @@ export default function Logs() {
                     }}
                 >
                     <Ionicons name="filter-outline" size={18} color={COLORS.gray1000} />
-                </TouchableOpacity>
+                </HeaderTouchableOpacity>
             ),
         })
     }, [navigation, projectId])
