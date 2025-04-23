@@ -4,6 +4,8 @@ import SwiftUI
 @main
 struct exportWidgets: WidgetBundle {
     var body: some Widget {
-//        LargeNotificationsWidget()
+       MediumFirewallWidget()
+       MediumAnalyticsWidget()
+       SmallShortcutWidget()
     }
 }
