@@ -1,0 +1,68 @@
+import AppIntents
+
+struct ProjectListItem: AppEntity, Decodable {
+  static var defaultQuery = ProjectQuery()
+  static var typeDisplayRepresentation: TypeDisplayRepresentation = "Select Project"
+  
+  var displayRepresentation: DisplayRepresentation {
+    DisplayRepresentation(title: "\(projectName)")
+  }
+  
+  let id: String
+  let projectName: String
+}
+
+struct ProjectQuery: EntityQuery {
+  func getSharedOptions() async throws -> Array<ProjectListItem> {
+    var options: [ProjectListItem] = []
+    
+    setWidgetState(state: .loading)
+    
+    guard let sharedDefaults = UserDefaults(suiteName: appGroupName),
+          let rawConnections = sharedDefaults.data(forKey: connectionsKey) else {
+      setWidgetState(state: .apiFailed)
+      
+      return options
+    }
+    
+    let connections = (try? JSONDecoder().decode([Connection].self, from: rawConnections)) ?? []
+    
+    
+    for connection in connections {
+      print("\(connection.apiToken)")
+      
+      do {
+        // TODO: Fetch Projects For Connection
+        options.append(.init(id: connection.id, projectName: connection.apiToken))
+      } catch {
+        setWidgetState(state: .apiFailed)
+        
+        return options
+      }
+    }
+    setWidgetState(state: options.isEmpty ? .noContainers : .hasContainers)
+    
+    return options
+  }
+  
+  func entities(for identifiers: [ProjectListItem.ID]) async throws -> Array<ProjectListItem> {
+    return try await getSharedOptions().filter { identifiers.contains($0.id) }
+  }
+  
+  func suggestedEntities() async throws -> Array<ProjectListItem> {
+    return try await getSharedOptions()
+  }
+  
+  func defaultResult() async -> ProjectListItem? {
+    return try? await suggestedEntities().first
+  }
+  
+  private func setWidgetState(state: WidgetIntentState) {
+    guard let sharedDefaults = UserDefaults(suiteName: appGroupName) else {
+      return
+    }
+    
+    sharedDefaults.set(state.rawValue, forKey: widgetStateKey)
+    sharedDefaults.synchronize()
+  }
+}

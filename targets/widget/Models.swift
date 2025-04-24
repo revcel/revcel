@@ -1,10 +1,17 @@
 import Foundation
 
 let appGroupName: String = "group.com.revcel.mobile"
-let instancesKey: String = "revcel::connections"
+let connectionsKey: String = "revcel::connections"
+let widgetStateKey: String = "pourtainer::widgetState"
 
 struct Connection: Decodable, Encodable {
   let id: String
   let apiToken: String
 }
 
+enum WidgetIntentState: Int {
+  case loading = 0
+  case apiFailed = 1
+  case hasContainers = 2
+  case noContainers = 3
+}

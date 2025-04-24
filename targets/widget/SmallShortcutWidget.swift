@@ -7,7 +7,7 @@ struct SmallShortcutAppIntentConfiguration: WidgetConfigurationIntent {
   static var description: IntentDescription { "Select your project." }
   
   @Parameter(title: "Project")
-  var favoriteEmoji: String?
+  var project: ProjectListItem?
 }
 
 struct SmallShortcutProvider: AppIntentTimelineProvider {
@@ -44,11 +44,8 @@ struct SmallShortcutEntryView : View {
   
   var body: some View {
     VStack {
-      Text("Small Time:")
-      Text(entry.date, style: .time)
-      
-      Text("Favorite Emoji:")
-      Text(entry.configuration.favoriteEmoji ?? "")
+      Text("Small Shortcut Widget")
+      Text("\(entry.configuration.project?.projectName ?? "")")
     }
   }
 }
@@ -66,15 +63,9 @@ struct SmallShortcutWidget: Widget {
 }
 
 extension SmallShortcutAppIntentConfiguration {
-  fileprivate static var smiley: SmallShortcutAppIntentConfiguration {
+  fileprivate static var project: SmallShortcutAppIntentConfiguration {
     let intent = SmallShortcutAppIntentConfiguration()
-    intent.favoriteEmoji = "😀"
-    return intent
-  }
-  
-  fileprivate static var starEyes: SmallShortcutAppIntentConfiguration {
-    let intent = SmallShortcutAppIntentConfiguration()
-    intent.favoriteEmoji = "🤩"
+    intent.project = .init(id: "1", projectName: "Revcel")
     return intent
   }
 }
@@ -82,6 +73,5 @@ extension SmallShortcutAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   SmallShortcutWidget()
 } timeline: {
-  SmallShortcutEntry(date: .now, configuration: .smiley)
-  SmallShortcutEntry(date: .now, configuration: .starEyes)
+  SmallShortcutEntry(date: .now, configuration: .project)
 }
