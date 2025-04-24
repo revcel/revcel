@@ -12,26 +12,33 @@ struct SmallShortcutAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct SmallShortcutProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> SmallShortcutEntry {
-    SmallShortcutEntry(date: Date(), configuration: SmallShortcutAppIntentConfiguration(), latestDeployment: nil)
+    SmallShortcutEntry(date: Date(), configuration: SmallShortcutAppIntentConfiguration(), faviconPath: nil)
   }
   
   func snapshot(for configuration: SmallShortcutAppIntentConfiguration, in context: Context) async -> SmallShortcutEntry {
-    SmallShortcutEntry(date: Date(), configuration: configuration, latestDeployment: nil)
+    SmallShortcutEntry(date: Date(), configuration: configuration, faviconPath: nil)
   }
   
   func timeline(for configuration: SmallShortcutAppIntentConfiguration, in context: Context) async -> Timeline<SmallShortcutEntry> {
     var entries: [SmallShortcutEntry] = []
+    var faviconPath: String? = nil
+    var latestDeployment: Deployment? = nil
     
+    if let project = configuration.project {
+      latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
+    }
     
-    let latestDeployment: Deployment? = if let project = configuration.project {
-      try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
-    } else { nil }
+    if let latestDeployment = latestDeployment, let project = configuration.project{
+      if let url = URL(string: "https://vercel.com/api/v0/deployments/\(latestDeployment.uid)/favicon?teamId=\(project.connectionTeam.id)") {
+        faviconPath = try? await downloadAndSaveImage(from: url, name: project.id)
+      }
+    }
     
     // Generate a timeline consisting of five entries an hour apart, starting from the current date.
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = SmallShortcutEntry(date: entryDate, configuration: configuration, latestDeployment: latestDeployment)
+      let entry = SmallShortcutEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath)
       entries.append(entry)
     }
     
@@ -42,7 +49,7 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
 struct SmallShortcutEntry: TimelineEntry {
   let date: Date
   let configuration: SmallShortcutAppIntentConfiguration
-  let latestDeployment: Deployment?
+  let faviconPath: String?
 }
 
 struct SmallShortcutEntryView: View {
@@ -50,17 +57,34 @@ struct SmallShortcutEntryView: View {
   
   var body: some View {
     VStack(alignment: .center, spacing: 10.0) {
-//      TODO: Need to first download image
-//      Image("")
-//        .resizable()
-//        .aspectRatio(contentMode: .fit)
-//        .clipShape(Circle())
-      Text("\(entry.configuration.project?.projectName ?? "")")
-        .font(.system(size: 16, weight: .bold))
-        .foregroundStyle(Color("gray1000"))
-        .multilineTextAlignment(.center)
-        .lineLimit(3)
-        .truncationMode(.tail)
+      if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
+        Image(uiImage: uiImage)
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(width: 75.0, height: 75.0)
+          .clipShape(Circle())
+      } else {
+        Circle()
+          .fill(Color("backgroundSecondary"))
+          .frame(width: 75.0, height: 75.0)
+      }
+      if let project = entry.configuration.project {
+        Text("\(project.projectName)")
+          .font(.system(size: 16, weight: .bold))
+          .foregroundStyle(Color("gray1000"))
+          .multilineTextAlignment(.center)
+          .lineLimit(2)
+          .truncationMode(.tail)
+      } else {
+        VStack() {
+          RoundedRectangle(cornerRadius: 8.0)
+            .fill(Color("backgroundSecondary"))
+            .frame(height: 10.0)
+          RoundedRectangle(cornerRadius: 8.0)
+            .fill(Color("backgroundSecondary"))
+            .frame(width: 50.0, height: 10.0)
+        }
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .widgetURL(URL(string: "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home"))
@@ -92,5 +116,5 @@ extension SmallShortcutAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   SmallShortcutWidget()
 } timeline: {
-  SmallShortcutEntry(date: .now, configuration: .project, latestDeployment: nil)
+  SmallShortcutEntry(date: .now, configuration: .project, faviconPath: nil)
 }

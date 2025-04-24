@@ -83,3 +83,35 @@ func httpRequest<T: Decodable>(params: FetchParams) async throws -> T {
     }
   }
 }
+
+func downloadAndSaveImage(from url: URL, name: String) async throws -> String? {
+  try await withCheckedThrowingContinuation { continuation in
+    let session = URLSession(configuration: .default)
+    let task = session.dataTask(with: url) { data, response, error in
+      guard let data = data, error == nil else {
+        return continuation.resume(returning: nil)
+      }
+      
+      guard let httpResponse = response as? HTTPURLResponse else {
+        return continuation.resume(returning: nil)
+      }
+      
+      if !(200...299).contains(httpResponse.statusCode) {
+        return continuation.resume(returning: nil)
+      }
+      
+      if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupName) {
+        let imageURL = containerURL.appendingPathComponent(name)
+        do {
+          try data.write(to: imageURL)
+          continuation.resume(returning: imageURL.path)
+        } catch {
+          continuation.resume(returning: nil)
+        }
+      } else {
+        continuation.resume(returning: nil)
+      }
+    }
+    task.resume()
+  }
+}
