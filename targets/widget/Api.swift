@@ -1,6 +1,6 @@
 import Foundation
 
-func fetchConnectionTeams(connection: Connection) async throws -> ConnectionTeamsResonse {
+func fetchConnectionTeams(connection: Connection) async throws -> ConnectionTeamsResponse {
   let params = FetchParams(
     method: HTTPMethod.GET,
     url: "/teams",
@@ -14,6 +14,16 @@ func fetchTeamProjects(connection: Connection, connectionTeam: ConnectionTeam) a
   let params = FetchParams(
     method: HTTPMethod.GET,
     url: "/projects?teamId=\(connectionTeam.id)&latestDeployments=5",
+    connection: connection
+  )
+  
+  return try await httpRequest(params: params)
+}
+
+func fetchLatestDeplyment(connection: Connection, projectId: String) async throws -> DeploymentResponse {
+  let params = FetchParams(
+    method: HTTPMethod.GET,
+    url: "/v6/deployments?projectId=\(projectId)&state=READY&limit=1",
     connection: connection
   )
   

@@ -10,6 +10,8 @@ struct ProjectListItem: AppEntity, Decodable {
   
   let id: String
   let projectName: String
+  let connection: Connection
+  let connectionTeam: ConnectionTeam
 }
 
 struct ProjectQuery: EntityQuery {
@@ -37,7 +39,9 @@ struct ProjectQuery: EntityQuery {
           options.append(contentsOf: teamProjects.map { project in
             ProjectListItem(
               id: project.id,
-              projectName: project.name
+              projectName: project.name,
+              connection: connection,
+              connectionTeam: connectionTeam
             )
           })
         }

@@ -69,7 +69,7 @@ struct MediumFirewallWidget: Widget {
 extension MediumFirewallAppIntentConfiguration {
   fileprivate static var project: MediumFirewallAppIntentConfiguration {
     let intent = MediumFirewallAppIntentConfiguration()
-    intent.project = .init(id: "1", projectName: "Revcel")
+    intent.project = .init(id: "1", projectName: "Revcel", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "2"))
     return intent
   }
 }

@@ -16,7 +16,7 @@ enum WidgetIntentState: Int {
   case noContainers = 3
 }
 
-struct ConnectionTeamsResonse: Decodable {
+struct ConnectionTeamsResponse: Decodable {
   let teams: [ConnectionTeam]
 }
 
@@ -28,4 +28,12 @@ struct ConnectionTeam: Decodable {
 struct ConnectionProject: Decodable {
   let id: String
   let name: String
+}
+
+struct DeploymentResponse: Decodable {
+  let deployments: [Deployment]
+}
+
+struct Deployment: Decodable {
+  let uid: String
 }

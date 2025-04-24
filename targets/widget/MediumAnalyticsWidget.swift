@@ -69,7 +69,7 @@ struct MediumAnalyticsWidget: Widget {
 extension MediumAnalyticsAppIntentConfiguration {
   fileprivate static var project: MediumAnalyticsAppIntentConfiguration {
     let intent = MediumAnalyticsAppIntentConfiguration()
-    intent.project = .init(id: "1", projectName: "Revcel")
+    intent.project = .init(id: "1", projectName: "Revcel", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "2"))
     return intent
   }
 }
