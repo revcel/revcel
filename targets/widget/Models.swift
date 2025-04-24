@@ -24,3 +24,8 @@ struct ConnectionTeam: Decodable {
   let id: String
   let name: String
 }
+
+struct ConnectionProject: Decodable {
+  let id: String
+  let name: String
+}

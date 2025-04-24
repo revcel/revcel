@@ -47,6 +47,8 @@ struct MediumFirewallEntryView : View {
       Text("Medium Firewall Widget")
       Text("\(entry.configuration.project?.projectName ?? "")")
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .widgetURL(URL(string: "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home"))
   }
 }
 
@@ -56,7 +58,9 @@ struct MediumFirewallWidget: Widget {
   var body: some WidgetConfiguration {
     AppIntentConfiguration(kind: kind, intent: MediumFirewallAppIntentConfiguration.self, provider: MediumFirewallProvider()) { entry in
       MediumFirewallEntryView(entry: entry)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(for: .widget) {
+          Color("background")
+        }
     }
     .supportedFamilies([.systemMedium])
   }

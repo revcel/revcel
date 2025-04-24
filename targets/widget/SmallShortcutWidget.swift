@@ -39,14 +39,20 @@ struct SmallShortcutEntry: TimelineEntry {
   let configuration: SmallShortcutAppIntentConfiguration
 }
 
-struct SmallShortcutEntryView : View {
+struct SmallShortcutEntryView: View {
   var entry: SmallShortcutProvider.Entry
   
   var body: some View {
-    VStack {
-      Text("Small Shortcut Widget")
+    VStack(alignment: .center) {
       Text("\(entry.configuration.project?.projectName ?? "")")
+        .font(.system(size: 16, weight: .bold))
+        .foregroundStyle(Color("gray1000"))
+        .multilineTextAlignment(.center)
+        .lineLimit(3)
+        .truncationMode(.tail)
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .widgetURL(URL(string: "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home"))
   }
 }
 
@@ -56,7 +62,9 @@ struct SmallShortcutWidget: Widget {
   var body: some WidgetConfiguration {
     AppIntentConfiguration(kind: kind, intent: SmallShortcutAppIntentConfiguration.self, provider: SmallShortcutProvider()) { entry in
       SmallShortcutEntryView(entry: entry)
-        .containerBackground(.fill.tertiary, for: .widget)
+        .containerBackground(for: .widget) {
+          Color("background")
+        }
     }
     .supportedFamilies([.systemSmall])
   }

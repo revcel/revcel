@@ -31,9 +31,15 @@ struct ProjectQuery: EntityQuery {
       do {
         let connectionTeams = try await fetchConnectionTeams(connection: connection)
         
-        for team in connectionTeams.teams {
-          // TODO: Fetch Team Projects
-          options.append(.init(id: team.id, projectName: team.name))
+        for connectionTeam in connectionTeams.teams {
+          let teamProjects = try await fetchTeamProjects(connection: connection, connectionTeam: connectionTeam)
+          
+          options.append(contentsOf: teamProjects.map { project in
+            ProjectListItem(
+              id: project.id,
+              projectName: project.name
+            )
+          })
         }
       } catch {
         setWidgetState(state: .apiFailed)
