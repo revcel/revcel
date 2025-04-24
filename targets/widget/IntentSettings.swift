@@ -13,7 +13,7 @@ struct ProjectListItem: AppEntity, Decodable {
 }
 
 struct ProjectQuery: EntityQuery {
-  func getSharedOptions() async throws -> Array<ProjectListItem> {
+  func getSharedOptions() async throws -> [ProjectListItem] {
     var options: [ProjectListItem] = []
     
     setWidgetState(state: .loading)
@@ -27,13 +27,14 @@ struct ProjectQuery: EntityQuery {
     
     let connections = (try? JSONDecoder().decode([Connection].self, from: rawConnections)) ?? []
     
-    
     for connection in connections {
-      print("\(connection.apiToken)")
-      
       do {
-        // TODO: Fetch Projects For Connection
-        options.append(.init(id: connection.id, projectName: connection.apiToken))
+        let connectionTeams = try await fetchConnectionTeams(connection: connection)
+        
+        for team in connectionTeams.teams {
+          // TODO: Fetch Team Projects
+          options.append(.init(id: team.id, projectName: team.name))
+        }
       } catch {
         setWidgetState(state: .apiFailed)
         
@@ -45,11 +46,11 @@ struct ProjectQuery: EntityQuery {
     return options
   }
   
-  func entities(for identifiers: [ProjectListItem.ID]) async throws -> Array<ProjectListItem> {
+  func entities(for identifiers: [ProjectListItem.ID]) async throws -> [ProjectListItem] {
     return try await getSharedOptions().filter { identifiers.contains($0.id) }
   }
   
-  func suggestedEntities() async throws -> Array<ProjectListItem> {
+  func suggestedEntities() async throws -> [ProjectListItem] {
     return try await getSharedOptions()
   }
   
@@ -63,6 +64,5 @@ struct ProjectQuery: EntityQuery {
     }
     
     sharedDefaults.set(state.rawValue, forKey: widgetStateKey)
-    sharedDefaults.synchronize()
   }
 }

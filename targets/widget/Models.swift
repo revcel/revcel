@@ -15,3 +15,12 @@ enum WidgetIntentState: Int {
   case hasContainers = 2
   case noContainers = 3
 }
+
+struct ConnectionTeamsResonse: Decodable {
+  let teams: [ConnectionTeam]
+}
+
+struct ConnectionTeam: Decodable {
+  let id: String
+  let name: String
+}

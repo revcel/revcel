@@ -19,7 +19,7 @@ private func fetch(params: FetchParams, completion: @escaping (Result<Data, Erro
     return completion(.failure(NSError(domain: "InvalidUrl", code: 0, userInfo: [NSLocalizedDescriptionKey: "URL should start with /"])))
   }
   
-  let fullUrlString = "\(params.url)"
+  let fullUrlString = "https://api.vercel.com\(params.url)"
   
   guard let fullUrl = URL(string: fullUrlString) else {
     return completion(.failure(NSError(domain: "InvalidURL", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
