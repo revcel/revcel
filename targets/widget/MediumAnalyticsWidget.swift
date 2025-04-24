@@ -6,7 +6,7 @@ struct MediumAnalyticsAppIntentConfiguration: WidgetConfigurationIntent {
     static var title: LocalizedStringResource { "Configuration" }
     static var description: IntentDescription { "This is an example widget." }
 
-    @Parameter(title: "Favorite Emoji", default: "😃")
+    @Parameter(title: "Favorite Emoji Analytics", default: "😃")
     var favoriteEmoji: String
 }
 
@@ -44,7 +44,7 @@ struct MediumAnalyticsEntryView : View {
 
     var body: some View {
         VStack {
-            Text("Time:")
+            Text("Medium Analytics Time:")
             Text(entry.date, style: .time)
 
             Text("Favorite Emoji:")
@@ -54,13 +54,14 @@ struct MediumAnalyticsEntryView : View {
 }
 
 struct MediumAnalyticsWidget: Widget {
-    let kind: String = "widget"
+    let kind: String = "MeediumAnalyticsWidget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: MediumAnalyticsAppIntentConfiguration.self, provider: MediumAnalyticsProvider()) { entry in
             MediumAnalyticsEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
+        .supportedFamilies([.systemMedium])
     }
 }
 

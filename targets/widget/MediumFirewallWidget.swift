@@ -6,7 +6,7 @@ struct MediumFirewallAppIntentConfiguration: WidgetConfigurationIntent {
     static var title: LocalizedStringResource { "Configuration" }
     static var description: IntentDescription { "This is an example widget." }
 
-    @Parameter(title: "Favorite Emoji", default: "😃")
+    @Parameter(title: "Favorite Emoji Firewall", default: "😃")
     var favoriteEmoji: String
 }
 
@@ -44,23 +44,24 @@ struct MediumFirewallEntryView : View {
 
     var body: some View {
         VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
+          Text("Medium FireWall Time:")
+          Text(entry.date, style: .time)
 
-            Text("Favorite Emoji:")
-            Text(entry.configuration.favoriteEmoji)
+          Text("Favorite Emoji:")
+          Text(entry.configuration.favoriteEmoji)
         }
     }
 }
 
 struct MediumFirewallWidget: Widget {
-    let kind: String = "widget"
+    let kind: String = "MediumFirewallWidget"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: kind, intent: MediumFirewallAppIntentConfiguration.self, provider: MediumFirewallProvider()) { entry in
             MediumFirewallEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
+        .supportedFamilies([.systemMedium])
     }
 }
 
