@@ -35,6 +35,59 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
       }
     }
     
+    if let project = configuration.project {
+      let endTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
+      let startTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
+      
+      let firewallMetricsRequestData = FirewallMetricsRequest(
+        event: "firewallAction",
+        reason: "firewall_tab",
+        rollups: FirewallMetricsRollups(
+          value: FirewallMetricsValue(
+            measure: "count",
+            aggregation: "sum"
+          )
+        ),
+        granularity: FirewallMetricsGranularity(
+          minutes: 5
+        ),
+        groupBy: [
+          "wafRuleId",
+          "wafAction"
+        ],
+        limit: 500,
+        tailRollup: "truncate",
+        summaryOnly: false,
+        startTime: startTime.ISO8601Format(),
+        endTime: endTime.ISO8601Format(),
+        scope: FirewallMetricsScope(
+          type: "project",
+          ownerId: project.connectionTeam.id,
+          projectIds: [project.id]
+        )
+      )
+      
+      if let firewallMetricsResponse = try? await fetchProjectFirewallMetrics(connection: project.connection, connectionTeam: project.connectionTeam, firewallMetricsRequestData: firewallMetricsRequestData) {
+        var allowed: Int? = nil
+        var denied: Int? = nil
+        var challenged: Int? = nil
+        
+        if let allowedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "" }) {
+          allowed = allowedValue.value
+        }
+        if let deniedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "deny" }) {
+          denied = deniedValue.value
+        }
+        if let challengedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "challenge" }) {
+          challenged = challengedValue.value
+        }
+        
+        firewallData = .init(allowed: allowed, denied: denied, chalanged: challenged)
+        
+        print(firewallData)
+      }
+    }
+    
     // Generate a timeline consisting of five entries an hour apart, starting from the current date.
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
@@ -57,14 +110,15 @@ struct MediumFirewallEntry: TimelineEntry {
 
 struct MediumFirewallInfoItemView: View {
   var color: String
+  var label: String
   var value: Int?
   
   var body: some View {
     VStack(alignment: .center, spacing: 10.0) {
-      Text(value != nil ? "\(String(describing: value)))" : "-")
-        .font(.system(size: 22, weight: .bold))
+      Text(value != nil ? "\(value ?? 0))" : "-")
+        .font(.system(size: 24, weight: .bold))
         .foregroundStyle(Color("gray1000"))
-      Text("Allowed")
+      Text(label)
         .font(.system(size: 14, weight: .bold))
         .foregroundStyle(Color(color))
     }
@@ -105,9 +159,9 @@ struct MediumFirewallEntryView: View {
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       HStack(alignment: .center, spacing: 30.0) {
-        MediumFirewallInfoItemView(color: "success", value: entry.firewallData.allowed)
-        MediumFirewallInfoItemView(color: "error", value: entry.firewallData.denied)
-        MediumFirewallInfoItemView(color: "warning", value: entry.firewallData.chalanged)
+        MediumFirewallInfoItemView(color: "success", label: "Allowed", value: entry.firewallData.allowed)
+        MediumFirewallInfoItemView(color: "error", label: "Denied", value: entry.firewallData.denied)
+        MediumFirewallInfoItemView(color: "warning", label: "Challenged", value: entry.firewallData.chalanged)
       }
       .frame(maxWidth: .infinity, alignment: .center)
     }

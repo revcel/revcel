@@ -54,3 +54,36 @@ struct FirewallWidgetData {
   let denied: Int?
   let chalanged: Int?
 }
+
+struct FirewallMetricsGranularity: Encodable {
+  let minutes: Int
+}
+
+struct FirewallMetricsScope: Encodable {
+  let type: String
+  let ownerId: String
+  let projectIds: [String]
+}
+
+struct FirewallMetricsRollups: Encodable {
+  let value: FirewallMetricsValue
+}
+
+struct FirewallMetricsValue: Encodable {
+  let measure: String
+  let aggregation: String
+}
+
+struct FirewallMetricsRequest: Encodable {
+  let event: String
+  let reason: String
+  let rollups: FirewallMetricsRollups
+  let granularity: FirewallMetricsGranularity
+  let groupBy: [String]
+  let limit: Int
+  let tailRollup: String
+  let summaryOnly: Bool
+  let startTime: String
+  let endTime: String
+  let scope: FirewallMetricsScope
+}

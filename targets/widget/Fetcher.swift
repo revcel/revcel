@@ -1,5 +1,7 @@
 import Foundation
 
+struct NoBody: Encodable {}
+
 enum HTTPMethod: String {
   case GET = "GET"
   case POST = "POST"
@@ -8,14 +10,15 @@ enum HTTPMethod: String {
   case DELETE = "DELETE"
 }
 
-struct FetchParams {
+struct FetchParams<T: Encodable> {
   let method: HTTPMethod
   let url: String
   let baseUrl: String? = nil
   let connection: Connection
+  let body: T?
 }
 
-private func fetch(params: FetchParams, completion: @escaping (Result<Data, Error>) -> Void) {
+private func fetch<T: Encodable>(params: FetchParams<T>, completion: @escaping (Result<Data, Error>) -> Void) {
   if (!params.url.starts(with: "/")) {
     return completion(.failure(NSError(domain: "InvalidUrl", code: 0, userInfo: [NSLocalizedDescriptionKey: "URL should start with /"])))
   }
@@ -31,6 +34,11 @@ private func fetch(params: FetchParams, completion: @escaping (Result<Data, Erro
   request.httpMethod = params.method.rawValue
   request.addValue("application/json", forHTTPHeaderField: "Accept")
   request.addValue("Bearer \(params.connection.apiToken)", forHTTPHeaderField: "Authorization")
+  
+  if let data = params.body {
+    let jsondata = try? JSONEncoder().encode(data)
+    request.httpBody = jsondata
+  }
   
   let session = URLSession(configuration: .default)
   
@@ -64,7 +72,7 @@ private func fetch(params: FetchParams, completion: @escaping (Result<Data, Erro
   task.resume()
 }
 
-func httpRequest<T: Decodable>(params: FetchParams) async throws -> T {
+func httpRequest<T: Decodable, K: Encodable>(params: FetchParams<K>) async throws -> T {
   try await withCheckedThrowingContinuation { continuation in
     fetch(params: params) { result in
       switch result {
