@@ -72,19 +72,17 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
         var denied: Int? = nil
         var challenged: Int? = nil
         
-        if let allowedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "" }) {
+        if let allowedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "allow" }) {
           allowed = allowedValue.value
         }
-        if let deniedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "deny" }) {
+        if let deniedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "deny" }) {
           denied = deniedValue.value
         }
-        if let challengedValue = firewallMetricsResponse.data.first(where: { $0.wafAction == "challenge" }) {
+        if let challengedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "challenge" }) {
           challenged = challengedValue.value
         }
         
         firewallData = .init(allowed: allowed, denied: denied, chalanged: challenged)
-        
-        print(firewallData)
       }
     }
     
@@ -115,7 +113,7 @@ struct MediumFirewallInfoItemView: View {
   
   var body: some View {
     VStack(alignment: .center, spacing: 10.0) {
-      Text(value != nil ? "\(value ?? 0))" : "-")
+      Text(value != nil ? "\(value ?? 0)" : "-")
         .font(.system(size: 24, weight: .bold))
         .foregroundStyle(Color("gray1000"))
       Text(label)

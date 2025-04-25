@@ -39,14 +39,13 @@ struct Deployment: Decodable {
 }
 
 struct FirewallMetricsResponse: Decodable {
-  let data: [FirewallMetricsData]
+  let summary: [FirewallMetricsSummary]
 }
 
-struct FirewallMetricsData: Decodable {
-  let value: Int
-  let timestamp: String
+struct FirewallMetricsSummary: Decodable {  
   let wafRuleId: String
   let wafAction: String
+  let value: Int
 }
 
 struct FirewallWidgetData {
