@@ -97,3 +97,14 @@ struct AnalyticsQuickStatsResponse: Decodable {
   let devices: Int
   let bounceRate: Int
 }
+
+struct AnalyticsTimeseries: Decodable {
+  let key: String
+  let total: Int
+  let devices: Int
+  let bounceRate: Int
+}
+
+struct AnalyticsTimeseriesResponse: Decodable {
+  let data: [AnalyticsTimeseries]
+}

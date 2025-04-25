@@ -12,11 +12,11 @@ struct MediumAnalyticsAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct MediumAnalyticsProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), faviconPath: nil, visitors: nil, analyticsAvailability: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
   }
   
   func snapshot(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: configuration, faviconPath: nil, visitors: nil, analyticsAvailability: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: configuration, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
   }
   
   func timeline(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> Timeline<MediumAnalyticsEntry> {
@@ -25,14 +25,21 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     var latestDeployment: Deployment? = nil
     var visitorsNumber: Int? = nil
     var analyticsAvailability: AnalyticsEnabledResponse? = nil
+    var analyticsData: AnalyticsTimeseriesResponse? = nil
     
     if let project = configuration.project {
+      analyticsAvailability = try? await fetchProjectAnalyticsAvailability(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
+      latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
+    }
+    
+    if let analyticsAvailability, let project = configuration.project {
       let endTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
       let startTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
       
-      analyticsAvailability = try? await fetchProjectAnalyticsAvailability(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
-      latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
-      visitorsNumber = try? await fetchProjectTotalVisitors(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id, from: startTime.ISO8601Format(), to: endTime.ISO8601Format()).total
+      if analyticsAvailability.isEnabled && analyticsAvailability.hasData {
+        visitorsNumber = try? await fetchProjectTotalVisitors(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id, from: startTime.ISO8601Format(), to: endTime.ISO8601Format()).total
+        analyticsData = try? await fetchProjectAnalyticsTimeseries(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id, from: startTime.ISO8601Format(), to: endTime.ISO8601Format())
+      }
     }
     
     if let latestDeployment = latestDeployment, let project = configuration.project{
@@ -45,7 +52,7 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = MediumAnalyticsEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability)
+      let entry = MediumAnalyticsEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
       entries.append(entry)
     }
     
@@ -59,6 +66,7 @@ struct MediumAnalyticsEntry: TimelineEntry {
   let faviconPath: String?
   let visitors: Int?
   let analyticsAvailability: AnalyticsEnabledResponse?
+  let analyticsData: AnalyticsTimeseriesResponse?
 }
 
 struct MediumAnalyticsEntryView : View {
@@ -149,5 +157,5 @@ extension MediumAnalyticsAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   MediumAnalyticsWidget()
 } timeline: {
-  MediumAnalyticsEntry(date: .now, configuration: .project, faviconPath: nil, visitors: 0, analyticsAvailability: nil)
+  MediumAnalyticsEntry(date: .now, configuration: .project, faviconPath: nil, visitors: 0, analyticsAvailability: nil, analyticsData: nil)
 }
