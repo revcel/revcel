@@ -5,7 +5,9 @@ import SwiftUI
 struct exportWidgets: WidgetBundle {
   var body: some Widget {
     SmallShortcutWidget()
-    MediumAnalyticsWidget()
+    if #available(iOS 16.0, *) {
+      MediumAnalyticsWidget()
+    }
     MediumFirewallWidget()
   }
 }

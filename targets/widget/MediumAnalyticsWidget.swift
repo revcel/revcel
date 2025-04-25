@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 import AppIntents
+import Charts
 
 struct MediumAnalyticsAppIntentConfiguration: WidgetConfigurationIntent {
   static var title: LocalizedStringResource { "Project" }
@@ -33,12 +34,27 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     }
     
     if let analyticsAvailability, let project = configuration.project {
-      let endTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
-      let startTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
+      let quikStatsEndTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
+      let quikStatsStartTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
+      
+      let analyticsEndTime = roundToGranularity(date: .now, granularity: .oneHour, mode: .up)
+      let analyticsStartTime = roundToGranularity(date: .now.addingTimeInterval(-7 * 24 * 60 * 60), granularity: .oneHour, mode: .down)
       
       if analyticsAvailability.isEnabled && analyticsAvailability.hasData {
-        visitorsNumber = try? await fetchProjectTotalVisitors(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id, from: startTime.ISO8601Format(), to: endTime.ISO8601Format()).total
-        analyticsData = try? await fetchProjectAnalyticsTimeseries(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id, from: startTime.ISO8601Format(), to: endTime.ISO8601Format())
+        visitorsNumber = try? await fetchProjectTotalVisitors(
+          connection: project.connection,
+          connectionTeam: project.connectionTeam,
+          projectId: project.id,
+          from: quikStatsStartTime.ISO8601Format(),
+          to: quikStatsEndTime.ISO8601Format()
+        ).total
+        analyticsData = try? await fetchProjectAnalyticsTimeseries(
+          connection: project.connection,
+          connectionTeam: project.connectionTeam,
+          projectId: project.id,
+          from: analyticsStartTime.ISO8601Format(),
+          to: analyticsEndTime.ISO8601Format()
+        )
       }
     }
     
@@ -69,7 +85,31 @@ struct MediumAnalyticsEntry: TimelineEntry {
   let analyticsData: AnalyticsTimeseriesResponse?
 }
 
-struct MediumAnalyticsEntryView : View {
+struct ChartsPlaceHolder: View {
+  var body: some View {
+    let calendar = Calendar.current
+    let today = Date()
+    
+    VStack(alignment: .leading) {
+      Chart {
+        ForEach(0...7, id: \.self) { item in
+          AreaMark(
+            x: .value("Weekday", calendar.date(byAdding: .day, value: -item, to: today) ?? Date()),
+            y: .value("Value", Int.random(in: 0...100))
+          )
+          .foregroundStyle(Color("backgroundSecondary"))
+        }
+      }
+      .chartYAxis(.hidden)
+      .chartXAxis(.hidden)
+    }
+    .padding(.top, 50.0)
+  }
+}
+
+struct MediumAnalyticsEntryView: View {
+  @Environment(\.widgetContentMargins) var widgetMargins
+  
   var entry: MediumAnalyticsProvider.Entry
   var haveAnalytics: Bool {
     if let analyticsAvailability = entry.analyticsAvailability {
@@ -127,7 +167,39 @@ struct MediumAnalyticsEntryView : View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
       }
     }
+    .padding(widgetMargins)
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(
+      VStack {
+        if let data = entry.analyticsData {
+          let chartData = data.data.map { (item) -> LineChartData in
+              .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.total)
+          }
+          
+          VStack(alignment: .leading) {
+            Chart {
+              ForEach(chartData, id: \.id) { item in
+                AreaMark(
+                  x: .value("Weekday", item.date),
+                  y: .value("Value", item.value)
+                )
+                .foregroundStyle(Color("blue100"))
+                LineMark(
+                  x: .value("Weekday", item.date),
+                  y: .value("Value", item.value)
+                )
+                .foregroundStyle(Color("blue700"))
+              }
+            }
+            .chartYAxis(.hidden)
+            .chartXAxis(.hidden)
+          }
+          .padding(.top, 35.0)
+        } else {
+          ChartsPlaceHolder()
+        }
+      }
+    )
     .widgetURL(URL(string: entry.configuration.project != nil ? "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home" : "revcel://"))
   }
 }
@@ -142,6 +214,7 @@ struct MediumAnalyticsWidget: Widget {
           Color("background")
         }
     }
+    .contentMarginsDisabled()
     .supportedFamilies([.systemMedium])
   }
 }

@@ -42,7 +42,7 @@ struct FirewallMetricsResponse: Decodable {
   let summary: [FirewallMetricsSummary]
 }
 
-struct FirewallMetricsSummary: Decodable {  
+struct FirewallMetricsSummary: Decodable {
   let wafRuleId: String
   let wafAction: String
   let value: Int
@@ -107,4 +107,10 @@ struct AnalyticsTimeseries: Decodable {
 
 struct AnalyticsTimeseriesResponse: Decodable {
   let data: [AnalyticsTimeseries]
+}
+
+struct LineChartData {
+  var id = UUID()
+  var date: Date
+  var value: Int
 }
