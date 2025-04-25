@@ -86,3 +86,14 @@ struct FirewallMetricsRequest: Encodable {
   let endTime: String
   let scope: FirewallMetricsScope
 }
+
+struct AnalyticsEnabledResponse: Decodable {
+  let isEnabled: Bool
+  let hasData: Bool
+}
+
+struct AnalyticsQuickStatsResponse: Decodable {
+  let total: Int
+  let devices: Int
+  let bounceRate: Int
+}

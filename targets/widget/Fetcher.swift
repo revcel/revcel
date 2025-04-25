@@ -13,9 +13,25 @@ enum HTTPMethod: String {
 struct FetchParams<T: Encodable> {
   let method: HTTPMethod
   let url: String
-  let baseUrl: String? = nil
+  let baseUrl: String?
   let connection: Connection
   let body: T?
+  
+  init(method: HTTPMethod, url: String, connection: Connection, body: T, baseUrl: String? = nil) {
+    self.method = method
+    self.url = url
+    self.connection = connection
+    self.body = body
+    self.baseUrl = baseUrl
+  }
+  
+  init(method: HTTPMethod, url: String, connection: Connection, baseUrl: String? = nil) {
+    self.method = method
+    self.url = url
+    self.connection = connection
+    self.body = nil
+    self.baseUrl = baseUrl
+  }
 }
 
 private func fetch<T: Encodable>(params: FetchParams<T>, completion: @escaping (Result<Data, Error>) -> Void) {
@@ -23,7 +39,7 @@ private func fetch<T: Encodable>(params: FetchParams<T>, completion: @escaping (
     return completion(.failure(NSError(domain: "InvalidUrl", code: 0, userInfo: [NSLocalizedDescriptionKey: "URL should start with /"])))
   }
   
-  let fullUrlString = params.baseUrl != nil ? "\(String(describing: params.baseUrl))\(params.url)" : "https://api.vercel.com\(params.url)"
+  let fullUrlString = params.baseUrl != nil ? "\(params.baseUrl ?? "")\(params.url)" : "https://api.vercel.com\(params.url)"
   
   guard let fullUrl = URL(string: fullUrlString) else {
     return completion(.failure(NSError(domain: "InvalidURL", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
