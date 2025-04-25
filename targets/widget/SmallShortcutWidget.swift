@@ -87,7 +87,7 @@ struct SmallShortcutEntryView: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .widgetURL(URL(string: "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home"))
+    .widgetURL(URL(string: entry.configuration.project != nil ? "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home" : "revcel://"))
   }
 }
 

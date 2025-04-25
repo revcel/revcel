@@ -29,3 +29,13 @@ func fetchLatestDeplyment(connection: Connection, projectId: String) async throw
   
   return try await httpRequest(params: params)
 }
+
+func fetchProjectFirewallMetrics(connection: Connection, connectionTeam: ConnectionTeam, projectId: String) async throws -> FirewallMetricsResponse {
+  let params = FetchParams(
+    method: HTTPMethod.POST,
+    url: "/observability/metrics?ownerId=\(connectionTeam.id)",
+    connection: connection
+  )
+  
+  return try await httpRequest(params: params)
+}
