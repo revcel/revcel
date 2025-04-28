@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ContainerWidgetConfigurationView(
+fun ProjectWidgetConfigurationView(
     enabled: Boolean,
     onDone: () -> Unit
 ) {

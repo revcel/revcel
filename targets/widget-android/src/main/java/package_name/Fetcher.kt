@@ -27,7 +27,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
         throw Exception("URL should start with /")
     }
 
-    val fullUrlString = "https://api.vercel.com" + params.url
+    val fullUrlString = "https://api.vercel.com${params.url}"
     val url = URL(fullUrlString)
 
     val connection = (url.openConnection() as HttpURLConnection).apply {

@@ -1,13 +1,26 @@
 package com.revcel.mobile
 
-// API Example
+import ConnectionTeam
+import ConnectionTeamsResponse
+import ConnectionProject
+import expo.modules.widgetkit.Connection
 
-// suspend fun fetchEndpoints(connection: Connection): Array<Endpoint> {
-//     val params = FetchParams(
-//         method = HTTPMethod.GET,
-//         url = "/api/endpoints?excludeSnapshots=true",
-//         connection = connection
-//     )
+suspend fun fetchConnectionTeams(connection: Connection): ConnectionTeamsResponse {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url =  "/teams",
+        connection = connection
+    )
 
-//     return httpRequestWithRetry(params)
-// }
+    return httpRequest(params)
+}
+
+suspend fun fetchTeamProjects(connection: Connection, connectionTeam: ConnectionTeam): Array<ConnectionProject> {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url =  "/projects?teamId=${connectionTeam.id}&latestDeployments=5",
+        connection = connection
+    )
+
+    return httpRequest(params)
+}
