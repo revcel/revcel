@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
+class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = SmallShortcutWidget()
 
     companion object {

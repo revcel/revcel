@@ -57,7 +57,10 @@ android {
 const withModifiedAndroidManifest = (config, opts) =>
     withAndroidManifest(config, (config) => {
         const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
-        mainApplication.receiver = {
+
+        mainApplication.receiver = mainApplication.receiver ? [...mainApplication.receiver] : []
+
+        mainApplication.receiver.push({
             $: {
                 'android:name': `.${opts.receiverName}`,
                 'android:exported': 'true',
@@ -87,12 +90,20 @@ const withModifiedAndroidManifest = (config, opts) =>
                 {
                     $: {
                         'android:name': 'android.appwidget.provider',
-                        'android:resource': '@xml/revcel_widget_info',
-                        'android:description': '@string/widget_description',
+                        'android:resource': opts.resource,
+                        'android:description': opts.description,
                     },
                 },
             ],
-        }
+        })
+
+        return config
+    })
+
+const withModifiedAndroidManifestActivity = (config, opts) =>
+    withAndroidManifest(config, (config) => {
+        const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
+        
         mainApplication.activity.push({
             $: {
                 'android:name': `.RevcelAppWidgetConfigurationActivity`,
@@ -116,7 +127,10 @@ const withModifiedAndroidManifest = (config, opts) =>
 
 const withAndroidWidget = (config, opts) => {
     config = withModifiedAppBuildGradle(config, opts)
-    config = withModifiedAndroidManifest(config, opts)
+    opts.widgets.forEach(widget => {
+        config = withModifiedAndroidManifest(config, widget)
+    })
+    config = withModifiedAndroidManifestActivity(config, opts)
     config = withSourceFiles(config, { src: opts.src })
 
     return config

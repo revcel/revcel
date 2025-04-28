@@ -29,11 +29,11 @@ class ContainerWidgetDataWorker(context: Context, workerParams: WorkerParameters
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId) {
-        ContainerWidgetReceiver().onStatusUpdated(context, glanceId)
+        SmallShortcutWidgetReceiver().onStatusUpdated(context, glanceId)
     }
 
     private fun onFetchError(context: Context, glanceId: GlanceId) {
-        ContainerWidgetReceiver().onFetchError(context, glanceId)
+        SmallShortcutWidgetReceiver().onFetchError(context, glanceId)
     }
 
     companion object {

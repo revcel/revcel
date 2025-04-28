@@ -1,3 +1,5 @@
 <resources>
-    <string name="widget_description">Open your project from shortcut</string>
+    <string name="small_shortcut_widget_description">Small shortcut widget</string>
+    <string name="medium_analytics_description">Medium analytics widget</string>
+    <string name="medium_firewall_widget_description">Medium firewall widget</string>
 </resources>

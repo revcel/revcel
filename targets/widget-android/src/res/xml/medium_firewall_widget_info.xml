@@ -10,7 +10,7 @@
     android:targetCellWidth="2"
     android:targetCellHeight="1"
     android:updatePeriodMillis="900000"
-    android:description="@string/widget_description"
+    android:description="@string/medium_firewall_widget_description"
     android:widgetCategory="home_screen"
     android:configure="com.revcel.mobile.RevcelAppWidgetConfigurationActivity"
     android:widgetFeatures="reconfigurable"
