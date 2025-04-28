@@ -75,6 +75,9 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
         if let allowedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "allow" }) {
           allowed = allowedValue.value
         }
+        if let allowedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "" }), allowed == nil {
+          allowed = allowedValue.value
+        }
         if let deniedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "deny" }) {
           denied = deniedValue.value
         }
@@ -90,7 +93,6 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      // TODO: Actually ftech data to be displayed
       let entry = MediumFirewallEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath, firewallData: firewallData)
       entries.append(entry)
     }

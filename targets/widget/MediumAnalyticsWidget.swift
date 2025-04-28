@@ -47,7 +47,7 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
           projectId: project.id,
           from: quikStatsStartTime.ISO8601Format(),
           to: quikStatsEndTime.ISO8601Format()
-        ).total
+        ).devices
         analyticsData = try? await fetchProjectAnalyticsTimeseries(
           connection: project.connection,
           connectionTeam: project.connectionTeam,
@@ -150,6 +150,7 @@ struct MediumAnalyticsEntryView: View {
           }
           if let visitors = entry.visitors {
             Text("\(visitors) Visitors")
+              .padding(.leading, 15.0)
               .font(.system(size: 16, weight: .bold))
               .foregroundStyle(Color("gray1000"))
           }
@@ -158,7 +159,7 @@ struct MediumAnalyticsEntryView: View {
       } else {
         HStack {
           Text("No analytics data available")
-            .font(.system(size: 16, weight: .bold))
+            .font(.system(size: 18.0, weight: .bold))
             .foregroundStyle(Color("gray1000"))
             .multilineTextAlignment(.center)
             .lineLimit(1)
@@ -173,7 +174,7 @@ struct MediumAnalyticsEntryView: View {
       VStack {
         if let data = entry.analyticsData {
           let chartData = data.data.map { (item) -> LineChartData in
-              .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.total)
+              .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.devices)
           }
           
           VStack(alignment: .leading) {
@@ -195,7 +196,7 @@ struct MediumAnalyticsEntryView: View {
             .chartXAxis(.hidden)
           }
           .padding(.top, 35.0)
-        } else {
+        } else if haveAnalytics {
           ChartsPlaceHolder()
         }
       }
