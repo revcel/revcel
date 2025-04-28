@@ -1,3 +1,4 @@
-export type Config = {
-  // todo
+export type Connection = {
+  id: string,
+  apiToken: string
 }

@@ -1,4 +1,5 @@
 import { mmkvStorage } from '@/lib/storage'
+import WidgetKitModule from '@/modules/widgetkit'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
@@ -35,6 +36,7 @@ export const usePersistedStore = create<PersistedStoreState>()(
             connections: [],
             currentConnection: null,
             removeConnection: (connectionId: string) => {
+                WidgetKitModule.removeConnection(connectionId)
                 const newConnections = get().connections.filter((c) => c.id !== connectionId)
 
                 set({
@@ -43,6 +45,7 @@ export const usePersistedStore = create<PersistedStoreState>()(
                 })
             },
             addConnection: (connection: Connection) => {
+                WidgetKitModule.addConnection(connection)
                 set((state) => ({ connections: [...state.connections, connection] }))
             },
             switchConnection: ({

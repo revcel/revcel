@@ -10,6 +10,7 @@
         "userInterfaceStyle": "dark",
         "newArchEnabled": true,
         "ios": {
+            "appleTeamId": "8FT82R3S6A",
             "bundleIdentifier": "com.revcel.mobile",
             "teamId": "8FT82R3S6A",
             "supportsTablet": true,
