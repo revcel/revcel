@@ -8,7 +8,9 @@ import com.google.gson.Gson
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import androidx.compose.runtime.getValue
 import android.os.Bundle
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -39,18 +41,44 @@ class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
         }
 
         val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
-        val rawInstances = prefs.getString(connectionsKey, "[]")
-        val instances = Gson().fromJson(rawInstances, Array<Connection>::class.java) ?: emptyArray()
+        val rawConnections = prefs.getString(connectionsKey, "[]")
+        val connections = Gson().fromJson(rawConnections, Array<Connection>::class.java) ?: emptyArray()
 
         setWidgetState(WidgetIntentState.LOADING)
 
         setContent {
             var widgetState = remember { mutableStateOf(WidgetIntentState.LOADING) }
             val options = remember { mutableStateListOf<ProjectListItem>() }
-            var selectedContainer by remember { mutableStateOf<ProjectListItem?>(null) }
+            var selectedProject by remember { mutableStateOf<ProjectListItem?>(null) }
 
             LaunchedEffect(Unit) {
-                // todo
+                for (connection in connections) {
+                    try {
+                        val connectionTeams = fetchConnectionTeams(connection)
+
+                        for (connectionTeam in connectionTeams.teams) {
+                            val teamProjects = fetchTeamProjects(connection, connectionTeam)
+
+                            options.addAll(teamProjects.map { project ->
+                                ProjectListItem(
+                                    id = project.id,
+                                    projectName = project.name,
+                                    connection = connection,
+                                    connectionTeam = connectionTeam
+                                )
+                            })
+                        }
+
+                        val nextState = if (connections.isEmpty()) WidgetIntentState.NO_CONTAINERS else WidgetIntentState.HAS_CONTAINERS
+
+                        setWidgetState(nextState)
+                        widgetState.value = nextState
+
+                    } catch (e: Exception) {
+                        setWidgetState(WidgetIntentState.API_FAILED)
+                        widgetState.value = WidgetIntentState.API_FAILED
+                    }
+                }
             }
 
             setupUI(appWidgetId)
