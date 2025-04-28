@@ -1,4 +1,4 @@
-package com.pourtainer.mobile
+package com.revcel.mobile
 
 import java.net.HttpURLConnection
 import java.net.URL
