@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/sample_widget"
+    android:previewImage="@drawable/preview"
+    android:minWidth="109dp"
+    android:minHeight="56dp"
+    android:maxResizeWidth="624dp"
+    android:maxResizeHeight="422dp"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="900000"
+    android:description="@string/widget_description"
+    android:widgetCategory="home_screen"
+    android:configure="com.revcel.mobile.RevcelAppWidgetConfigurationActivity"
+    android:widgetFeatures="reconfigurable"
+/>

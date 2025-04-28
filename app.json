@@ -59,7 +59,16 @@
                     "organization": "ff-global"
                 }
             ],
-            "@bacons/apple-targets"
+            "@bacons/apple-targets",
+            [
+                "./plugins/withAndroidWidget",
+                {
+                    "src": "./targets/widget-android",
+                    "glanceVersion": "1.1.1",
+                    "kotlinExtensionVersion": "1.5.15",
+                    "receiverName": "ContainerWidgetReceiver"
+                }
+            ]
         ],
         "experiments": {
             "typedRoutes": true
