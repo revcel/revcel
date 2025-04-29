@@ -27,7 +27,9 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
 
     companion object {
         const val sharedPreferencesGroup = "group.com.revcel.mobile"
+        val widgetStateKey = stringPreferencesKey("state")
         val selectedProjectKey = stringPreferencesKey("selectedProject")
+        val faviconPathKey = stringPreferencesKey("faviconPath")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -92,7 +94,7 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onStatusUpdated(context: Context, glanceId: GlanceId) {
+    fun onStatusUpdated(context: Context, glanceId: GlanceId, faviconPath: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
 
@@ -104,7 +106,7 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
                         glanceId = glanceId
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
-                            // todo
+                            this[faviconPathKey] = faviconPath
                         }
                     }
 
@@ -126,7 +128,7 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
                         glanceId = glanceId
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
-                            // todo
+                            this[widgetStateKey] = WidgetIntentState.API_FAILED.toString()
                         }
                     }
 
@@ -149,12 +151,11 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val work = PeriodicWorkRequestBuilder<ContainerWidgetDataWorker>(15, TimeUnit.MINUTES)
+        val work = PeriodicWorkRequestBuilder<SmallShortcutWidgetDataWorker>(15, TimeUnit.MINUTES)
             .setInputData(
                 workDataOf(
-                    // pass project
-                    //  ContainerWidgetDataWorker.containerKey to Gson().toJson(container),
-                    ContainerWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
+                    SmallShortcutWidgetDataWorker.projectKey to Gson().toJson(project),
+                    SmallShortcutWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
                 )
             )
             .setConstraints(constraints)

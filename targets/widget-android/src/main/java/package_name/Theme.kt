@@ -19,6 +19,7 @@ val successColor = Color(0xFF4ADE80)
 val buttonColor = Color(0xFF1A98FF)
 val whiteColor = Color(0xFFFFFFFF)
 val buttonInactiveColor = Color(0xFF73B8F8)
+val backgroundSecondary = Color(0xFF171717)
 
 // light colors
 private val LightColorPalette = lightColorScheme(

@@ -25,6 +25,14 @@ data class ProjectListItem(
     val connectionTeam: ConnectionTeam
 )
 
+data class DeploymentResponse(
+    val deployments: Array<Deployment>
+)
+
+data class Deployment(
+    val uid: String
+)
+
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),

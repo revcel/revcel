@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import android.content.Context
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlinx.coroutines.Dispatchers
@@ -7,6 +8,7 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import com.google.gson.Gson
 import expo.modules.widgetkit.Connection
+import java.io.File
 
 enum class HTTPMethod(val value: String) {
     GET("GET"),
@@ -21,6 +23,39 @@ data class FetchParams(
     val url: String,
     val connection: Connection
 )
+
+suspend fun downloadImageToFile(context: Context, vercelConnection: Connection, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
+    val url = URL(imageUrl)
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+        requestMethod = "GET"
+        // Need this, otherwise vercel will throw error
+        setRequestProperty("User-Agent", "")
+    }
+
+    try {
+        connection.doInput = true
+        connection.connect()
+
+        val responseCode = connection.responseCode
+
+        if (responseCode !in 200..299) {
+            val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                ?: "HTTP Error: $responseCode"
+            throw Exception("HTTP Error: $responseCode. $errorMsg")
+        }
+
+        val inputStream = connection.inputStream
+
+        val file = File(context.filesDir, fileName)
+        file.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+        file
+    } finally {
+        connection.disconnect()
+    }
+}
 
 suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) {
     if (!params.url.startsWith("/")) {
