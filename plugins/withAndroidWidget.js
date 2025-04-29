@@ -106,7 +106,7 @@ const withModifiedAndroidManifestActivity = (config, opts) =>
         
         mainApplication.activity.push({
             $: {
-                'android:name': `.RevcelAppWidgetConfigurationActivity`,
+                'android:name': `.${opts.configurationActivity}`,
                 'android:exported': 'true',
             },
             'intent-filter': [
@@ -130,7 +130,9 @@ const withAndroidWidget = (config, opts) => {
     opts.widgets.forEach(widget => {
         config = withModifiedAndroidManifest(config, widget)
     })
-    config = withModifiedAndroidManifestActivity(config, opts)
+    opts.widgets.forEach(widget => {
+        config = withModifiedAndroidManifestActivity(config, widget)
+    })
     config = withSourceFiles(config, { src: opts.src })
 
     return config

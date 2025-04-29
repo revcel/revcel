@@ -51,7 +51,7 @@ class SmallShortcutWidgetDataWorker(context: Context, workerParams: WorkerParame
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String) {
-        SmallShortcutWidgetReceiver().onStatusUpdated(context, glanceId, faviconPath)
+        SmallShortcutWidgetReceiver().onFaviconFetched(context, glanceId, faviconPath)
     }
 
     private fun onFetchError(context: Context, glanceId: GlanceId) {

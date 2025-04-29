@@ -26,7 +26,6 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = SmallShortcutWidget()
 
     companion object {
-        const val sharedPreferencesGroup = "group.com.revcel.mobile"
         val widgetStateKey = stringPreferencesKey("state")
         val selectedProjectKey = stringPreferencesKey("selectedProject")
         val faviconPathKey = stringPreferencesKey("faviconPath")
@@ -43,10 +42,14 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
                         definition = PreferencesGlanceStateDefinition,
                         glanceId = glanceId
                     ) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            // update if necessary
-                            // schedule periodic work
+                        val rawProject = prefs[selectedProjectKey] ?: "null"
+                        val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
+
+                        if (project != null) {
+                            schedulePeriodicWork(context, glanceId, project)
                         }
+
+                        prefs.toMutablePreferences().apply {}
                     }
 
                     glanceAppWidget.update(context, glanceId)
@@ -94,7 +97,7 @@ class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onStatusUpdated(context: Context, glanceId: GlanceId, faviconPath: String) {
+    fun onFaviconFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
 

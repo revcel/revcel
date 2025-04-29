@@ -12,6 +12,6 @@
     android:updatePeriodMillis="900000"
     android:description="@string/small_shortcut_widget_description"
     android:widgetCategory="home_screen"
-    android:configure="com.revcel.mobile.RevcelAppWidgetConfigurationActivity"
+    android:configure="com.revcel.mobile.SmallShortcutWidgetConfigurationActivity"
     android:widgetFeatures="reconfigurable"
 />

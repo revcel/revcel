@@ -23,7 +23,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import expo.modules.widgetkit.Connection
 import savedWidgetStateKey
 
-class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
+class SmallShortcutWidgetConfigurationActivity: AppCompatActivity() {
     override fun onCreate(savedConnectionState: Bundle?) {
         super.onCreate(savedConnectionState)
 
