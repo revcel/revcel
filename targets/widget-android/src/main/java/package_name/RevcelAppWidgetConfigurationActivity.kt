@@ -112,9 +112,7 @@ class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
                 onProjectSelected,
                 onDone = {
                     val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
-
-                    // call receiver
-                    // ContainerWidgetReceiver().onContainerSelected(applicationContext, glanceId, selectedContainer)
+                    SmallShortcutWidgetReceiver().onProjectSelected(applicationContext, glanceId, selectedProject)
 
                     val resultValue = Intent().apply {
                         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
