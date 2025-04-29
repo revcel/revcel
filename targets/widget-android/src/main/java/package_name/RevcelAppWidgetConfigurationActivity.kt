@@ -69,7 +69,7 @@ class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
                             })
                         }
 
-                        val nextState = if (connections.isEmpty()) WidgetIntentState.NO_CONTAINERS else WidgetIntentState.HAS_CONTAINERS
+                        val nextState = if (connections.isEmpty()) WidgetIntentState.NO_PROJECTS else WidgetIntentState.HAS_PROJECTS
 
                         setWidgetState(nextState)
                         widgetState.value = nextState
@@ -81,17 +81,35 @@ class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
                 }
             }
 
-            setupUI(appWidgetId)
+            setupUI(
+                connections.isNotEmpty(),
+                widgetState.value,
+                selectedProject,
+                options,
+                appWidgetId,
+                { project ->
+                    selectedProject = project
+                }
+            )
         }
     }
 
     @Composable
     private fun setupUI(
+        isAuthorized: Boolean,
+        state: WidgetIntentState,
+        selectedProject: ProjectListItem?,
+        projects: List<ProjectListItem>,
         appWidgetId: Int,
+        onProjectSelected: (selectedProject: ProjectListItem?) -> Unit
     ) {
         RevcelMaterialTheme {
             ProjectWidgetConfigurationView(
-                enabled = true,
+                isAuthorized,
+                state,
+                selectedProject,
+                projects,
+                onProjectSelected,
                 onDone = {
                     val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
 
@@ -104,6 +122,9 @@ class RevcelAppWidgetConfigurationActivity: AppCompatActivity() {
 
                     setResult(RESULT_OK, resultValue)
                     finish()
+                },
+                openApp = {
+                    packageManager.getLaunchIntentForPackage(packageName)?.let { startActivity(it) }
                 }
             )
         }

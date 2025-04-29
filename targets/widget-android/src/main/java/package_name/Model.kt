@@ -28,6 +28,6 @@ data class ProjectListItem(
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),
-    HAS_CONTAINERS(2),
-    NO_CONTAINERS(3)
+    HAS_PROJECTS(2),
+    NO_PROJECTS(3)
 }

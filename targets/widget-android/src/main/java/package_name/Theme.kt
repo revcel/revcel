@@ -1,6 +1,4 @@
 package com.revcel.mobile
-
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
@@ -24,14 +22,14 @@ val buttonInactiveColor = Color(0xFF73B8F8)
 
 // light colors
 private val LightColorPalette = lightColorScheme(
-    background = Color(0xFFF8FAFC),
-    onSurface = Color(0xFF0F172A),
+    background = Color(0xFF0A0A0A),
+    onSurface = Color(0xFFEDEDED)
 )
 
 // dark colors
 private val DarkColorPalette = darkColorScheme(
-    background = Color(0xFF0F172A),
-    onSurface = Color(0xFFF8FAFC)
+    background = Color(0xFF0A0A0A),
+    onSurface = Color(0xFFEDEDED)
 )
 
 private val GlanceColors = ColorProviders(
@@ -78,7 +76,9 @@ private val DarkTypography = Typography(
 
 @Composable
 fun RevcelMaterialTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // TODO: If we need support for light theme
+    // darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) DarkColorPalette else LightColorPalette
