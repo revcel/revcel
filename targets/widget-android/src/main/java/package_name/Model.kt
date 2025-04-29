@@ -33,6 +33,49 @@ data class Deployment(
     val uid: String
 )
 
+data class FirewallMetricsResponse(
+    val summary: Array<FirewallMetricsSummary>
+)
+
+data class FirewallMetricsSummary(
+    val wafRuleId: String,
+    val wafAction: String,
+    val value: Int
+)
+
+data class FirewallMetricsGranularity(
+    val minutes: Int
+)
+
+data class FirewallMetricsScope(
+    val type: String,
+    val ownerId: String,
+    val projectIds: Array<String>
+)
+
+data class FirewallMetricsRollups(
+    val value: FirewallMetricsValue
+)
+
+data class FirewallMetricsValue(
+    val measure: String,
+    val aggregation: String
+)
+
+data class FirewallMetricsRequest(
+    val event: String,
+    val reason: String,
+    val rollups: FirewallMetricsRollups,
+    val granularity: FirewallMetricsGranularity,
+    val groupBy: Array<String>,
+    val limit: Int,
+    val tailRollup: String,
+    val summaryOnly: Boolean,
+    val startTime: String,
+    val endTime: String,
+    val scope: FirewallMetricsScope
+)
+
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),

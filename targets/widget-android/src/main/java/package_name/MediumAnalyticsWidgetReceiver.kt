@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = SmallShortcutWidget()
+    override val glanceAppWidget: GlanceAppWidget = MediumAnalyticsWidget()
 
     companion object {
         val widgetStateKey = stringPreferencesKey("state")
@@ -34,7 +34,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.appwidget.action.APPWIDGET_UPDATE") {
             CoroutineScope(Dispatchers.IO).launch {
-                val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+                val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 
                 glanceIds.forEach { glanceId ->
                     updateAppWidgetState(
@@ -76,7 +76,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 
             glanceIds.forEach { runningGlanceId ->
                 if (runningGlanceId == glanceId) {
@@ -99,7 +99,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
 
     fun onFaviconFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 
             glanceIds.forEach { runningGlanceId ->
                 if (runningGlanceId == glanceId) {
@@ -121,7 +121,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
 
     fun onFetchError(context: Context, glanceId: GlanceId) {
         CoroutineScope(Dispatchers.IO).launch {
-            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 
             glanceIds.forEach { runningGlanceId ->
                 if (runningGlanceId == glanceId) {
@@ -154,11 +154,11 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val work = PeriodicWorkRequestBuilder<SmallShortcutWidgetDataWorker>(15, TimeUnit.MINUTES)
+        val work = PeriodicWorkRequestBuilder<MediumAnalyticsWidgetDataWorker>(15, TimeUnit.MINUTES)
             .setInputData(
                 workDataOf(
-                    SmallShortcutWidgetDataWorker.projectKey to Gson().toJson(project),
-                    SmallShortcutWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
+                    MediumAnalyticsWidgetDataWorker.projectKey to Gson().toJson(project),
+                    MediumAnalyticsWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
                 )
             )
             .setConstraints(constraints)

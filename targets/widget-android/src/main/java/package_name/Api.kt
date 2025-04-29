@@ -4,6 +4,8 @@ import ConnectionTeam
 import ConnectionTeamsResponse
 import ConnectionProject
 import DeploymentResponse
+import FirewallMetricsRequest
+import FirewallMetricsResponse
 import expo.modules.widgetkit.Connection
 
 suspend fun fetchConnectionTeams(connection: Connection): ConnectionTeamsResponse {
@@ -30,6 +32,16 @@ suspend fun fetchLatestDeployment(connection: Connection, projectId: String): De
     val params = FetchParams(
         method = HTTPMethod.GET,
         url = "/v6/deployments?projectId=${projectId}&state=READY&limit=1",
+        connection = connection
+    )
+
+    return httpRequest(params)
+}
+
+suspend fun fetchProjectFirewallMetrics(connection: Connection, connectionTeam: ConnectionTeam, firewallMetricsRequestData: FirewallMetricsRequest): FirewallMetricsResponse {
+    val params = FetchParams(
+        method = HTTPMethod.POST,
+        url = "/observability/metrics?ownerId=${connectionTeam.id}",
         connection = connection
     )
 

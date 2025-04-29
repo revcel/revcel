@@ -75,13 +75,13 @@
                         },
                         {
                             "receiverName": "MediumAnalyticsWidgetReceiver",
-                            "configurationActivity": "SmallShortcutWidgetConfigurationActivity",
+                            "configurationActivity": "MediumAnalyticsWidgetConfigurationActivity",
                             "resource": "@xml/medium_analytics_widget_info",
                             "description": "@string/medium_analytics_description"
                         },
                         {
                             "receiverName": "MediumFirewallWidgetReceiver",
-                            "configurationActivity": "SmallShortcutWidgetConfigurationActivity",
+                            "configurationActivity": "MediumFirewallWidgetConfigurationActivity",
                             "resource": "@xml/medium_firewall_widget_info",
                             "description": "@string/medium_firewall_widget_description"
                         }
