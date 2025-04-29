@@ -42,7 +42,7 @@ class SmallShortcutWidgetDataWorker(context: Context, workerParams: WorkerParame
         val imageUrl = "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${selectedProject.connectionTeam.id}"
 
         try {
-            val file = downloadImageToFile(context, selectedProject.connection, imageUrl, selectedProject.id)
+            val file = downloadImageToFile(context, imageUrl, selectedProject.id)
 
             return file.path
         } catch(error: Exception) {

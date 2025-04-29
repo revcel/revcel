@@ -24,7 +24,7 @@ data class FetchParams(
     val connection: Connection
 )
 
-suspend fun downloadImageToFile(context: Context, vercelConnection: Connection, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
+suspend fun downloadImageToFile(context: Context, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
     val url = URL(imageUrl)
     val connection = (url.openConnection() as HttpURLConnection).apply {
         requestMethod = "GET"
