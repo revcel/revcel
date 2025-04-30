@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import AnalyticsTimeseries
 import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
@@ -47,15 +48,29 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
             mode = RoundMode.UP
         )
 
+        val analyticsEndTime = roundToGranularity(
+            date = now,
+            granularity = Granularity.ONE_HOUR,
+            mode = RoundMode.UP
+        )
+        val analyticsStartTime = roundToGranularity(
+            date = Date(now.time - 7 * 24 * 60 * 60 * 1000),
+            granularity = Granularity.ONE_HOUR,
+            mode = RoundMode.DOWN
+        )
+
         val availability = fetchProjectAnalyticsAvailability(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id)
         var visitorsNumber = 0
+        var data = emptyArray<AnalyticsTimeseries>()
         if (availability.hasData && availability.isEnabled) {
             visitorsNumber = fetchProjectTotalVisitors(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(quickStatsStartTime), convertDateToIso(quickStatsEndTime)).devices
+            data = fetchProjectAnalyticsTimeseries(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(analyticsStartTime), convertDateToIso(analyticsEndTime)).data
         }
         return AnalyticsWidgetData(
             visitorsNumber = visitorsNumber,
             isEnabled = availability.isEnabled,
             hasData = availability.hasData,
+            data = data
         )
     }
 

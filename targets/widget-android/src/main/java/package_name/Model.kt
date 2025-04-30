@@ -107,7 +107,8 @@ data class AnalyticsTimeseriesResponse(
 data class AnalyticsWidgetData(
     val visitorsNumber: Int,
     val isEnabled: Boolean,
-    val hasData: Boolean
+    val hasData: Boolean,
+    val data: Array<AnalyticsTimeseries>
 )
 
 enum class WidgetIntentState(val value: Int) {

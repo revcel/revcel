@@ -1,11 +1,13 @@
 package com.revcel.mobile
 
+import AnalyticsTimeseries
 import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -35,7 +37,6 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
@@ -43,6 +44,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.google.gson.Gson
+import androidx.glance.LocalContext
 
 class MediumAnalyticsWidget: GlanceAppWidget() {
 	companion object {
@@ -69,6 +71,7 @@ class MediumAnalyticsWidget: GlanceAppWidget() {
 @Composable
 fun MediumAnalyticsWidgetContent() {
     val imageSize = 42.dp
+    val context = LocalContext.current
     val state = currentState<Preferences>()
     val rawProject = state[MediumAnalyticsWidgetReceiver.selectedProjectKey]
     val faviconPath = state[MediumAnalyticsWidgetReceiver.faviconPathKey]
@@ -77,6 +80,11 @@ fun MediumAnalyticsWidgetContent() {
     val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java)
     val customUri = "revcel://projects/${project.id}/(tabs)/home"
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
+
+    val chartImagePath = remember {
+        val bitmap = ChartGenerator.generateBitmap(context, analyticsData.data)
+        ChartGenerator.saveBitmap(context, bitmap)
+    }
 
     if (!analyticsData.isEnabled || !analyticsData.hasData) {
         return Column(
@@ -149,6 +157,10 @@ fun MediumAnalyticsWidgetContent() {
                 )
             )
         }
+        Image(
+            provider = ImageProvider(BitmapFactory.decodeFile(chartImagePath)),
+            contentDescription = "Device chart"
+        )
     }
 }
 
