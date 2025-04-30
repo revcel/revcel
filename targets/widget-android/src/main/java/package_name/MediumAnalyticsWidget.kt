@@ -35,6 +35,7 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
@@ -76,6 +77,28 @@ fun MediumAnalyticsWidgetContent() {
     val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java)
     val customUri = "revcel://projects/${project.id}/(tabs)/home"
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
+
+    if (!analyticsData.isEnabled || !analyticsData.hasData) {
+        return Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(GlanceTheme.colors.background)
+                .clickable(actionStartActivity(intent)),
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            verticalAlignment = Alignment.Vertical.CenterVertically
+        ) {
+            Text(
+                text = "No analytics data available",
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = GlanceTheme.colors.onSurface
+                ),
+            )
+        }
+    }
 
     Column(
         modifier = GlanceModifier
