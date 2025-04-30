@@ -110,7 +110,7 @@ fun MediumFirewallWidgetContent() {
                 style = TextStyle(
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     color = GlanceTheme.colors.onSurface
                 ),
                 modifier = GlanceModifier

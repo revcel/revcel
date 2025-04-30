@@ -104,6 +104,12 @@ data class AnalyticsTimeseriesResponse(
     val data: Array<AnalyticsTimeseries>
 )
 
+data class AnalyticsWidgetData(
+    val visitorsNumber: Int,
+    val isEnabled: Boolean,
+    val hasData: Boolean
+)
+
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),

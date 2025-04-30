@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
@@ -71,6 +72,8 @@ fun MediumAnalyticsWidgetContent() {
     val rawProject = state[MediumAnalyticsWidgetReceiver.selectedProjectKey]
     val faviconPath = state[MediumAnalyticsWidgetReceiver.faviconPathKey]
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
+    val rawAnalyticsData = state[MediumAnalyticsWidgetReceiver.analyticsDataKey]
+    val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java)
     val customUri = "revcel://projects/${project.id}/(tabs)/home"
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
 
@@ -105,12 +108,20 @@ fun MediumAnalyticsWidgetContent() {
                 style = TextStyle(
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     color = GlanceTheme.colors.onSurface
                 ),
                 modifier = GlanceModifier
-                    .padding(start = 8.dp),
+                    .padding(horizontal = 8.dp),
                 maxLines = 1
+            )
+            Text(
+                text = "${analyticsData.visitorsNumber} Visitors",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = GlanceTheme.colors.onSurface
+                )
             )
         }
     }

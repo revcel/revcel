@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
@@ -29,6 +30,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
         val widgetStateKey = stringPreferencesKey("state")
         val selectedProjectKey = stringPreferencesKey("selectedProject")
         val faviconPathKey = stringPreferencesKey("faviconPath")
+        val analyticsDataKey = stringPreferencesKey("analyticsData")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -97,7 +99,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onDataFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
+    fun onDataFetched(context: Context, glanceId: GlanceId, faviconPath: String, analyticsWidgetData: AnalyticsWidgetData) {
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 
@@ -110,6 +112,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
                             this[faviconPathKey] = faviconPath
+                            this[analyticsDataKey] = Gson().toJson(analyticsWidgetData)
                         }
                     }
 
