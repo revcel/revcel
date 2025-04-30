@@ -60,6 +60,8 @@ suspend fun downloadImageToFile(context: Context, imageUrl: String, fileName: St
 }
 
 suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) {
+    val isPOSTRequest = params.body !== null && params.method === HTTPMethod.POST
+
     if (!params.url.startsWith("/")) {
         throw Exception("URL should start with /")
     }
@@ -69,6 +71,9 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
 
     val connection = (url.openConnection() as HttpURLConnection).apply {
         requestMethod = params.method.value
+        if (isPOSTRequest) {
+            setRequestProperty("User-Agent", "")
+        }
         setRequestProperty("Accept", "application/json")
         setRequestProperty("Authorization", "Bearer ${params.connection.apiToken}")
         connectTimeout = 15000
@@ -76,7 +81,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
     }
 
     try {
-        if (params.body !== null && params.method === HTTPMethod.POST) {
+        if (isPOSTRequest) {
             connection.doOutput = true
             OutputStreamWriter(connection.outputStream).use { writer ->
                 writer.write(params.body)
@@ -90,6 +95,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
         if (responseCode !in 200..299) {
             val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() }
                 ?: "HTTP Error: $responseCode"
+
             throw Exception("HTTP Error: $responseCode. $errorMsg")
         }
 

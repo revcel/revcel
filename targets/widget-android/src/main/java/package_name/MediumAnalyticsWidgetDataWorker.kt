@@ -12,7 +12,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
     override suspend fun doWork(): Result {
         val boxedGlanceId = inputData.getString(glanceIdKey) ?: throw Exception("Missing glance id")
         val glanceId = GlanceAppWidgetManager(context = applicationContext)
-            .getGlanceIds(SmallShortcutWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
+            .getGlanceIds(MediumAnalyticsWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
 
         if (glanceId == null) {
             return Result.failure()
