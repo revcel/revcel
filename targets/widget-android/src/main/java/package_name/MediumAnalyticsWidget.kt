@@ -34,7 +34,7 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Row
-import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
@@ -85,8 +85,9 @@ fun MediumAnalyticsWidgetContent() {
             .clickable(actionStartActivity(intent))
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = GlanceModifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            verticalAlignment = Alignment.Vertical.CenterVertically
         ) {
             if (faviconPath != null && faviconPath !== "") {
                 Image(
@@ -115,6 +116,7 @@ fun MediumAnalyticsWidgetContent() {
                     .padding(horizontal = 8.dp),
                 maxLines = 1
             )
+            Spacer(modifier = GlanceModifier.defaultWeight())
             Text(
                 text = "${analyticsData.visitorsNumber} Visitors",
                 style = TextStyle(
