@@ -11,6 +11,7 @@ class WidgetKitModule : Module() {
     companion object {
         const val groupName = "group.com.revcel.mobile"
         const val instancesKey = "revcel::connections"
+        const val isSubscribedKey = "revcel::subscribed"
     }
 
     private fun getConnections(): List<Connection> {
@@ -33,6 +34,17 @@ class WidgetKitModule : Module() {
 
     override fun definition() = ModuleDefinition {
         Name("RevcelWidgetKit")
+
+        Function("setIsSubscribed") { isSubscribed: Boolean ->
+            appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
+                prefs.edit() {
+                    putBoolean(isSubscribedKey, isSubscribed)
+                    apply()
+                }
+
+                notifyAllWidgets()
+            }
+        }
 
         Function("addConnection") { connection: Connection ->
             appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->

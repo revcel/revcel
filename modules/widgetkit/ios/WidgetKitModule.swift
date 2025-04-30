@@ -4,6 +4,7 @@ import WidgetKit
 public class WidgetKitModule: Module {
     let _groupName: String = "group.com.revcel.mobile"
     let _connectionsKey: String = "revcel::connections"
+    let _isSubscribedKey: String = "revcel::subscribed"
     
     private func getConnections() -> [Connection] {
         guard let sharedDefaults = UserDefaults(suiteName: _groupName),
@@ -22,6 +23,14 @@ public class WidgetKitModule: Module {
     
     public func definition() -> ModuleDefinition {
         Name("RevcelWidgetKit")
+        
+        Function("setIsSubscribed") { (isSubscribed: Bool) -> Void in
+            guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
+            
+            sharedDefaults.set(isSubscribed, forKey: _isSubscribedKey)
+            
+            self.reloadWidgets()
+        }
         
         Function("addConnection") { (connection: Connection) -> Void in
             guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
