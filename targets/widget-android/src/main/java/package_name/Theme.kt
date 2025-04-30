@@ -13,9 +13,9 @@ import androidx.glance.GlanceTheme
 import androidx.glance.material3.ColorProviders
 
 // shared colors
-val errorColor = Color(0xFFEF4444)
-var warningColor = Color(0xFFF59E0B)
-val successColor = Color(0xFF4ADE80)
+val errorColor = Color(0xFFEE0000)
+var warningColor = Color(0xFFF5A623)
+val successColor = Color(0xFF0070F3)
 val buttonColor = Color(0xFF1A98FF)
 val whiteColor = Color(0xFFFFFFFF)
 val buttonInactiveColor = Color(0xFF73B8F8)
@@ -24,13 +24,19 @@ val backgroundSecondary = Color(0xFF171717)
 // light colors
 private val LightColorPalette = lightColorScheme(
     background = Color(0xFF0A0A0A),
-    onSurface = Color(0xFFEDEDED)
+    onSurface = Color(0xFFEDEDED),
+    primary = successColor,
+    error = errorColor,
+    outline = warningColor
 )
 
 // dark colors
 private val DarkColorPalette = darkColorScheme(
     background = Color(0xFF0A0A0A),
-    onSurface = Color(0xFFEDEDED)
+    onSurface = Color(0xFFEDEDED),
+    primary = successColor,
+    error = errorColor,
+    outline = warningColor
 )
 
 private val GlanceColors = ColorProviders(

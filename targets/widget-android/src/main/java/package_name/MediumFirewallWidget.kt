@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -33,11 +34,15 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
+import androidx.glance.layout.Row
+import androidx.glance.layout.fillMaxHeight
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
 import com.google.gson.Gson
 
 class MediumFirewallWidget: GlanceAppWidget() {
@@ -75,51 +80,80 @@ fun MediumFirewallWidgetContent() {
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = GlanceModifier
             .fillMaxSize()
             .padding(16.dp)
             .background(GlanceTheme.colors.background)
             .clickable(actionStartActivity(intent))
     ) {
-        if (faviconPath != null && faviconPath !== "") {
-            Image(
-                provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
-                contentDescription = null,
-                modifier = GlanceModifier.size(imageSize, imageSize)
-                    .cornerRadius(imageSize / 2)
-            )
-        } else {
-            Box(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (faviconPath != null && faviconPath !== "") {
+                Image(
+                    provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
+                    contentDescription = null,
+                    modifier = GlanceModifier.size(imageSize, imageSize)
+                        .cornerRadius(imageSize / 2)
+                )
+            } else {
+                Box(
+                    modifier = GlanceModifier
+                        .size(imageSize)
+                        .cornerRadius(imageSize / 2)
+                        .background(backgroundSecondary)
+                ) {}
+            }
+            Text(
+                text = project.projectName,
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = GlanceTheme.colors.onSurface
+                ),
                 modifier = GlanceModifier
-                    .size(imageSize)
-                    .cornerRadius(imageSize / 2)
-                    .background(backgroundSecondary)
-            ) {}
+                    .padding(start = 8.dp),
+                maxLines = 1
+            )
         }
-        Text(
-            text = project.projectName,
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = GlanceTheme.colors.onSurface
-            ),
+        Row(
+            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+            verticalAlignment = Alignment.Vertical.CenterVertically,
             modifier = GlanceModifier
-                .padding(top = 8.dp),
-            maxLines = 1
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            StatColumn(firewallData.allowed, "Allowed", GlanceTheme.colors.primary)
+            StatColumn(firewallData.denied, "Denied", GlanceTheme.colors.error)
+            StatColumn(firewallData.challenged, "Challenged", GlanceTheme.colors.outline)
+        }
+    }
+}
+
+@Composable
+fun StatColumn(value: Int?, label: String, color: ColorProvider) {
+    Column(
+        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+        modifier = GlanceModifier
+            .padding(horizontal = 10.dp),
+    ) {
+        Text(
+            text = if (value !== null) "${value}" else "-",
+            style = TextStyle(
+                color = GlanceTheme.colors.onSurface,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold
+            )
         )
         Text(
-            text = "${firewallData.allowed}${firewallData.denied}${firewallData.challenged}",
+            text = label,
             style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = GlanceTheme.colors.onSurface
-            ),
-            modifier = GlanceModifier
-                .padding(top = 8.dp),
-            maxLines = 1
+                color = color,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
         )
     }
 }
