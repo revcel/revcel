@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import FirewallWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
@@ -29,6 +30,7 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
         val widgetStateKey = stringPreferencesKey("state")
         val selectedProjectKey = stringPreferencesKey("selectedProject")
         val faviconPathKey = stringPreferencesKey("faviconPath")
+        val firewallWidgetDataKey = stringPreferencesKey("firewallWidgetData")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -97,7 +99,7 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onFaviconFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
+    fun onDataFetched(context: Context, glanceId: GlanceId, faviconPath: String, firewallWidgetData: FirewallWidgetData) {
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumFirewallWidget::class.java)
 
@@ -110,6 +112,7 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
                             this[faviconPathKey] = faviconPath
+                            this[firewallWidgetDataKey] = Gson().toJson(firewallWidgetData)
                         }
                     }
 

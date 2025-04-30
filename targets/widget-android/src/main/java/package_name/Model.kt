@@ -76,6 +76,12 @@ data class FirewallMetricsRequest(
     val scope: FirewallMetricsScope
 )
 
+data class FirewallWidgetData(
+    val allowed: Int? = null,
+    val denied: Int? = null,
+    val challenged: Int? = null
+)
+
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),

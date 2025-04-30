@@ -8,11 +8,11 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 
-class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
+class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
         val boxedGlanceId = inputData.getString(glanceIdKey) ?: throw Exception("Missing glance id")
         val glanceId = GlanceAppWidgetManager(context = applicationContext)
-            .getGlanceIds(SmallShortcutWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
+            .getGlanceIds(MediumAnalyticsWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
 
         if (glanceId == null) {
             return Result.failure()
@@ -51,11 +51,11 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String) {
-        MediumFirewallWidgetReceiver().onFaviconFetched(context, glanceId, faviconPath)
+        MediumAnalyticsWidgetReceiver().onFaviconFetched(context, glanceId, faviconPath)
     }
 
     private fun onFetchError(context: Context, glanceId: GlanceId) {
-        MediumFirewallWidgetReceiver().onFetchError(context, glanceId)
+        MediumAnalyticsWidgetReceiver().onFetchError(context, glanceId)
     }
 
     companion object {

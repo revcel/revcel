@@ -1,6 +1,10 @@
 package com.revcel.mobile
 
+import FirewallWidgetData
+import ProjectListItem
 import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceId
@@ -18,10 +22,23 @@ import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import androidx.datastore.preferences.core.Preferences
+import androidx.glance.Image
+import androidx.glance.ImageProvider
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.currentState
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import com.google.gson.Gson
 
 class MediumFirewallWidget: GlanceAppWidget() {
 	companion object {
@@ -47,20 +64,62 @@ class MediumFirewallWidget: GlanceAppWidget() {
 
 @Composable
 fun MediumFirewallWidgetContent() {
+    val imageSize = 42.dp
+    val state = currentState<Preferences>()
+    val rawProject = state[MediumFirewallWidgetReceiver.selectedProjectKey]
+    val faviconPath = state[MediumFirewallWidgetReceiver.faviconPathKey]
+    val rawFirewallData = state[MediumFirewallWidgetReceiver.firewallWidgetDataKey]
+    val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
+    val firewallData = Gson().fromJson(rawFirewallData, FirewallWidgetData::class.java)
+    val customUri = "revcel://projects/${project.id}/(tabs)/home"
+    val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
+
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = GlanceModifier
             .fillMaxSize()
             .padding(16.dp)
             .background(GlanceTheme.colors.background)
+            .clickable(actionStartActivity(intent))
     ) {
+        if (faviconPath != null && faviconPath !== "") {
+            Image(
+                provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
+                contentDescription = null,
+                modifier = GlanceModifier.size(imageSize, imageSize)
+                    .cornerRadius(imageSize / 2)
+            )
+        } else {
+            Box(
+                modifier = GlanceModifier
+                    .size(imageSize)
+                    .cornerRadius(imageSize / 2)
+                    .background(backgroundSecondary)
+            ) {}
+        }
         Text(
-            text = "MediumFirewallWidget",
+            text = project.projectName,
             style = TextStyle(
+                textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = GlanceTheme.colors.onSurface
             ),
-            modifier = GlanceModifier.padding(bottom = 8.dp)
+            modifier = GlanceModifier
+                .padding(top = 8.dp),
+            maxLines = 1
+        )
+        Text(
+            text = "${firewallData.allowed}${firewallData.denied}${firewallData.challenged}",
+            style = TextStyle(
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = GlanceTheme.colors.onSurface
+            ),
+            modifier = GlanceModifier
+                .padding(top = 8.dp),
+            maxLines = 1
         )
     }
 }

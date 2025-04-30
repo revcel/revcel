@@ -6,6 +6,7 @@ import ConnectionProject
 import DeploymentResponse
 import FirewallMetricsRequest
 import FirewallMetricsResponse
+import com.google.gson.Gson
 import expo.modules.widgetkit.Connection
 
 suspend fun fetchConnectionTeams(connection: Connection): ConnectionTeamsResponse {
@@ -42,7 +43,8 @@ suspend fun fetchProjectFirewallMetrics(connection: Connection, connectionTeam: 
     val params = FetchParams(
         method = HTTPMethod.POST,
         url = "/observability/metrics?ownerId=${connectionTeam.id}",
-        connection = connection
+        connection = connection,
+        body = Gson().toJson(firewallMetricsRequestData)
     )
 
     return httpRequest(params)

@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream
 import com.google.gson.Gson
 import expo.modules.widgetkit.Connection
 import java.io.File
+import java.io.OutputStreamWriter
 
 enum class HTTPMethod(val value: String) {
     GET("GET"),
@@ -21,13 +22,14 @@ enum class HTTPMethod(val value: String) {
 data class FetchParams(
     val method: HTTPMethod,
     val url: String,
-    val connection: Connection
+    val connection: Connection,
+    val body: String? = null
 )
 
 suspend fun downloadImageToFile(context: Context, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
     val url = URL(imageUrl)
     val connection = (url.openConnection() as HttpURLConnection).apply {
-        requestMethod = "GET"
+        requestMethod = HTTPMethod.GET.value
         // Need this, otherwise vercel will throw error
         setRequestProperty("User-Agent", "")
     }
@@ -74,6 +76,14 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
     }
 
     try {
+        if (params.body !== null && params.method === HTTPMethod.POST) {
+            connection.doOutput = true
+            OutputStreamWriter(connection.outputStream).use { writer ->
+                writer.write(params.body)
+                writer.flush()
+            }
+        }
+
         connection.connect()
         val responseCode = connection.responseCode
 
