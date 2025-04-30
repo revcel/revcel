@@ -1,5 +1,8 @@
 package com.revcel.mobile
 
+import AnalyticsEnabledResponse
+import AnalyticsQuickStatsResponse
+import AnalyticsTimeseriesResponse
 import ConnectionTeam
 import ConnectionTeamsResponse
 import ConnectionProject
@@ -45,6 +48,39 @@ suspend fun fetchProjectFirewallMetrics(connection: Connection, connectionTeam: 
         url = "/observability/metrics?ownerId=${connectionTeam.id}",
         connection = connection,
         body = Gson().toJson(firewallMetricsRequestData)
+    )
+
+    return httpRequest(params)
+}
+
+suspend fun fetchProjectAnalyticsAvailability(connection: Connection, connectionTeam: ConnectionTeam, projectId: String): AnalyticsEnabledResponse {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url = "/v1/web/insights/enabled?projectId=${projectId}&teamId=${connectionTeam.id}",
+        connection = connection,
+        baseUrl = "https://vercel.com/api"
+    )
+
+    return httpRequest(params)
+}
+
+suspend fun fetchProjectTotalVisitors(connection: Connection, connectionTeam: ConnectionTeam, projectId: String, from: String, to: String): AnalyticsQuickStatsResponse {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url = "/web-analytics/overview?environment=production&filter%7B%7D&from=${from}&projectId=${projectId}&teamId=${connectionTeam.id}&to=${to}",
+        connection = connection,
+        baseUrl = "https://vercel.com/api"
+    )
+
+    return httpRequest(params)
+}
+
+suspend fun fetchProjectAnalyticsTimeseries(connection: Connection, connectionTeam: ConnectionTeam, projectId: String, from: String, to: String): AnalyticsTimeseriesResponse {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url = "/web-analytics/timeseries?environment=production&filter=%7B%7D&from=${from}&projectId=${projectId}&teamId=${connectionTeam.id}&to=${to}",
+        connection = connection,
+        baseUrl = "https://vercel.com/api"
     )
 
     return httpRequest(params)

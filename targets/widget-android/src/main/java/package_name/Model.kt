@@ -82,6 +82,28 @@ data class FirewallWidgetData(
     val challenged: Int? = null
 )
 
+data class AnalyticsEnabledResponse(
+    val isEnabled: Boolean,
+    val hasData: Boolean
+)
+
+data class AnalyticsQuickStatsResponse(
+    val total: Int,
+    val devices: Int,
+    val bounceRate: Int
+)
+
+data class AnalyticsTimeseries(
+    val key: String,
+    val total: Int,
+    val devices: Int,
+    val bounceRate: Int
+)
+
+data class AnalyticsTimeseriesResponse(
+    val data: Array<AnalyticsTimeseries>
+)
+
 enum class WidgetIntentState(val value: Int) {
     LOADING(0),
     API_FAILED(1),

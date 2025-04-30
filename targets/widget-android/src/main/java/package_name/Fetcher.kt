@@ -23,7 +23,8 @@ data class FetchParams(
     val method: HTTPMethod,
     val url: String,
     val connection: Connection,
-    val body: String? = null
+    val body: String? = null,
+    val baseUrl: String? = null
 )
 
 suspend fun downloadImageToFile(context: Context, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
@@ -66,7 +67,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
         throw Exception("URL should start with /")
     }
 
-    val fullUrlString = "https://api.vercel.com${params.url}"
+    val fullUrlString = if (params.baseUrl !== null) "${params.baseUrl}${params.url}" else "https://api.vercel.com${params.url}"
     val url = URL(fullUrlString)
 
     val connection = (url.openConnection() as HttpURLConnection).apply {
