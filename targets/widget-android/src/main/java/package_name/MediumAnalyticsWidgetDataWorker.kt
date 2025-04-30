@@ -50,7 +50,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
         val availability = fetchProjectAnalyticsAvailability(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id)
         var visitorsNumber = 0
         if (availability.hasData && availability.isEnabled) {
-            visitorsNumber = fetchProjectTotalVisitors(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, quickStatsStartTime.toString(), quickStatsEndTime.toString()).devices
+            visitorsNumber = fetchProjectTotalVisitors(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(quickStatsStartTime), convertDateToIso(quickStatsEndTime)).devices
         }
         return AnalyticsWidgetData(
             visitorsNumber = visitorsNumber,

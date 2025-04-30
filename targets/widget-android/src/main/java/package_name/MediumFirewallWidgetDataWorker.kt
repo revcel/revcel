@@ -93,8 +93,8 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
             limit = 500,
             tailRollup = "truncate",
             summaryOnly = false,
-            startTime = startTime.toString(),
-            endTime = endTime.toString(),
+            startTime = convertDateToIso(startTime),
+            endTime = convertDateToIso(endTime),
             scope = FirewallMetricsScope(
                 type = "project",
                 ownerId = selectedProject.connectionTeam.id,

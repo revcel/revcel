@@ -72,9 +72,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
 
     val connection = (url.openConnection() as HttpURLConnection).apply {
         requestMethod = params.method.value
-        if (isPOSTRequest) {
-            setRequestProperty("User-Agent", "")
-        }
+        setRequestProperty("User-Agent", "")
         setRequestProperty("Accept", "application/json")
         setRequestProperty("Authorization", "Bearer ${params.connection.apiToken}")
         connectTimeout = 15000
