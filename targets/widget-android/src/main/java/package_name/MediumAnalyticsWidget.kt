@@ -6,6 +6,7 @@ import ProjectListItem
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.google.gson.Gson
 import androidx.glance.LocalContext
+import androidx.glance.layout.ContentScale
 
 class MediumAnalyticsWidget: GlanceAppWidget() {
 	companion object {
@@ -108,59 +110,73 @@ fun MediumAnalyticsWidgetContent() {
         }
     }
 
-    Column(
+    Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .padding(16.dp)
             .background(GlanceTheme.colors.background)
-            .clickable(actionStartActivity(intent))
     ) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-            verticalAlignment = Alignment.Vertical.CenterVertically
+        Column(
+            modifier = GlanceModifier
+                .padding(top = 40.dp)
         ) {
-            if (faviconPath != null && faviconPath !== "") {
-                Image(
-                    provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
-                    contentDescription = null,
-                    modifier = GlanceModifier.size(imageSize, imageSize)
-                        .cornerRadius(imageSize / 2)
-                )
-            } else {
-                Box(
-                    modifier = GlanceModifier
-                        .size(imageSize)
-                        .cornerRadius(imageSize / 2)
-                        .background(backgroundSecondary)
-                ) {}
-            }
-            Text(
-                text = project.projectName,
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = GlanceTheme.colors.onSurface
-                ),
+            Image(
+                provider = ImageProvider(BitmapFactory.decodeFile(chartImagePath)),
+                contentDescription = "Device chart",
                 modifier = GlanceModifier
-                    .padding(horizontal = 8.dp),
-                maxLines = 1
-            )
-            Spacer(modifier = GlanceModifier.defaultWeight())
-            Text(
-                text = "${analyticsData.visitorsNumber} Visitors",
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = GlanceTheme.colors.onSurface
-                )
+                    .padding(0.dp)
+                    .fillMaxSize(),
+                contentScale = ContentScale.FillBounds
             )
         }
-        Image(
-            provider = ImageProvider(BitmapFactory.decodeFile(chartImagePath)),
-            contentDescription = "Device chart"
-        )
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .clickable(actionStartActivity(intent))
+        ) {
+            Row(
+                modifier = GlanceModifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+                verticalAlignment = Alignment.Vertical.CenterVertically
+            ) {
+                if (faviconPath != null && faviconPath !== "") {
+                    Image(
+                        provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
+                        contentDescription = null,
+                        modifier = GlanceModifier.size(imageSize, imageSize)
+                            .cornerRadius(imageSize / 2)
+                    )
+                } else {
+                    Box(
+                        modifier = GlanceModifier
+                            .size(imageSize)
+                            .cornerRadius(imageSize / 2)
+                            .background(backgroundSecondary)
+                    ) {}
+                }
+                Text(
+                    text = project.projectName,
+                    style = TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = GlanceTheme.colors.onSurface
+                    ),
+                    modifier = GlanceModifier
+                        .padding(horizontal = 8.dp),
+                    maxLines = 1
+                )
+                Spacer(modifier = GlanceModifier.defaultWeight())
+                Text(
+                    text = "${analyticsData.visitorsNumber} Visitors",
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = GlanceTheme.colors.onSurface
+                    )
+                )
+            }
+        }
     }
 }
 

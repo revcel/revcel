@@ -5,15 +5,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.view.View
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 
 object ChartGenerator {
     fun generateBitmap(context: Context, data: Array<AnalyticsTimeseries>): Bitmap {
@@ -22,26 +21,31 @@ object ChartGenerator {
         }
 
         val dataSet = LineDataSet(entries, "Devices").apply {
-            color = Color.BLUE
+            color = "#006EFE".toColorInt()
             setDrawValues(false)
             setDrawCircles(false)
             lineWidth = 2f
+
+            setDrawFilled(true)
+            fillColor = "#06193A".toColorInt()
         }
 
         val chart = LineChart(context).apply {
+            setPadding(0, 0, 0, 0)
+            setViewPortOffsets(0f, 0f, 0f, 0f)
             layout(0, 0, 800, 400)
             this.data = LineData(dataSet)
-            axisRight.isEnabled = false
-            xAxis.position = XAxis.XAxisPosition.BOTTOM
-            legend.isEnabled = false
-            description = null
-        }
 
-        chart.measure(
-            View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY)
-        )
-        chart.layout(0, 0, 800, 400)
+            axisLeft.axisMinimum = 0f
+            description.isEnabled = false
+            legend.isEnabled = false
+            axisLeft.isEnabled = false
+            axisRight.isEnabled = false
+            xAxis.isEnabled = false
+            setDrawGridBackground(false)
+            setDrawBorders(false)
+            setBackgroundColor(Color.TRANSPARENT)
+        }
 
         return createBitmap(800, 400).apply {
             val canvas = Canvas(this)
