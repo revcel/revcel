@@ -97,7 +97,7 @@ class MediumAnalyticsWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onFaviconFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
+    fun onDataFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumAnalyticsWidget::class.java)
 

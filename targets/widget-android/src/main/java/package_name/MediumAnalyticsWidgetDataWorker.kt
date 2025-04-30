@@ -31,7 +31,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
 
     private suspend fun fetchProjectFavicon(context: Context): String {
         val rawContainer = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawContainer, ProjectListItem::class.java) ?: throw Exception("Missing selected container")
+        val selectedProject = Gson().fromJson(rawContainer, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
 
         val latestDeployment = fetchLatestDeployment(selectedProject.connection, selectedProject.id)
 
@@ -51,7 +51,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String) {
-        MediumAnalyticsWidgetReceiver().onFaviconFetched(context, glanceId, faviconPath)
+        MediumAnalyticsWidgetReceiver().onDataFetched(context, glanceId, faviconPath)
     }
 
     private fun onFetchError(context: Context, glanceId: GlanceId) {
