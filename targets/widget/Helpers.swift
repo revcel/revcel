@@ -28,3 +28,19 @@ func roundToGranularity(date: Date, granularity: Granularity, mode: RoundMode = 
   
   return Date(timeIntervalSince1970: resultTime)
 }
+
+func getAppUrl(project: ProjectListItem?) -> String {
+  guard let project = project else {
+    return "revcel://"
+  }
+  
+  if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
+    let isSubscribed = sharedDefaults.bool(forKey: isSubscribedKey)
+    
+    if isSubscribed {
+      return "revcel://projects/\(project.id)/(tabs)/home"
+    }
+  }
+
+  return "revcel://?showPaywall=1"
+}
