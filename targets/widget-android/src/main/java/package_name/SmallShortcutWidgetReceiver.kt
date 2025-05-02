@@ -1,7 +1,10 @@
 package com.revcel.mobile
 
+import ProjectListItem
 import android.content.Context
 import android.content.Intent
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -14,21 +17,28 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import appGroupName
+import com.google.gson.Gson
+import isSubscribedKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
+class SmallShortcutWidgetReceiver: GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = SmallShortcutWidget()
 
     companion object {
-        const val sharedPreferencesGroup = "group.com.revcel.mobile"
+        val widgetStateKey = stringPreferencesKey("state")
+        val selectedProjectKey = stringPreferencesKey("selectedProject")
+        val faviconPathKey = stringPreferencesKey("faviconPath")
+        val isSubscribedValueKey = booleanPreferencesKey("isSubscribed")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.appwidget.action.APPWIDGET_UPDATE") {
             CoroutineScope(Dispatchers.IO).launch {
+                val sharedPrefs = context.getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
                 val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
 
                 glanceIds.forEach { glanceId ->
@@ -37,9 +47,15 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
                         definition = PreferencesGlanceStateDefinition,
                         glanceId = glanceId
                     ) { prefs ->
+                        val rawProject = prefs[selectedProjectKey] ?: "null"
+                        val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
+
+                        if (project != null) {
+                            schedulePeriodicWork(context, glanceId, project)
+                        }
+
                         prefs.toMutablePreferences().apply {
-                            // update if necessary
-                            // schedule periodic work
+                            this[isSubscribedValueKey] = sharedPrefs.getBoolean(isSubscribedKey, false)
                         }
                     }
 
@@ -61,7 +77,11 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onStatusUpdated(context: Context, glanceId: GlanceId) {
+    fun onProjectSelected(context: Context, glanceId: GlanceId, project: ProjectListItem?, isSubscribed: Boolean) {
+        if (project == null) {
+            return
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
 
@@ -73,7 +93,31 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
                         glanceId = glanceId
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
-                            // todo
+                            this[selectedProjectKey] = Gson().toJson(project)
+                            this[isSubscribedValueKey] = isSubscribed
+                        }
+                    }
+
+                    glanceAppWidget.update(context, glanceId)
+                    schedulePeriodicWork(context, glanceId, project)
+                }
+            }
+        }
+    }
+
+    fun onFaviconFetched(context: Context, glanceId: GlanceId, faviconPath: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+
+            glanceIds.forEach { runningGlanceId ->
+                if (runningGlanceId == glanceId) {
+                    updateAppWidgetState(
+                        context = context,
+                        definition = PreferencesGlanceStateDefinition,
+                        glanceId = glanceId
+                    ) { prefs ->
+                        prefs.toMutablePreferences().apply {
+                            this[faviconPathKey] = faviconPath
                         }
                     }
 
@@ -95,7 +139,7 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
                         glanceId = glanceId
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
-                            // todo
+                            this[widgetStateKey] = WidgetIntentState.API_FAILED.toString()
                         }
                     }
 
@@ -109,7 +153,7 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
      * Schedules periodic work to update the widget with container data
      * Initial schedule with 15-minute interval
      */
-    private fun schedulePeriodicWork(context: Context, glanceId: GlanceId) {
+    private fun schedulePeriodicWork(context: Context, glanceId: GlanceId, project: ProjectListItem) {
         val workManager = WorkManager.getInstance(context)
 
         // cancel previous jobs if present
@@ -118,12 +162,11 @@ class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        val work = PeriodicWorkRequestBuilder<ContainerWidgetDataWorker>(15, TimeUnit.MINUTES)
+        val work = PeriodicWorkRequestBuilder<SmallShortcutWidgetDataWorker>(15, TimeUnit.MINUTES)
             .setInputData(
                 workDataOf(
-                    // pass project
-                    //  ContainerWidgetDataWorker.containerKey to Gson().toJson(container),
-                    ContainerWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
+                    SmallShortcutWidgetDataWorker.projectKey to Gson().toJson(project),
+                    SmallShortcutWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
                 )
             )
             .setConstraints(constraints)

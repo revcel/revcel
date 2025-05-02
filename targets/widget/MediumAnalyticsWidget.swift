@@ -13,16 +13,17 @@ struct MediumAnalyticsAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct MediumAnalyticsProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
   }
   
   func snapshot(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: configuration, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
   }
   
   func timeline(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> Timeline<MediumAnalyticsEntry> {
     var entries: [MediumAnalyticsEntry] = []
     var faviconPath: String? = nil
+    var isSubscribed: Bool = false
     var latestDeployment: Deployment? = nil
     var visitorsNumber: Int? = nil
     var analyticsAvailability: AnalyticsEnabledResponse? = nil
@@ -64,11 +65,17 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
       }
     }
     
+    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
+      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
+      
+      isSubscribed = isSubscribedValue
+    }
+    
     // Generate a timeline consisting of five entries an hour apart, starting from the current date.
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = MediumAnalyticsEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
+      let entry = MediumAnalyticsEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
       entries.append(entry)
     }
     
@@ -79,6 +86,7 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
 struct MediumAnalyticsEntry: TimelineEntry {
   let date: Date
   let configuration: MediumAnalyticsAppIntentConfiguration
+  let isSubscribed: Bool
   let faviconPath: String?
   let visitors: Int?
   let analyticsAvailability: AnalyticsEnabledResponse?
@@ -120,88 +128,93 @@ struct MediumAnalyticsEntryView: View {
   }
   
   var body: some View {
-    VStack {
-      if haveAnalytics {
-        HStack(alignment: .center, spacing: 10.0) {
-          if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
-            Image(uiImage: uiImage)
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 30.0, height: 30.0)
-              .clipShape(Circle())
-          } else {
-            Circle()
-              .fill(Color("backgroundSecondary"))
-              .frame(width: 30.0, height: 30.0)
+    if (!entry.isSubscribed) {
+      SubscriptionRequiredView()
+        .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
+    } else {
+      VStack {
+        if haveAnalytics {
+          HStack(alignment: .center, spacing: 10.0) {
+            if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
+              Image(uiImage: uiImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 30.0, height: 30.0)
+                .clipShape(Circle())
+            } else {
+              Circle()
+                .fill(Color("backgroundSecondary"))
+                .frame(width: 30.0, height: 30.0)
+            }
+            if let project = entry.configuration.project {
+              Text("\(project.projectName)")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color("gray1000"))
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            } else {
+              VStack {
+                RoundedRectangle(cornerRadius: 8.0)
+                  .fill(Color("backgroundSecondary"))
+                  .frame(height: 10.0)
+              }
+            }
+            if let visitors = entry.visitors {
+              Text("\(visitors) Visitors")
+                .padding(.leading, 15.0)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color("gray1000"))
+            }
           }
-          if let project = entry.configuration.project {
-            Text("\(project.projectName)")
-              .font(.system(size: 16, weight: .bold))
+          .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+          HStack {
+            Text("No analytics data available")
+              .font(.system(size: 18.0, weight: .bold))
               .foregroundStyle(Color("gray1000"))
               .multilineTextAlignment(.center)
               .lineLimit(1)
               .truncationMode(.tail)
-          } else {
-            VStack {
-              RoundedRectangle(cornerRadius: 8.0)
-                .fill(Color("backgroundSecondary"))
-                .frame(height: 10.0)
-            }
           }
-          if let visitors = entry.visitors {
-            Text("\(visitors) Visitors")
-              .padding(.leading, 15.0)
-              .font(.system(size: 16, weight: .bold))
-              .foregroundStyle(Color("gray1000"))
-          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-      } else {
-        HStack {
-          Text("No analytics data available")
-            .font(.system(size: 18.0, weight: .bold))
-            .foregroundStyle(Color("gray1000"))
-            .multilineTextAlignment(.center)
-            .lineLimit(1)
-            .truncationMode(.tail)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
       }
-    }
-    .padding(widgetMargins)
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .background(
-      VStack {
-        if let data = entry.analyticsData {
-          let chartData = data.data.map { (item) -> LineChartData in
-              .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.devices)
-          }
-          
-          VStack(alignment: .leading) {
-            Chart {
-              ForEach(chartData, id: \.id) { item in
-                AreaMark(
-                  x: .value("Weekday", item.date),
-                  y: .value("Value", item.value)
-                )
-                .foregroundStyle(Color("blue100"))
-                LineMark(
-                  x: .value("Weekday", item.date),
-                  y: .value("Value", item.value)
-                )
-                .foregroundStyle(Color("blue700"))
+      .padding(widgetMargins)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .background(
+        VStack {
+          if let data = entry.analyticsData {
+            let chartData = data.data.map { (item) -> LineChartData in
+                .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.devices)
+            }
+            
+            VStack(alignment: .leading) {
+              Chart {
+                ForEach(chartData, id: \.id) { item in
+                  AreaMark(
+                    x: .value("Weekday", item.date),
+                    y: .value("Value", item.value)
+                  )
+                  .foregroundStyle(Color("blue100"))
+                  LineMark(
+                    x: .value("Weekday", item.date),
+                    y: .value("Value", item.value)
+                  )
+                  .foregroundStyle(Color("blue700"))
+                }
               }
+              .chartYAxis(.hidden)
+              .chartXAxis(.hidden)
             }
-            .chartYAxis(.hidden)
-            .chartXAxis(.hidden)
+            .padding(.top, 35.0)
+          } else if haveAnalytics {
+            ChartsPlaceHolder()
           }
-          .padding(.top, 35.0)
-        } else if haveAnalytics {
-          ChartsPlaceHolder()
         }
-      }
-    )
-    .widgetURL(URL(string: entry.configuration.project != nil ? "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home" : "revcel://"))
+      )
+      .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
+    }
   }
 }
 
@@ -231,5 +244,5 @@ extension MediumAnalyticsAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   MediumAnalyticsWidget()
 } timeline: {
-  MediumAnalyticsEntry(date: .now, configuration: .project, faviconPath: nil, visitors: 0, analyticsAvailability: nil, analyticsData: nil)
+  MediumAnalyticsEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, visitors: 0, analyticsAvailability: nil, analyticsData: nil)
 }

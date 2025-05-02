@@ -12,17 +12,24 @@ struct SmallShortcutAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct SmallShortcutProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> SmallShortcutEntry {
-    SmallShortcutEntry(date: Date(), configuration: SmallShortcutAppIntentConfiguration(), faviconPath: nil)
+    SmallShortcutEntry(date: Date(), configuration: SmallShortcutAppIntentConfiguration(), isSubscribed: true, faviconPath: nil)
   }
   
   func snapshot(for configuration: SmallShortcutAppIntentConfiguration, in context: Context) async -> SmallShortcutEntry {
-    SmallShortcutEntry(date: Date(), configuration: configuration, faviconPath: nil)
+    SmallShortcutEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil)
   }
   
   func timeline(for configuration: SmallShortcutAppIntentConfiguration, in context: Context) async -> Timeline<SmallShortcutEntry> {
     var entries: [SmallShortcutEntry] = []
     var faviconPath: String? = nil
+    var isSubscribed: Bool = false
     var latestDeployment: Deployment? = nil
+    
+    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
+      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
+      
+      isSubscribed = isSubscribedValue
+    }
     
     if let project = configuration.project {
       latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
@@ -38,7 +45,7 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = SmallShortcutEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath)
+      let entry = SmallShortcutEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath)
       entries.append(entry)
     }
     
@@ -49,6 +56,7 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
 struct SmallShortcutEntry: TimelineEntry {
   let date: Date
   let configuration: SmallShortcutAppIntentConfiguration
+  let isSubscribed: Bool
   let faviconPath: String?
 }
 
@@ -56,38 +64,43 @@ struct SmallShortcutEntryView: View {
   var entry: SmallShortcutProvider.Entry
   
   var body: some View {
-    VStack(alignment: .center, spacing: 10.0) {
-      if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
-        Image(uiImage: uiImage)
-          .resizable()
-          .aspectRatio(contentMode: .fit)
-          .frame(width: 75.0, height: 75.0)
-          .clipShape(Circle())
-      } else {
-        Circle()
-          .fill(Color("backgroundSecondary"))
-          .frame(width: 75.0, height: 75.0)
-      }
-      if let project = entry.configuration.project {
-        Text("\(project.projectName)")
-          .font(.system(size: 16, weight: .bold))
-          .foregroundStyle(Color("gray1000"))
-          .multilineTextAlignment(.center)
-          .lineLimit(2)
-          .truncationMode(.tail)
-      } else {
-        VStack() {
-          RoundedRectangle(cornerRadius: 8.0)
+    if (!entry.isSubscribed) {
+      SubscriptionRequiredView()
+        .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
+    } else {
+      VStack(alignment: .center, spacing: 10.0) {
+        if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
+          Image(uiImage: uiImage)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 75.0, height: 75.0)
+            .clipShape(Circle())
+        } else {
+          Circle()
             .fill(Color("backgroundSecondary"))
-            .frame(height: 10.0)
-          RoundedRectangle(cornerRadius: 8.0)
-            .fill(Color("backgroundSecondary"))
-            .frame(width: 50.0, height: 10.0)
+            .frame(width: 75.0, height: 75.0)
+        }
+        if let project = entry.configuration.project {
+          Text("\(project.projectName)")
+            .font(.system(size: 16, weight: .bold))
+            .foregroundStyle(Color("gray1000"))
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .truncationMode(.tail)
+        } else {
+          VStack() {
+            RoundedRectangle(cornerRadius: 8.0)
+              .fill(Color("backgroundSecondary"))
+              .frame(height: 10.0)
+            RoundedRectangle(cornerRadius: 8.0)
+              .fill(Color("backgroundSecondary"))
+              .frame(width: 50.0, height: 10.0)
+          }
         }
       }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .widgetURL(URL(string: entry.configuration.project != nil ? "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home" : "revcel://"))
   }
 }
 
@@ -116,5 +129,5 @@ extension SmallShortcutAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   SmallShortcutWidget()
 } timeline: {
-  SmallShortcutEntry(date: .now, configuration: .project, faviconPath: nil)
+  SmallShortcutEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil)
 }

@@ -12,16 +12,17 @@ struct MediumFirewallAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct MediumFirewallProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> MediumFirewallEntry {
-    MediumFirewallEntry(date: Date(), configuration: MediumFirewallAppIntentConfiguration(), faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+    MediumFirewallEntry(date: Date(), configuration: MediumFirewallAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
   }
   
   func snapshot(for configuration: MediumFirewallAppIntentConfiguration, in context: Context) async -> MediumFirewallEntry {
-    MediumFirewallEntry(date: Date(), configuration: configuration, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+    MediumFirewallEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
   }
   
   func timeline(for configuration: MediumFirewallAppIntentConfiguration, in context: Context) async -> Timeline<MediumFirewallEntry> {
     var entries: [MediumFirewallEntry] = []
     var faviconPath: String? = nil
+    var isSubscribed: Bool = false
     var latestDeployment: Deployment? = nil
     var firewallData: FirewallWidgetData = .init(allowed: nil, denied: nil, chalanged: nil)
     
@@ -33,6 +34,12 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
       if let url = URL(string: "https://vercel.com/api/v0/deployments/\(latestDeployment.uid)/favicon?teamId=\(project.connectionTeam.id)") {
         faviconPath = try? await downloadAndSaveImage(from: url, name: project.id)
       }
+    }
+    
+    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
+      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
+      
+      isSubscribed = isSubscribedValue
     }
     
     if let project = configuration.project {
@@ -93,7 +100,7 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
     let currentDate = Date()
     for hourOffset in 0 ..< 5 {
       let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = MediumFirewallEntry(date: entryDate, configuration: configuration, faviconPath: faviconPath, firewallData: firewallData)
+      let entry = MediumFirewallEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, firewallData: firewallData)
       entries.append(entry)
     }
     
@@ -104,6 +111,7 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
 struct MediumFirewallEntry: TimelineEntry {
   let date: Date
   let configuration: MediumFirewallAppIntentConfiguration
+  let isSubscribed: Bool
   let faviconPath: String?
   let firewallData: FirewallWidgetData
 }
@@ -129,44 +137,49 @@ struct MediumFirewallEntryView: View {
   var entry: MediumFirewallProvider.Entry
   
   var body: some View {
-    VStack(alignment: .leading, spacing: 30.0) {
-      HStack(alignment: .center, spacing: 10.0) {
-        if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
-          Image(uiImage: uiImage)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 30.0, height: 30.0)
-            .clipShape(Circle())
-        } else {
-          Circle()
-            .fill(Color("backgroundSecondary"))
-            .frame(width: 30.0, height: 30.0)
-        }
-        if let project = entry.configuration.project {
-          Text("\(project.projectName)")
-            .font(.system(size: 16, weight: .bold))
-            .foregroundStyle(Color("gray1000"))
-            .multilineTextAlignment(.center)
-            .lineLimit(1)
-            .truncationMode(.tail)
-        } else {
-          VStack {
-            RoundedRectangle(cornerRadius: 8.0)
+    if (!entry.isSubscribed) {
+      SubscriptionRequiredView()
+        .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
+    } else {
+      VStack(alignment: .leading, spacing: 30.0) {
+        HStack(alignment: .center, spacing: 10.0) {
+          if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
+            Image(uiImage: uiImage)
+              .resizable()
+              .aspectRatio(contentMode: .fit)
+              .frame(width: 30.0, height: 30.0)
+              .clipShape(Circle())
+          } else {
+            Circle()
               .fill(Color("backgroundSecondary"))
-              .frame(height: 10.0)
+              .frame(width: 30.0, height: 30.0)
+          }
+          if let project = entry.configuration.project {
+            Text("\(project.projectName)")
+              .font(.system(size: 16, weight: .bold))
+              .foregroundStyle(Color("gray1000"))
+              .multilineTextAlignment(.center)
+              .lineLimit(1)
+              .truncationMode(.tail)
+          } else {
+            VStack {
+              RoundedRectangle(cornerRadius: 8.0)
+                .fill(Color("backgroundSecondary"))
+                .frame(height: 10.0)
+            }
           }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .center, spacing: 30.0) {
+          MediumFirewallInfoItemView(color: "success", label: "Allowed", value: entry.firewallData.allowed)
+          MediumFirewallInfoItemView(color: "error", label: "Denied", value: entry.firewallData.denied)
+          MediumFirewallInfoItemView(color: "warning", label: "Challenged", value: entry.firewallData.chalanged)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
       }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      HStack(alignment: .center, spacing: 30.0) {
-        MediumFirewallInfoItemView(color: "success", label: "Allowed", value: entry.firewallData.allowed)
-        MediumFirewallInfoItemView(color: "error", label: "Denied", value: entry.firewallData.denied)
-        MediumFirewallInfoItemView(color: "warning", label: "Challenged", value: entry.firewallData.chalanged)
-      }
-      .frame(maxWidth: .infinity, alignment: .center)
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-    .widgetURL(URL(string: entry.configuration.project != nil ? "revcel://projects/\(entry.configuration.project?.id ?? "")/(tabs)/home" : "revcel://"))
   }
 }
 
@@ -195,5 +208,5 @@ extension MediumFirewallAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   MediumFirewallWidget()
 } timeline: {
-  MediumFirewallEntry(date: .now, configuration: .project, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+  MediumFirewallEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
 }

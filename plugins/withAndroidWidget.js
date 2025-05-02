@@ -15,6 +15,7 @@ const withModifiedAppBuildGradle = (config, opts) =>
     implementation("androidx.compose.ui:ui:1.7.8")
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("androidx.work:work-runtime:2.10.0")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     `
 
         const gradleAndroidConfig = `
@@ -57,7 +58,10 @@ android {
 const withModifiedAndroidManifest = (config, opts) =>
     withAndroidManifest(config, (config) => {
         const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
-        mainApplication.receiver = {
+
+        mainApplication.receiver = mainApplication.receiver ? [...mainApplication.receiver] : []
+
+        mainApplication.receiver.push({
             $: {
                 'android:name': `.${opts.receiverName}`,
                 'android:exported': 'true',
@@ -87,15 +91,23 @@ const withModifiedAndroidManifest = (config, opts) =>
                 {
                     $: {
                         'android:name': 'android.appwidget.provider',
-                        'android:resource': '@xml/revcel_widget_info',
-                        'android:description': '@string/widget_description',
+                        'android:resource': opts.resource,
+                        'android:description': opts.description,
                     },
                 },
             ],
-        }
+        })
+
+        return config
+    })
+
+const withModifiedAndroidManifestActivity = (config, opts) =>
+    withAndroidManifest(config, (config) => {
+        const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
+        
         mainApplication.activity.push({
             $: {
-                'android:name': `.RevcelAppWidgetConfigurationActivity`,
+                'android:name': `.${opts.configurationActivity}`,
                 'android:exported': 'true',
             },
             'intent-filter': [
@@ -116,7 +128,12 @@ const withModifiedAndroidManifest = (config, opts) =>
 
 const withAndroidWidget = (config, opts) => {
     config = withModifiedAppBuildGradle(config, opts)
-    config = withModifiedAndroidManifest(config, opts)
+    opts.widgets.forEach(widget => {
+        config = withModifiedAndroidManifest(config, widget)
+    })
+    opts.widgets.forEach(widget => {
+        config = withModifiedAndroidManifestActivity(config, widget)
+    })
     config = withSourceFiles(config, { src: opts.src })
 
     return config

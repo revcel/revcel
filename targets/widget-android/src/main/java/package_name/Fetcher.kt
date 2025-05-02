@@ -1,138 +1,120 @@
 package com.revcel.mobile
 
 import android.content.Context
-import android.content.Intent
-import androidx.glance.GlanceId
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
-import kotlinx.coroutines.CoroutineScope
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import com.google.gson.Gson
+import expo.modules.widgetkit.Connection
+import java.io.File
+import java.io.OutputStreamWriter
 
-class ContainerWidgetReceiver: GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = SmallShortcutWidget()
+enum class HTTPMethod(val value: String) {
+    GET("GET"),
+    POST("POST"),
+    PUT("PUT"),
+    PATCH("PATCH"),
+    DELETE("DELETE")
+}
 
-    companion object {
-        const val sharedPreferencesGroup = "group.com.revcel.mobile"
+data class FetchParams(
+    val method: HTTPMethod,
+    val url: String,
+    val connection: Connection,
+    val body: String? = null,
+    val baseUrl: String? = null
+)
+
+suspend fun downloadImageToFile(context: Context, imageUrl: String, fileName: String) = withContext(Dispatchers.IO) {
+    val url = URL(imageUrl)
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+        requestMethod = HTTPMethod.GET.value
+        // Need this, otherwise vercel will throw error
+        setRequestProperty("User-Agent", "")
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == "android.appwidget.action.APPWIDGET_UPDATE") {
-            CoroutineScope(Dispatchers.IO).launch {
-                val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+    try {
+        connection.doInput = true
+        connection.connect()
 
-                glanceIds.forEach { glanceId ->
-                    updateAppWidgetState(
-                        context = context,
-                        definition = PreferencesGlanceStateDefinition,
-                        glanceId = glanceId
-                    ) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            // update if necessary
-                            // schedule periodic work
-                        }
-                    }
+        val responseCode = connection.responseCode
 
-                    glanceAppWidget.update(context, glanceId)
-                }
+        if (responseCode !in 200..299) {
+            val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                ?: "HTTP Error: $responseCode"
+            throw Exception("HTTP Error: $responseCode. $errorMsg")
+        }
+
+        val inputStream = connection.inputStream
+
+        val file = File(context.filesDir, fileName)
+        file.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+        file
+    } finally {
+        connection.disconnect()
+    }
+}
+
+suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) {
+    val isPOSTRequest = params.body !== null && params.method === HTTPMethod.POST
+
+    if (!params.url.startsWith("/")) {
+        throw Exception("URL should start with /")
+    }
+
+    val fullUrlString = if (params.baseUrl !== null) "${params.baseUrl}${params.url}" else "https://api.vercel.com${params.url}"
+    val url = URL(fullUrlString)
+
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+        requestMethod = params.method.value
+        setRequestProperty("User-Agent", "")
+        setRequestProperty("Accept", "application/json")
+        setRequestProperty("Authorization", "Bearer ${params.connection.apiToken}")
+        connectTimeout = 15000
+        readTimeout = 15000
+    }
+
+    try {
+        if (isPOSTRequest) {
+            connection.doOutput = true
+            OutputStreamWriter(connection.outputStream).use { writer ->
+                writer.write(params.body)
+                writer.flush()
             }
         }
-    }
 
-    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
-        super.onDeleted(context, appWidgetIds)
+        connection.connect()
+        val responseCode = connection.responseCode
 
-        appWidgetIds.forEach { appWidgetId ->
-            val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
-            val workManager = WorkManager.getInstance(context)
+        if (responseCode !in 200..299) {
+            val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                ?: "HTTP Error: $responseCode"
 
-            // widget should no longer get periodic updates
-            workManager.cancelUniqueWork("widget_update_${glanceId.hashCode()}")
+            throw Exception("HTTP Error: $responseCode. $errorMsg")
         }
-    }
 
-    fun onStatusUpdated(context: Context, glanceId: GlanceId) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
-
-            glanceIds.forEach { runningGlanceId ->
-                if (runningGlanceId == glanceId) {
-                    updateAppWidgetState(
-                        context = context,
-                        definition = PreferencesGlanceStateDefinition,
-                        glanceId = glanceId
-                    ) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            // todo
-                        }
-                    }
-
-                    glanceAppWidget.update(context, glanceId)
-                }
+        connection.inputStream.use { input ->
+            val buffer = ByteArrayOutputStream()
+            val data = ByteArray(1024)
+            var nRead: Int
+            while (input.read(data, 0, data.size).also { nRead = it } != -1) {
+                buffer.write(data, 0, nRead)
             }
+            buffer.toByteArray()
         }
+    } finally {
+        connection.disconnect()
     }
+}
 
-    fun onFetchError(context: Context, glanceId: GlanceId) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(SmallShortcutWidget::class.java)
+suspend inline fun <reified T> httpRequest(params: FetchParams): T {
+    val data = fetch(params)
+    val json = String(data, Charsets.UTF_8)
 
-            glanceIds.forEach { runningGlanceId ->
-                if (runningGlanceId == glanceId) {
-                    updateAppWidgetState(
-                        context = context,
-                        definition = PreferencesGlanceStateDefinition,
-                        glanceId = glanceId
-                    ) { prefs ->
-                        prefs.toMutablePreferences().apply {
-                            // todo
-                        }
-                    }
-
-                    glanceAppWidget.update(context, glanceId)
-                }
-            }
-        }
-    }
-
-    /**
-     * Schedules periodic work to update the widget with container data
-     * Initial schedule with 15-minute interval
-     */
-    private fun schedulePeriodicWork(context: Context, glanceId: GlanceId) {
-        val workManager = WorkManager.getInstance(context)
-
-        // cancel previous jobs if present
-        workManager.cancelUniqueWork("widget_update_${glanceId.hashCode()}")
-
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val work = PeriodicWorkRequestBuilder<ContainerWidgetDataWorker>(15, TimeUnit.MINUTES)
-            .setInputData(
-                workDataOf(
-                    // pass project
-                    //  ContainerWidgetDataWorker.containerKey to Gson().toJson(container),
-                    ContainerWidgetDataWorker.glanceIdKey to glanceId.hashCode().toString()
-                )
-            )
-            .setConstraints(constraints)
-            .build()
-
-        workManager.enqueueUniquePeriodicWork(
-            "widget_update_${glanceId.hashCode()}",
-            ExistingPeriodicWorkPolicy.UPDATE,
-            work
-        )
-    }
+    return Gson().fromJson(json, T::class.java)
 }

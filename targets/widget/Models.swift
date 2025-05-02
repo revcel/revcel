@@ -2,6 +2,7 @@ import Foundation
 
 let appGroupName: String = "group.com.revcel.mobile"
 let connectionsKey: String = "revcel::connections"
+let isSubscribedKey: String = "revcel::subscribed"
 let widgetStateKey: String = "revcel::widgetState"
 
 struct Connection: Decodable, Encodable {
