@@ -4,6 +4,7 @@ import FirewallWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
@@ -17,7 +18,9 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import appGroupName
 import com.google.gson.Gson
+import isSubscribedKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,11 +34,13 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
         val selectedProjectKey = stringPreferencesKey("selectedProject")
         val faviconPathKey = stringPreferencesKey("faviconPath")
         val firewallWidgetDataKey = stringPreferencesKey("firewallWidgetData")
+        val isSubscribedValueKey = booleanPreferencesKey("isSubscribed")
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == "android.appwidget.action.APPWIDGET_UPDATE") {
             CoroutineScope(Dispatchers.IO).launch {
+                val sharedPrefs = context.getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
                 val glanceIds = GlanceAppWidgetManager(context).getGlanceIds(MediumFirewallWidget::class.java)
 
                 glanceIds.forEach { glanceId ->
@@ -51,7 +56,9 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
                             schedulePeriodicWork(context, glanceId, project)
                         }
 
-                        prefs.toMutablePreferences().apply {}
+                        prefs.toMutablePreferences().apply {
+                            this[isSubscribedValueKey] = sharedPrefs.getBoolean(isSubscribedKey, false)
+                        }
                     }
 
                     glanceAppWidget.update(context, glanceId)
@@ -72,7 +79,7 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 
-    fun onProjectSelected(context: Context, glanceId: GlanceId, project: ProjectListItem?) {
+    fun onProjectSelected(context: Context, glanceId: GlanceId, project: ProjectListItem?, isSubscribed: Boolean) {
         if (project == null) {
             return
         }
@@ -89,6 +96,7 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
                     ) { prefs ->
                         prefs.toMutablePreferences().apply {
                             this[selectedProjectKey] = Gson().toJson(project)
+                            this[isSubscribedValueKey] = isSubscribed
                         }
                     }
 

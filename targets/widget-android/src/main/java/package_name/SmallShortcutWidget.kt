@@ -66,9 +66,10 @@ fun SmallShortcutWidgetContent() {
     val imageSize = 42.dp
     val state = currentState<Preferences>()
     val rawProject = state[SmallShortcutWidgetReceiver.selectedProjectKey]
+    val isSubscribed = state[SmallShortcutWidgetReceiver.isSubscribedValueKey] ?: false
     val faviconPath = state[SmallShortcutWidgetReceiver.faviconPathKey]
-    val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
-    val customUri = "revcel://projects/${project.id}/(tabs)/home"
+    val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
+    val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
 
     Column(
@@ -79,6 +80,12 @@ fun SmallShortcutWidgetContent() {
             .background(GlanceTheme.colors.background)
             .clickable(actionStartActivity(intent))
     ) {
+        if (!isSubscribed) {
+            SubscriptionRequiredView()
+
+            return@Column
+        }
+
         if (faviconPath != null && faviconPath !== "") {
             Image(
                 provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
@@ -94,18 +101,20 @@ fun SmallShortcutWidgetContent() {
                     .background(backgroundSecondary)
             ) {}
         }
-        Text(
-            text = project.projectName,
-            style = TextStyle(
-                textAlign = TextAlign.Center,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = GlanceTheme.colors.onSurface
-            ),
-            modifier = GlanceModifier
-                .padding(top = 8.dp),
-            maxLines = 1
-        )
+        if (project != null) {
+            Text(
+                text = project.projectName,
+                style = TextStyle(
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = GlanceTheme.colors.onSurface
+                ),
+                modifier = GlanceModifier
+                    .padding(top = 8.dp),
+                maxLines = 1
+            )
+        }
     }
 }
 

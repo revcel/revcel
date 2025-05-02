@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.edit
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import expo.modules.widgetkit.Connection
+import isSubscribedKey
 import savedWidgetStateKey
 
 class MediumFirewallWidgetConfigurationActivity: AppCompatActivity() {
@@ -111,8 +112,11 @@ class MediumFirewallWidgetConfigurationActivity: AppCompatActivity() {
                 projects,
                 onProjectSelected,
                 onDone = {
+                    val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
+                    val isSubscribed = prefs.getBoolean(isSubscribedKey, false)
+
                     val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
-                    MediumFirewallWidgetReceiver().onProjectSelected(applicationContext, glanceId, selectedProject)
+                    MediumFirewallWidgetReceiver().onProjectSelected(applicationContext, glanceId, selectedProject, isSubscribed)
 
                     val resultValue = Intent().apply {
                         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)

@@ -1,5 +1,10 @@
 package com.revcel.mobile
 
+import ProjectListItem
+import android.content.Context
+import android.content.SharedPreferences
+import appGroupName
+import isSubscribedKey
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.text.SimpleDateFormat
@@ -29,4 +34,16 @@ fun convertDateToIso(date: Date): String {
     val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
     sdf.timeZone = TimeZone.getTimeZone("UTC")
     return sdf.format(date)
+}
+
+fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String {
+    if (project == null) {
+        return "revcel://"
+    }
+
+    if (isSubscribed) {
+        return "revcel://projects/${project.id}/(tabs)/home"
+    }
+
+    return "revcel://?showPaywall=1"
 }

@@ -71,12 +71,13 @@ class MediumFirewallWidget: GlanceAppWidget() {
 fun MediumFirewallWidgetContent() {
     val imageSize = 42.dp
     val state = currentState<Preferences>()
+    val isSubscribed = state[MediumFirewallWidgetReceiver.isSubscribedValueKey] ?: false
     val rawProject = state[MediumFirewallWidgetReceiver.selectedProjectKey]
     val faviconPath = state[MediumFirewallWidgetReceiver.faviconPathKey]
     val rawFirewallData = state[MediumFirewallWidgetReceiver.firewallWidgetDataKey]
-    val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
-    val firewallData = Gson().fromJson(rawFirewallData, FirewallWidgetData::class.java)
-    val customUri = "revcel://projects/${project.id}/(tabs)/home"
+    val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
+    val firewallData = Gson().fromJson(rawFirewallData, FirewallWidgetData::class.java) ?: null
+    val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
 
     Column(
@@ -86,6 +87,11 @@ fun MediumFirewallWidgetContent() {
             .background(GlanceTheme.colors.background)
             .clickable(actionStartActivity(intent))
     ) {
+        if (!isSubscribed) {
+            SubscriptionRequiredView()
+
+            return@Column
+        }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -105,18 +111,20 @@ fun MediumFirewallWidgetContent() {
                         .background(backgroundSecondary)
                 ) {}
             }
-            Text(
-                text = project.projectName,
-                style = TextStyle(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = GlanceTheme.colors.onSurface
-                ),
-                modifier = GlanceModifier
-                    .padding(start = 8.dp),
-                maxLines = 1
-            )
+            if (project != null) {
+                Text(
+                    text = project.projectName,
+                    style = TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = GlanceTheme.colors.onSurface
+                    ),
+                    modifier = GlanceModifier
+                        .padding(start = 8.dp),
+                    maxLines = 1
+                )
+            }
         }
         Row(
             horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
@@ -125,9 +133,13 @@ fun MediumFirewallWidgetContent() {
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
-            StatColumn(firewallData.allowed, "Allowed", GlanceTheme.colors.primary)
-            StatColumn(firewallData.denied, "Denied", GlanceTheme.colors.error)
-            StatColumn(firewallData.challenged, "Challenged", GlanceTheme.colors.outline)
+            if (firewallData != null) {
+                StatColumn(firewallData.allowed, "Allowed", GlanceTheme.colors.primary)
+                StatColumn(firewallData.denied, "Denied", GlanceTheme.colors.error)
+                StatColumn(firewallData.challenged, "Challenged", GlanceTheme.colors.outline)
+            } else {
+                LoadingView()
+            }
         }
     }
 }

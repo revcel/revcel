@@ -1,12 +1,10 @@
 package com.revcel.mobile
 
-import AnalyticsTimeseries
 import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
@@ -75,13 +73,34 @@ fun MediumAnalyticsWidgetContent() {
     val imageSize = 42.dp
     val context = LocalContext.current
     val state = currentState<Preferences>()
+    val isSubscribed = state[MediumAnalyticsWidgetReceiver.isSubscribedValueKey] ?: false
     val rawProject = state[MediumAnalyticsWidgetReceiver.selectedProjectKey]
     val faviconPath = state[MediumAnalyticsWidgetReceiver.faviconPathKey]
-    val project = Gson().fromJson(rawProject, ProjectListItem::class.java)
+    val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
     val rawAnalyticsData = state[MediumAnalyticsWidgetReceiver.analyticsDataKey]
-    val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java)
-    val customUri = "revcel://projects/${project.id}/(tabs)/home"
+    val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java) ?: null
+    val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
+
+    if (project == null || analyticsData == null || !isSubscribed) {
+        return Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .background(GlanceTheme.colors.background)
+                .clickable(actionStartActivity(intent))
+        ) {
+            if (!isSubscribed) {
+                SubscriptionRequiredView()
+
+                return@Column
+            }
+            LoadingView()
+
+            return@Column
+        }
+    }
 
     val chartImagePath = remember {
         val bitmap = ChartGenerator.generateBitmap(context, analyticsData.data)
