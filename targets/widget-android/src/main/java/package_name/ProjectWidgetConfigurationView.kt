@@ -24,7 +24,7 @@ fun ProjectWidgetConfigurationView(
 ) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!isAuthorized) {
-            SettingsView("Unauthorized", "Sign in with Revcel app", openApp)
+            SettingsView("Unauthorized", "Open the app to connect your account", openApp)
             return@Column
         }
 
@@ -34,12 +34,12 @@ fun ProjectWidgetConfigurationView(
         }
 
         if (state == WidgetIntentState.API_FAILED) {
-            SettingsView("Api error", "We couldn't fetch data from api", openApp)
+            SettingsView("Error", "We couldn't fetch data from Vercel", openApp)
             return@Column
         }
 
         if (state == WidgetIntentState.NO_PROJECTS) {
-            SettingsView("No projects", "Add your first project in Revcel app", openApp)
+            SettingsView("No Projects", "Create a project first", openApp)
             return@Column
         }
 
@@ -128,7 +128,7 @@ fun SettingsView(title: String, description: String, openApp: (() -> Unit)? = nu
                 )
             ) {
                 Text(
-                    text = "Open Revcel App",
+                    text = "Open Rev App",
                     color = whiteColor
                 )
             }

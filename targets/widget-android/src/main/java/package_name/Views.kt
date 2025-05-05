@@ -20,7 +20,7 @@ fun SubscriptionRequiredView() {
             .fillMaxSize()
     ) {
         Text(
-            text = "Subscription is required",
+            text = "Subscription missing, tap here to enable",
             style = TextStyle(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
