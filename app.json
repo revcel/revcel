@@ -12,15 +12,12 @@
         "ios": {
             "appleTeamId": "8FT82R3S6A",
             "bundleIdentifier": "com.revcel.mobile",
-            "teamId": "8FT82R3S6A",
             "supportsTablet": true,
             "config": {
                 "usesNonExemptEncryption": false
             },
             "entitlements": {
-                "com.apple.security.application-groups": [
-                    "group.com.revcel.mobile"
-                ]
+                "com.apple.security.application-groups": ["group.com.revcel.mobile"]
             }
         },
         "android": {
@@ -28,7 +25,8 @@
             "adaptiveIcon": {
                 "foregroundImage": "./assets/icon.png",
                 "backgroundColor": "#0A0A0A"
-            }
+            },
+            "googleServicesFile": "./google-services.json"
         },
         "plugins": [
             "expo-router",
