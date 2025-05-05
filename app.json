@@ -71,19 +71,22 @@
                             "receiverName": "SmallShortcutWidgetReceiver",
                             "configurationActivity": "SmallShortcutWidgetConfigurationActivity",
                             "resource": "@xml/small_shortcut_widget_info",
-                            "description": "@string/small_shortcut_widget_description"
+                            "description": "@string/small_shortcut_widget_description",
+                            "title": "@string/small_shortcut_widget_title"
                         },
                         {
                             "receiverName": "MediumAnalyticsWidgetReceiver",
                             "configurationActivity": "MediumAnalyticsWidgetConfigurationActivity",
                             "resource": "@xml/medium_analytics_widget_info",
-                            "description": "@string/medium_analytics_description"
+                            "description": "@string/medium_analytics_description",
+                            "title": "@string/medium_analytics_title"
                         },
                         {
                             "receiverName": "MediumFirewallWidgetReceiver",
                             "configurationActivity": "MediumFirewallWidgetConfigurationActivity",
                             "resource": "@xml/medium_firewall_widget_info",
-                            "description": "@string/medium_firewall_widget_description"
+                            "description": "@string/medium_firewall_widget_description",
+                            "title": "@string/medium_firewall_widget_title"
                         }
                     ]
                 }

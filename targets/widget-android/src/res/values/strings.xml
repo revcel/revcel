@@ -1,5 +1,8 @@
 <resources>
-    <string name="small_shortcut_widget_description">Small shortcut widget</string>
-    <string name="medium_analytics_description">Medium analytics widget</string>
-    <string name="medium_firewall_widget_description">Medium firewall widget</string>
+    <string name="small_shortcut_widget_title">Project Shortcut</string>
+    <string name="small_shortcut_widget_description">Quickly open your project.</string>
+    <string name="medium_analytics_title">Analytics</string>
+    <string name="medium_analytics_description">See the analytics for your project.</string>
+    <string name="medium_firewall_widget_title">Firewall</string>
+    <string name="medium_firewall_widget_description">See the firewall metrics for your project.</string>
 </resources>

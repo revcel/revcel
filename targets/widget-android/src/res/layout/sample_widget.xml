@@ -10,5 +10,5 @@
             android:scaleType="centerCrop"
             android:layout_gravity="center"
             android:alpha="0.4"
-            android:src="@drawable/preview" />
+            android:src="@drawable/shortcut_preview" />
 </FrameLayout>

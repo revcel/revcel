@@ -65,7 +65,7 @@ const withModifiedAndroidManifest = (config, opts) =>
             $: {
                 'android:name': `.${opts.receiverName}`,
                 'android:exported': 'true',
-                'android:label': '@string/app_name',
+                'android:label': `${opts.title}`,
             },
             'intent-filter': [
                 {
