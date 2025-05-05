@@ -193,6 +193,7 @@ struct MediumFirewallWidget: Widget {
           Color("background")
         }
     }
+    .configurationDisplayName("Firewall").description("See the firewall metrics for your project.")
     .supportedFamilies([.systemMedium])
   }
 }

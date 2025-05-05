@@ -229,6 +229,7 @@ struct MediumAnalyticsWidget: Widget {
         }
     }
     .contentMarginsDisabled()
+    .configurationDisplayName("Analytics").description("See the analytics for your project.")
     .supportedFamilies([.systemMedium])
   }
 }

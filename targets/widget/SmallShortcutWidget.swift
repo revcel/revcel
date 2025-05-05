@@ -114,6 +114,7 @@ struct SmallShortcutWidget: Widget {
           Color("background")
         }
     }
+    .configurationDisplayName("Project Shortcut").description("Quickly open your project.")
     .supportedFamilies([.systemSmall])
   }
 }
