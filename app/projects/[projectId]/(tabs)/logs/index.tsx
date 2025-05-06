@@ -3,18 +3,20 @@ import EmptyListComponent from '@/components/EmptyListComponent'
 import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import { COLOR_FOR_REQUEST_STATUS } from '@/lib/constants'
 import { queryClient } from '@/lib/query'
+import WidgetKitModule from '@/modules/widgetkit'
 import { useStore } from '@/store/default'
 import { COLORS } from '@/theme/colors'
 import type { Log } from '@/types/logs'
 import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
+import Superwall from '@superwall/react-native-superwall'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import ms from 'ms'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { RefreshControl, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, RefreshControl, Text, TouchableOpacity, View } from 'react-native'
 
 export default function Logs() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
@@ -116,13 +118,24 @@ export default function Logs() {
                 <TouchableOpacity
                     onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                        router.push({
-                            pathname: '/logs/details',
-                            params: {
-                                logId: log.requestId,
-                                projectId,
-                            },
-                        })
+                        Superwall.shared
+                            .register({
+                                placement: 'ExpandLog',
+                                feature: () => {
+                                    router.push({
+                                        pathname: '/logs/details',
+                                        params: {
+                                            logId: log.requestId,
+                                            projectId,
+                                        },
+                                    })
+                                    WidgetKitModule.setIsSubscribed(true)
+                                },
+                            })
+                            .catch((error) => {
+                                console.error('Error registering ExpandLog', error)
+                                Alert.alert('Error', 'Something went wrong, please try again.')
+                            })
                     }}
                 >
                     <LogListRow

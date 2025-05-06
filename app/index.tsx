@@ -1,5 +1,8 @@
+import WidgetKitModule from '@/modules/widgetkit'
 import { usePersistedStore } from '@/store/persisted'
+import Superwall from '@superwall/react-native-superwall'
 import { Redirect, useLocalSearchParams } from 'expo-router'
+import { Alert } from 'react-native'
 
 export default function App() {
     const { showPaywall } = useLocalSearchParams<{ showPaywall?: string }>()
@@ -12,12 +15,23 @@ export default function App() {
 
     if (!currentConnection) {
         usePersistedStore.setState({ currentConnection: connections[0] })
-        throw new Error('Found connections but not current connection id.')
+        if (__DEV__) {
+            throw new Error('Found connections but not current connection id.')
+        }
     }
 
     if (showPaywall) {
-        console.log('showPaywall', showPaywall)
-        // show paywall
+        Superwall.shared
+            .register({
+                placement: 'TapWidget',
+                feature: () => {
+                    WidgetKitModule.setIsSubscribed(true)
+                },
+            })
+            .catch((error) => {
+                console.error('Error registering TapWidget', error)
+                Alert.alert('Error', 'Something went wrong, please try again.')
+            })
     }
 
     return <Redirect href="/home" />

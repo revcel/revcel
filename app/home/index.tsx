@@ -2,15 +2,17 @@ import { fetchAllTeams, fetchTeamAvatar, fetchTeamProjects, fetchUserInfo } from
 import ApiStatus from '@/components/ApiStatus'
 import BottomGradient from '@/components/BottomGradient'
 import DeploymentCard from '@/components/DeploymentCard'
-import ProjectCard from '@/components/ProjectCard'
 import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
+import ProjectCard from '@/components/ProjectCard'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { storage } from '@/lib/storage'
+import WidgetKitModule from '@/modules/widgetkit'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import CookieManager, { type Cookie } from '@react-native-cookies/cookies'
+import Superwall from '@superwall/react-native-superwall'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useNavigation } from 'expo-router'
@@ -87,7 +89,6 @@ export default function HomeScreen() {
 
     const currentTeam = useMemo(() => {
         if (!currentTeamId || !currentUserTeams || currentUserTeams.length === 0) return undefined
-        console.log('[currentTeam] currentUserTeams', JSON.stringify(currentUserTeams, null, 2))
         const team = currentUserTeams?.find((t) => t.id === currentTeamId)
         return team
     }, [currentUserTeams, currentTeamId])
@@ -239,12 +240,34 @@ export default function HomeScreen() {
                         }
 
                         if (e.nativeEvent.name === 'Add Connection') {
-                            router.push('/login')
+                            Superwall.shared
+                                .register({
+                                    placement: 'AddConnection',
+                                    feature: () => {
+                                        router.push('/login')
+                                        WidgetKitModule.setIsSubscribed(true)
+                                    },
+                                })
+                                .catch((error) => {
+                                    console.error('Error registering AddConnection', error)
+                                    Alert.alert('Error', 'Something went wrong, please try again.')
+                                })
                             return
                         }
 
                         if (e.nativeEvent.name === 'Notifications') {
-                            router.push('/notifications')
+                            Superwall.shared
+                                .register({
+                                    placement: 'OpenNotifications',
+                                    feature: () => {
+                                        router.push('/notifications')
+                                        WidgetKitModule.setIsSubscribed(true)
+                                    },
+                                })
+                                .catch((error) => {
+                                    console.error('Error registering OpenNotifications', error)
+                                    Alert.alert('Error', 'Something went wrong, please try again.')
+                                })
                             return
                         }
 

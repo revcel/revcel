@@ -1,5 +1,5 @@
 import { NativeModule, requireNativeModule } from 'expo'
-import { Connection } from './WidgetKit.types'
+import type { Connection } from './WidgetKit.types'
 
 declare class WidgetKitModule extends NativeModule {
     addConnection(connection: Connection): void
