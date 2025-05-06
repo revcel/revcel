@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import Connection
 import ProjectListItem
 import appGroupName
 import connectionsKey
@@ -20,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.content.edit
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import expo.modules.widgetkit.Connection
 import isSubscribedKey
 import savedWidgetStateKey
 

@@ -3,6 +3,7 @@ package com.revcel.mobile
 import AnalyticsEnabledResponse
 import AnalyticsQuickStatsResponse
 import AnalyticsTimeseriesResponse
+import Connection
 import ConnectionTeam
 import ConnectionTeamsResponse
 import ConnectionProject
@@ -10,7 +11,6 @@ import DeploymentResponse
 import FirewallMetricsRequest
 import FirewallMetricsResponse
 import com.google.gson.Gson
-import expo.modules.widgetkit.Connection
 
 suspend fun fetchConnectionTeams(connection: Connection): ConnectionTeamsResponse {
     val params = FetchParams(

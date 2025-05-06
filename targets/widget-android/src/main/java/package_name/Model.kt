@@ -1,9 +1,12 @@
-import expo.modules.widgetkit.Connection
-
 val appGroupName: String = "group.com.revcel.mobile"
 val connectionsKey: String = "revcel::connections"
 val savedWidgetStateKey: String = "pourtainer::widgetState"
 val isSubscribedKey: String = "revcel::subscribed"
+
+data class Connection(
+    val id: String? = null,
+    val apiToken: String? = null
+)
 
 data class ConnectionTeamsResponse(
     val teams: Array<ConnectionTeam>

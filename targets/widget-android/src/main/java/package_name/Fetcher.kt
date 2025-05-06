@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import Connection
 import android.content.Context
 import java.net.HttpURLConnection
 import java.net.URL
@@ -7,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import com.google.gson.Gson
-import expo.modules.widgetkit.Connection
 import java.io.File
 import java.io.OutputStreamWriter
 
