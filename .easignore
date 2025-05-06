@@ -40,3 +40,6 @@ ios/
 android/
 
 env.example
+
+*.apk
+*.aab

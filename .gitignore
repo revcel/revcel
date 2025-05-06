@@ -45,6 +45,9 @@ android/
 
 google-services.json
 
+*.apk
+*.aab
+
 # widgets
 !modules/widgetkit/ios
 !modules/widgetkit/android
