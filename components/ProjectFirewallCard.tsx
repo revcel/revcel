@@ -45,7 +45,9 @@ export default function ProjectFirewallCard() {
     //     },
     // })
 
-    const allowed = metricsQuery.data?.find((metric) => metric.wafAction === '')?.value
+    const allowed = metricsQuery.data?.find(
+        (metric) => metric.wafAction === '' || metric.wafAction === 'allow'
+    )?.value
     const denied = metricsQuery.data?.find((metric) => metric.wafAction === 'deny')?.value
     const challenged = metricsQuery.data?.find((metric) => metric.wafAction === 'challenge')?.value
 

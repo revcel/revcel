@@ -676,7 +676,7 @@ export async function fetchProjectFirewallMetrics({
             }
             summary: {
                 wafRuleId: '' | 'sys_dos_mitigation' | string
-                wafAction: '' | 'deny' | 'challenge'
+                wafAction: '' | 'allow' | 'deny' | 'challenge'
                 value: number
             }[]
         }>(`/observability/metrics?ownerId=${currentTeamId}`, {
