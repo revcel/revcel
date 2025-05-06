@@ -1,10 +1,6 @@
 package com.revcel.mobile
 
 import ProjectListItem
-import android.content.Context
-import android.content.SharedPreferences
-import appGroupName
-import isSubscribedKey
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.text.SimpleDateFormat
