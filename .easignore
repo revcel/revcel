@@ -43,3 +43,8 @@ env.example
 
 *.apk
 *.aab
+
+# widgets
+!modules/widgetkit/ios
+!modules/widgetkit/android
+modules/widgetkit/android/build
