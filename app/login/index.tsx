@@ -146,7 +146,6 @@ export default function Login() {
                     paddingTop: 120,
                     backgroundColor: COLORS.background,
                 }}
-                scrollEnabled={false} // might interfere with the keyboard scroll
             >
                 {showCloseButton && (
                     <TouchableOpacity
