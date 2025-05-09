@@ -38,7 +38,6 @@ export default function Environment() {
                         width: 32,
                     }}
                     onPress={() => {
-                        console.log('onPress')
                         // stops working on android
                         // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
                         //     (error) => {

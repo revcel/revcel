@@ -214,6 +214,7 @@ export async function fetchTeamProjectFavicon({ projectId }: { projectId: string
 
     //! see VERCEL.md/API
     //! some api endpoints return `id` others `uid`, this one is `uid`
+    //! thx G
     // @ts-ignore
     const deploymentId = readyDeployments?.deployments?.[0].uid
 
@@ -1393,7 +1394,6 @@ export async function fetchProjectLogsFilters({
         fetchAttributeWithDelay(attribute, index * 50)
     )
 
-    // Wait for all promises to resolve
     const results = await Promise.all(promises)
 
     // Combine results into the final filterValues object
@@ -1425,7 +1425,6 @@ export async function fetchWebhook({
 
     const params = new URLSearchParams({
         teamId: currentTeamId,
-        // teamId: 'team_w5QEgxSqjv7GCAKNT1ScSpah',
     })
 
     console.log('PUSH TOKEN', pushToken)

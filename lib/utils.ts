@@ -22,8 +22,8 @@ export const getDeploymentFavicon = async ({
             project: projectId,
             teamId,
         })
+
         const url = `https://vercel.com/api/v0/deployments/${deploymentId}/favicon?${params.toString()}`
-        console.log('Favicon URL', url)
 
         // const response = await fetch(url);
         // if (!response.headers.get("content-type")?.includes("image/png")) {

@@ -14,20 +14,15 @@ export default function buildEmptyListComponent({
     emptyLabel: string
     errorLabel: string
 }) {
-    console.log('[EMPTY LIST COMPONENT]', isLoading)
-
     if (isLoading) {
-        console.log('stopped at isLoading')
-
         return (
             <EmptyListView>
                 <ActivityIndicator size="large" color={COLORS.success} />
             </EmptyListView>
         )
     }
-    console.log('after isLoading')
+
     if (error) {
-        console.log('stopped at error')
         return (
             <EmptyListView>
                 <Text style={{ fontSize: 16, color: COLORS.gray1000, textAlign: 'center' }}>
@@ -36,9 +31,8 @@ export default function buildEmptyListComponent({
             </EmptyListView>
         )
     }
-    console.log('after error')
+
     if (!hasValue) {
-        console.log('stopped at hasValue')
         return (
             <EmptyListView>
                 <Text style={{ fontSize: 16, color: COLORS.gray1000, textAlign: 'center' }}>
@@ -47,7 +41,7 @@ export default function buildEmptyListComponent({
             </EmptyListView>
         )
     }
-    console.log('returning null')
+
     return undefined
 }
 

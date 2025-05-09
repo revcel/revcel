@@ -250,13 +250,6 @@ function TeamRow({
         [registerWebhookDebounced, hasPushEnabled, enablePush, pushToken]
     )
 
-    // when event changes
-    // check if push notifications are enabled, if not ask for permission
-    // delete existing vercel webhook
-    // create new vercel webhook
-    // update worker data (send push token if necessary)
-    // reset webhook query
-
     return (
         <View style={{ flexDirection: 'column', gap: 20, backgroundColor, padding: 14 }}>
             <View
@@ -293,37 +286,50 @@ function TeamRow({
             </View>
 
             <View style={{ flexDirection: 'column', gap: 10 }}>
-                {Object.entries(LABEL_FOR_EVENT).map(([event, label]) => (
-                    <View
-                        key={event}
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 10,
-                        }}
-                    >
-                        <View style={{ flexDirection: 'column', gap: 2 }}>
-                            <Text
-                                style={{ fontSize: 14, fontWeight: 'bold', color: COLORS.gray1000 }}
-                            >
-                                {label}
-                            </Text>
-
-                            <Text style={{ fontSize: 14, color: COLORS.gray900 }}>{event}</Text>
-                        </View>
-
-                        <Switch
-                            value={enabledEvents.includes(event)}
-                            onValueChange={() => toggleEvent(event)}
-                            trackColor={{
-                                true: COLORS.success,
-                                false: undefined,
+                {['pro', 'enterprise'].includes(team.billing.plan) ? (
+                    Object.entries(LABEL_FOR_EVENT).map(([event, label]) => (
+                        <View
+                            key={event}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 10,
                             }}
-                            thumbColor={Platform.OS === 'android' ? COLORS.successDark : undefined}
-                        />
-                    </View>
-                ))}
+                        >
+                            <View style={{ flexDirection: 'column', gap: 2 }}>
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        fontWeight: 'bold',
+                                        color: COLORS.gray1000,
+                                    }}
+                                >
+                                    {label}
+                                </Text>
+
+                                <Text style={{ fontSize: 14, color: COLORS.gray900 }}>{event}</Text>
+                            </View>
+
+                            <Switch
+                                value={enabledEvents.includes(event)}
+                                onValueChange={() => toggleEvent(event)}
+                                trackColor={{
+                                    true: COLORS.success,
+                                    false: undefined,
+                                }}
+                                thumbColor={
+                                    Platform.OS === 'android' ? COLORS.successDark : undefined
+                                }
+                            />
+                        </View>
+                    ))
+                ) : (
+                    <Text style={{ fontSize: 14, color: COLORS.gray900 }}>
+                        Push notifications work with Vercel Pro or Enterprise accounts. Hobby
+                        accounts are not supported (by Vercel).
+                    </Text>
+                )}
             </View>
         </View>
     )

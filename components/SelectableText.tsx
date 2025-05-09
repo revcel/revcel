@@ -10,7 +10,6 @@ type SelectableTextProps = {
 
 // On android setting editable prop on TextInput will also disable text selection.
 // If we do not need this TextInput to be editable we can try to use Text component with selectable prop so user can select and copy text.
-// I'm leaving old implementation for iOS in case it was working as expected.
 export function SelectableText({ text, shouldScrollToBottom }: SelectableTextProps) {
     const isAndroid = Platform.OS === 'android'
     const scrollViewRef = useRef<ScrollView>(null)

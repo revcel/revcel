@@ -32,7 +32,8 @@
                 "noInferrableTypes": "off",
                 "noDefaultExport": "off",
                 "useNamingConvention": "off",
-                "useForOf": "off"
+                "useForOf": "off",
+                "noNamespaceImport": "off"
             },
             "suspicious": {
                 "all": false

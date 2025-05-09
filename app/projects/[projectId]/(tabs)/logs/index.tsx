@@ -59,7 +59,6 @@ export default function Logs() {
                     }}
                     onPress={() => {
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
-                        // TrueSheet.present('logsFilters')
                         router.push({
                             pathname: '/logs/filters',
                             params: {

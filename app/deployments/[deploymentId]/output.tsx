@@ -27,7 +27,7 @@ function updateTreeRecursively(
 
         // this means if a folder has the same path as another root folder
         // both will open because we only check the last part of the path
-        // this is not a key issues (altought that should be worked on)
+        // this is not a key issue (altough that should be worked on)
         if (item.type === 'directory' && item.name === itemPath) {
             return {
                 ...item,
