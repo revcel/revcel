@@ -1,9 +1,10 @@
 import { fetchTeamProjects } from '@/api/queries'
 import DeploymentCard from '@/components/DeploymentCard'
 import EmptyListComponent from '@/components/EmptyListComponent'
+import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import ProjectFirewallCard from '@/components/ProjectFirewallCard'
 import ProjectQuickActions from '@/components/ProjectQuickActions'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
+import ProjectWidgetMessage from '@/components/ProjectWidgetMessage'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -140,6 +141,7 @@ export default function ProjectHomeScreen() {
                             gap: 12,
                         }}
                     >
+                        <ProjectWidgetMessage />
                         <ProjectFirewallCard />
                         <ProjectQuickActions />
                     </View>
