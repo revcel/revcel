@@ -27,6 +27,7 @@ import { useLayoutEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
     Alert,
+    Image,
     RefreshControl,
     ScrollView,
     Text,
@@ -55,12 +56,6 @@ export default function Deployment() {
         queryFn: () => fetchProductionDeployment({ projectId: deployment?.projectId! }),
         enabled: !!deployment,
     })
-
-    // const deploymentScreenshotQuery = useQuery({
-    //     queryKey: ['deployment', deploymentId, 'screenshot'],
-    //     queryFn: () => fetchTeamDeploymentScreenshot({ deploymentId }),
-    //     // enabled: deploymentQuery.data?.readyState === 'READY',
-    // })
 
     const rollbackMutation = useMutation({
         mutationFn: () =>
@@ -388,6 +383,22 @@ export default function Deployment() {
                             style={{ width: '100%', height: 200 }}
                         />
                     )} */}
+
+                    {deployment.readyState === 'READY' && (
+                        <Image
+                            source={{
+                                uri: `https://vercel.com/api/screenshot?dark=1&deploymentId=${deployment.id}&teamId=${currentTeamId}&withStatus=1`,
+                                headers: {
+                                    Authorization: `Bearer ${currentConnection?.apiToken}`,
+                                },
+                            }}
+                            style={{
+                                width: '100%',
+                                height: 275,
+                                resizeMode: 'contain',
+                            }}
+                        />
+                    )}
                     <InfoRow
                         label="Status"
                         icon="checkmark-circle-outline"

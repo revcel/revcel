@@ -540,40 +540,6 @@ export async function fetchTeamDeploymenBuildFileTree({
     }
 }
 
-export async function fetchTeamDeploymentScreenshot({ deploymentId }: { deploymentId: string }) {
-    const currentConnection = usePersistedStore.getState().currentConnection
-
-    if (!currentConnection) {
-        throw new Error('Current connection not found')
-    }
-
-    const currentTeamId = currentConnection.currentTeamId
-
-    if (!currentTeamId) {
-        throw new Error('Current team not found')
-    }
-
-    try {
-        const response = await fetch(
-            `https://vercel.com/api/screenshot?dark=0&deploymentId=${deploymentId}&teamId=${currentTeamId}&withStatus=1`,
-            {
-                headers: {
-                    Authorization: `Bearer ${currentConnection.apiToken}`,
-                },
-            }
-        )
-
-        if (response.status !== 200) {
-            throw new Error('Error fetching deployment screenshot')
-        }
-
-        return response.url
-    } catch (error) {
-        console.log('[Error] Error fetching deployment screenshot', error)
-        throw error
-    }
-}
-
 /* FIREWALL */
 export async function fetchProjectFirewallRules({ projectId }: { projectId: string }) {
     const currentConnection = usePersistedStore.getState().currentConnection
