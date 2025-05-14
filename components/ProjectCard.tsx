@@ -50,13 +50,13 @@ export default function ProjectCard({
 
     const latestDeploymentTime = useMemo(() => {
         if (!project.latestDeployments?.[0]?.createdAt) {
-            return "No deployment"
+            return 'No deployment'
         }
         try {
             return format(new Date(project.latestDeployments?.[0]?.createdAt), 'dd/MM/yyyy')
         } catch (error) {
             console.error('Error formatting latest deployment time', error)
-            return "No deployment"
+            return 'Bad date'
         }
     }, [project.latestDeployments])
 
