@@ -48,6 +48,18 @@ export default function ProjectCard({
         return '18.9%'
     }, [windowWidth])
 
+    const latestDeploymentTime = useMemo(() => {
+        if (!project.latestDeployments?.[0]?.createdAt) {
+            return "No deployment"
+        }
+        try {
+            return format(new Date(project.latestDeployments?.[0]?.createdAt), 'dd/MM/yyyy')
+        } catch (error) {
+            console.error('Error formatting latest deployment time', error)
+            return "No deployment"
+        }
+    }, [project.latestDeployments])
+
     return (
         <SquircleView
             key={project.id}
@@ -208,7 +220,7 @@ export default function ProjectCard({
                         {project.latestDeployments[0]?.meta?.githubCommitMessage || 'Manual deploy'}
                     </Text>
                     <Text style={{ color: COLORS.gray900, fontSize: 10, fontWeight: 'semibold' }}>
-                        {format(new Date(project.latestDeployments?.[0]?.createdAt), 'dd/MM/yyyy')}
+                        {latestDeploymentTime}
                     </Text>
                 </View>
 
