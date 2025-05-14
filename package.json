@@ -1,7 +1,7 @@
 {
     "name": "revcel",
     "main": "index.js",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "scripts": {
         "start": "expo start",
         "android": "expo run:android",
