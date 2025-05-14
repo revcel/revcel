@@ -18,7 +18,7 @@ import * as Haptics from 'expo-haptics'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { Image, Platform } from 'react-native'
+import { Image, Linking, Platform } from 'react-native'
 import {
     Alert,
     RefreshControl,
@@ -395,6 +395,39 @@ export default function HomeScreen() {
         switchConnection,
         connections.length,
     ])
+
+    useEffect(() => {
+        const getUrlAsync = async () => {
+            // Get the deep link used to open the app
+            const initialUrl = await Linking.getInitialURL()
+
+            const eventId = initialUrl?.split('revcel:///?event=')[1]
+
+            if (!eventId) return
+
+            if (eventId === 'push') {
+                Superwall.shared
+                    .register({
+                        placement: 'OpenNotifications',
+                        feature: () => {
+                            router.push('/notifications')
+                        },
+                    })
+                    .catch((error) => {
+                        console.error('Error registering OpenNotifications', error)
+                        Alert.alert('Error', 'Something went wrong, please try again.')
+                    })
+                return
+            }
+
+            if (eventId === 'v0') {
+                router.push('/v0')
+                return
+            }
+        }
+
+        getUrlAsync()
+    }, [])
 
     useNotificationHandler()
     useWebhookCheck(teamsQueries)
