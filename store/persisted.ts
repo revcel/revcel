@@ -26,6 +26,7 @@ interface PersistedStoreState {
         swipeLeftProject: boolean
         swipeLeftBrowser: boolean
         swipeLeftv0: boolean
+        swipeLeftDomains: boolean
     }
     acknowledge: (type: keyof PersistedStoreState['acknowledgments']) => void
 }
@@ -78,6 +79,7 @@ export const usePersistedStore = create<PersistedStoreState>()(
                 swipeLeftProject: false,
                 swipeLeftBrowser: false,
                 swipeLeftv0: false,
+                swipeLeftDomains: false,
             },
             acknowledge(type: keyof PersistedStoreState['acknowledgments']) {
                 set((state) => ({

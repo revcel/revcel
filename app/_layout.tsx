@@ -147,6 +147,16 @@ function RootLayout() {
                         />
 
                         <Stack.Screen
+                            name="domains/index"
+                            options={{
+                                title: 'Domains',
+                                headerShown: false,
+                                ...commonContentStyle,
+                                autoHideHomeIndicator: true,
+                            }}
+                        />
+
+                        <Stack.Screen
                             name="projects/all"
                             options={{
                                 title: 'My Projects',
