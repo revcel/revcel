@@ -319,67 +319,145 @@ export default function HomeScreen() {
                 </ContextMenu>
             ),
             headerRight: () => (
-                <HeaderTouchableOpacity
-                    onPress={async () => {
-                        const useWebkit = false
+                <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                    <HeaderTouchableOpacity
+                        onPress={async () => {
+                            const useWebkit = false
 
-                        console.log(
-                            'COOKIES',
-                            JSON.stringify(
-                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
-                                null,
-                                2
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
                             )
-                        )
 
-                        await CookieManager.clearAll(useWebkit)
+                            await CookieManager.clearAll(useWebkit)
 
-                        console.log(
-                            'COOKIES',
-                            JSON.stringify(
-                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
-                                null,
-                                2
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
                             )
-                        )
 
-                        const tokenCookie: Cookie = {
-                            name: 'authorization',
-                            value: `Bearer ${currentConnection?.apiToken!}`,
-                            domain: 'vercel.com',
-                            path: '/',
-                            secure: true,
-                            httpOnly: true,
-                            expires: '2026-03-22T13:00:50.148Z',
-                        }
+                            const tokenCookie: Cookie = {
+                                name: 'authorization',
+                                value: `Bearer ${currentConnection?.apiToken!}`,
+                                domain: 'vercel.com',
+                                path: '/',
+                                secure: true,
+                                httpOnly: true,
+                                expires: '2026-03-22T13:00:50.148Z',
+                            }
 
-                        const loggedInCookie: Cookie = {
-                            name: 'isLoggedIn',
-                            value: '1',
-                            domain: 'vercel.com',
-                            path: '/',
-                            secure: true,
-                            httpOnly: false,
-                            expires: '2026-03-22T13:00:50.148Z',
-                        }
+                            const loggedInCookie: Cookie = {
+                                name: 'isLoggedIn',
+                                value: '1',
+                                domain: 'vercel.com',
+                                path: '/',
+                                secure: true,
+                                httpOnly: false,
+                                expires: '2026-03-22T13:00:50.148Z',
+                            }
 
-                        await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
-                        await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
+                            await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
+                            await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
 
-                        console.log(
-                            'COOKIES',
-                            JSON.stringify(
-                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
-                                null,
-                                2
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
                             )
-                        )
 
-                        router.push('/v0')
-                    }}
-                >
-                    <Image source={require('@/assets/v0.png')} style={{ width: 32, height: 16 }} />
-                </HeaderTouchableOpacity>
+                            router.push('/domains')
+                        }}
+                    >
+                        <Ionicons name="globe-outline" size={24} color={COLORS.white} />
+                    </HeaderTouchableOpacity>
+                    <HeaderTouchableOpacity
+                        onPress={async () => {
+                            const useWebkit = false
+
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
+                            )
+
+                            await CookieManager.clearAll(useWebkit)
+
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
+                            )
+
+                            const tokenCookie: Cookie = {
+                                name: 'authorization',
+                                value: `Bearer ${currentConnection?.apiToken!}`,
+                                domain: 'vercel.com',
+                                path: '/',
+                                secure: true,
+                                httpOnly: true,
+                                expires: '2026-03-22T13:00:50.148Z',
+                            }
+
+                            const loggedInCookie: Cookie = {
+                                name: 'isLoggedIn',
+                                value: '1',
+                                domain: 'vercel.com',
+                                path: '/',
+                                secure: true,
+                                httpOnly: false,
+                                expires: '2026-03-22T13:00:50.148Z',
+                            }
+
+                            await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
+                            await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
+
+                            console.log(
+                                'COOKIES',
+                                JSON.stringify(
+                                    Platform.OS === 'ios'
+                                        ? await CookieManager.getAll(useWebkit)
+                                        : '',
+                                    null,
+                                    2
+                                )
+                            )
+
+                            router.push('/v0')
+                        }}
+                    >
+                        <Image
+                            source={require('@/assets/v0.png')}
+                            style={{ width: 32, height: 16 }}
+                        />
+                    </HeaderTouchableOpacity>
+                </View>
             ),
         })
     }, [
