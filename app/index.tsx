@@ -1,10 +1,13 @@
 import WidgetKitModule from '@/modules/widgetkit'
 import { usePersistedStore } from '@/store/persisted'
-import Superwall from '@superwall/react-native-superwall'
+import * as Sentry from '@sentry/react-native'
 import { Redirect, useLocalSearchParams } from 'expo-router'
+import { usePlacement, useUser } from 'expo-superwall'
 import { Alert } from 'react-native'
 
 export default function App() {
+    const { registerPlacement } = usePlacement()
+    const { subscriptionStatus } = useUser()
     const { showPaywall } = useLocalSearchParams<{ showPaywall?: string }>()
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
@@ -15,23 +18,36 @@ export default function App() {
 
     if (!currentConnection) {
         usePersistedStore.setState({ currentConnection: connections[0] })
-        if (__DEV__) {
-            throw new Error('Found connections but not current connection id.')
-        }
+        Sentry.captureException(new Error('Found connections but not current connection id.'))
     }
 
     if (showPaywall) {
-        Superwall.shared
-            .register({
-                placement: 'TapWidget',
+        registerPlacement({
+            placement: 'TapWidget',
+            feature: () => {
+                WidgetKitModule.setIsSubscribed(true)
+                Alert.alert(
+                    'Congrats, you can now go to your homescreen and search for "Rev" widgets'
+                )
+            },
+        }).catch((error) => {
+            Sentry.captureException(error)
+            console.error('Error registering TapWidget', error)
+            Alert.alert('Error', 'Something went wrong, please try again.')
+        })
+    } else if (subscriptionStatus.status === 'INACTIVE') {
+        setTimeout(() => {
+            registerPlacement({
+                placement: 'LifetimeOffer_1',
                 feature: () => {
                     WidgetKitModule.setIsSubscribed(true)
+                    Alert.alert('Congrats, you unlocked lifetime access to Rev.')
                 },
+            }).catch((error) => {
+                console.error('Error registering LifetimeOffer_1', error)
+                Sentry.captureException(error)
             })
-            .catch((error) => {
-                console.error('Error registering TapWidget', error)
-                Alert.alert('Error', 'Something went wrong, please try again.')
-            })
+        }, 1000)
     }
 
     return <Redirect href="/home" />

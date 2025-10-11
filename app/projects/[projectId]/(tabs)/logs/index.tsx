@@ -8,17 +8,19 @@ import { useStore } from '@/store/default'
 import { COLORS } from '@/theme/colors'
 import type { Log } from '@/types/logs'
 import { Ionicons } from '@expo/vector-icons'
+import * as Sentry from '@sentry/react-native'
 import { FlashList } from '@shopify/flash-list'
-import Superwall from '@superwall/react-native-superwall'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
+import { usePlacement } from 'expo-superwall'
 import ms from 'ms'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Alert, RefreshControl, Text, TouchableOpacity, View } from 'react-native'
 
 export default function Logs() {
+    const { registerPlacement } = usePlacement()
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
     const navigation = useNavigation()
 
@@ -117,24 +119,30 @@ export default function Logs() {
                 <TouchableOpacity
                     onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                        Superwall.shared
-                            .register({
-                                placement: 'ExpandLog',
-                                feature: () => {
-                                    router.push({
-                                        pathname: '/logs/details',
-                                        params: {
-                                            logId: log.requestId,
-                                            projectId,
-                                        },
-                                    })
-                                    WidgetKitModule.setIsSubscribed(true)
+                        const featureFn = () => {
+                            router.push({
+                                pathname: '/logs/details',
+                                params: {
+                                    logId: log.requestId,
+                                    projectId,
                                 },
                             })
-                            .catch((error) => {
-                                console.error('Error registering ExpandLog', error)
-                                Alert.alert('Error', 'Something went wrong, please try again.')
-                            })
+                            WidgetKitModule.setIsSubscribed(true)
+                        }
+
+                        if (__DEV__) {
+                            featureFn()
+                            return
+                        }
+
+                        registerPlacement({
+                            placement: 'ExpandLog',
+                            feature: featureFn,
+                        }).catch((error) => {
+                            Sentry.captureException(error)
+                            console.error('Error registering ExpandLog', error)
+                            Alert.alert('Error', 'Something went wrong, please try again.')
+                        })
                     }}
                 >
                     <LogListRow

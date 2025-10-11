@@ -1,7 +1,6 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { CommonEnvironmentVariable } from '@/types/common'
-import Superwall from '@superwall/react-native-superwall'
 import { Platform } from 'react-native'
 import { fetchWebhook } from './queries'
 
@@ -497,20 +496,14 @@ export async function registerWebhook({
     pushToken,
     connectionId,
     teamId,
+    isSubscribed,
 }: {
     events: string[]
     pushToken: string
     connectionId: string
     teamId: string
+    isSubscribed: boolean
 }) {
-    let isSubscribed = false
-    try {
-        const { status } = await Superwall.shared.getSubscriptionStatus()
-        isSubscribed = status === 'ACTIVE'
-    } catch (error) {
-        console.error(error)
-        throw new Error('Could not enable notifications at this time, please try again later')
-    }
     if (!isSubscribed) {
         throw new Error('Push Notifications require an active subscription')
     }

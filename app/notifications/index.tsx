@@ -7,6 +7,7 @@ import type { Team } from '@/types/teams'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation, useQueries } from '@tanstack/react-query'
 import * as Notifications from 'expo-notifications'
+import { useUser } from 'expo-superwall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
     ActivityIndicator,
@@ -144,6 +145,29 @@ export default function NotificationsScreen() {
             }
         >
             <View style={{ marginTop: 20 }}>
+                {Object.keys(dataForTeamId).length !== proTeamIds.length && (
+                    <View
+                        style={{
+                            marginHorizontal: 20,
+                            marginVertical: 10,
+                            padding: 10,
+                            flexDirection: 'column',
+                            borderRadius: 16,
+                            backgroundColor: COLORS.successDark,
+                        }}
+                    >
+                        <Text style={{ fontSize: 18, color: COLORS.gray1000, fontWeight: 500 }}>
+                            Don't see your team here?
+                        </Text>
+                        <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>
+                            This means the team is not on the Vercel Pro or Enterprise plan. Do not
+                            worry, you can subscribe and then refund on the same day. Vercel will
+                            refund almost the entire payment (minutes the few hours you used it) and
+                            your push notifications will remain active until you disable them.
+                        </Text>
+                    </View>
+                )}
+
                 {proTeamIds.map((teamId, teamIndex) => (
                     <TeamRow
                         key={teamId}
@@ -172,6 +196,7 @@ function TeamRow({
     pushToken: string | null
     backgroundColor: string
 }) {
+    const { subscriptionStatus } = useUser()
     const [enabledEvents, setEnabledEvents] = useState<string[]>([])
 
     const teamAvatarQuery = useQuery({
@@ -215,6 +240,7 @@ function TeamRow({
                 teamId: team.id,
                 events: enabledEvents,
                 pushToken: pushToken,
+                isSubscribed: subscriptionStatus.status === 'ACTIVE',
             })
         },
         onSuccess: () => {

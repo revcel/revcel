@@ -12,11 +12,12 @@ import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import CookieManager, { type Cookie } from '@react-native-cookies/cookies'
-import Superwall from '@superwall/react-native-superwall'
+import * as Sentry from '@sentry/react-native'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
+import { usePlacement } from 'expo-superwall'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
 import {
@@ -32,6 +33,7 @@ import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
 
 export default function HomeScreen() {
+    const { registerPlacement } = usePlacement()
     const navigation = useNavigation()
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
@@ -240,34 +242,46 @@ export default function HomeScreen() {
                         }
 
                         if (e.nativeEvent.name === 'Add Connection') {
-                            Superwall.shared
-                                .register({
-                                    placement: 'AddConnection',
-                                    feature: () => {
-                                        router.push('/login')
-                                        WidgetKitModule.setIsSubscribed(true)
-                                    },
-                                })
-                                .catch((error) => {
-                                    console.error('Error registering AddConnection', error)
-                                    Alert.alert('Error', 'Something went wrong, please try again.')
-                                })
+                            const featureFn = () => {
+                                router.push('/login')
+                                WidgetKitModule.setIsSubscribed(true)
+                            }
+
+                            if (__DEV__) {
+                                featureFn()
+                                return
+                            }
+
+                            registerPlacement({
+                                placement: 'AddConnection',
+                                feature: featureFn,
+                            }).catch((error) => {
+                                Sentry.captureException(error)
+                                console.error('Error registering AddConnection', error)
+                                Alert.alert('Error', 'Something went wrong, please try again.')
+                            })
                             return
                         }
 
                         if (e.nativeEvent.name === 'Notifications') {
-                            Superwall.shared
-                                .register({
-                                    placement: 'OpenNotifications',
-                                    feature: () => {
-                                        router.push('/notifications')
-                                        WidgetKitModule.setIsSubscribed(true)
-                                    },
-                                })
-                                .catch((error) => {
-                                    console.error('Error registering OpenNotifications', error)
-                                    Alert.alert('Error', 'Something went wrong, please try again.')
-                                })
+                            const featureFn = () => {
+                                router.push('/notifications')
+                                WidgetKitModule.setIsSubscribed(true)
+                            }
+
+                            if (__DEV__) {
+                                featureFn()
+                                return
+                            }
+
+                            registerPlacement({
+                                placement: 'OpenNotifications',
+                                feature: featureFn,
+                            }).catch((error) => {
+                                Sentry.captureException(error)
+                                console.error('Error registering OpenNotifications', error)
+                                Alert.alert('Error', 'Something went wrong, please try again.')
+                            })
                             return
                         }
 
@@ -394,6 +408,7 @@ export default function HomeScreen() {
         removeConnection,
         switchConnection,
         connections.length,
+        registerPlacement,
     ])
 
     useEffect(() => {
@@ -406,17 +421,17 @@ export default function HomeScreen() {
             if (!eventId) return
 
             if (eventId === 'push') {
-                Superwall.shared
-                    .register({
-                        placement: 'OpenNotifications',
-                        feature: () => {
-                            router.push('/notifications')
-                        },
-                    })
-                    .catch((error) => {
-                        console.error('Error registering OpenNotifications', error)
-                        Alert.alert('Error', 'Something went wrong, please try again.')
-                    })
+                registerPlacement({
+                    placement: 'OpenNotifications',
+                    feature: () => {
+                        router.push('/notifications')
+                        WidgetKitModule.setIsSubscribed(true)
+                    },
+                }).catch((error) => {
+                    Sentry.captureException(error)
+                    console.error('Error registering OpenNotifications', error)
+                    Alert.alert('Error', 'Something went wrong, please try again.')
+                })
                 return
             }
 
@@ -427,7 +442,7 @@ export default function HomeScreen() {
         }
 
         getUrlAsync()
-    }, [])
+    }, [registerPlacement])
 
     useNotificationHandler()
     useWebhookCheck(teamsQueries)
