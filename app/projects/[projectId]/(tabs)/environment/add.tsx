@@ -85,6 +85,9 @@ export default function AddEnvironmentVariableScreen() {
                                 }}
                                 placeholder="Enter name"
                                 placeholderTextColor={COLORS.gray900}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 
@@ -108,6 +111,9 @@ export default function AddEnvironmentVariableScreen() {
                                 placeholder="Enter value"
                                 placeholderTextColor={COLORS.gray900}
                                 multiline={true}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 
@@ -133,6 +139,9 @@ export default function AddEnvironmentVariableScreen() {
                                 placeholder="Add a comment (optional)"
                                 placeholderTextColor={COLORS.gray900}
                                 multiline={true}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 

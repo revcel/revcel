@@ -227,6 +227,7 @@ export default function Login() {
                             placeholderTextColor={COLORS.gray900}
                             secureTextEntry={true}
                             autoCapitalize="none"
+                            autoComplete="off"
                             autoCorrect={false}
                             onChangeText={(text) => {
                                 apiTokenRef.current = text
