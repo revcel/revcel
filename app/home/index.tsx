@@ -15,9 +15,10 @@ import CookieManager, { type Cookie } from '@react-native-cookies/cookies'
 import * as Sentry from '@sentry/react-native'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
+import * as QuickActions from 'expo-quick-actions'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
-import { usePlacement } from 'expo-superwall'
+import { usePlacement, useUser } from 'expo-superwall'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
 import {
@@ -33,14 +34,16 @@ import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
 
 export default function HomeScreen() {
-    const { registerPlacement } = usePlacement()
     const navigation = useNavigation()
+    const { registerPlacement } = usePlacement()
+    const { subscriptionStatus } = useUser()
+    const { width: windowWidth } = useWindowDimensions()
+
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
     const currentTeamId = useMemo(() => currentConnection?.currentTeamId, [currentConnection])
     const removeConnection = usePersistedStore((state) => state.removeConnection)
     const switchConnection = usePersistedStore((state) => state.switchConnection)
-    const { width: windowWidth } = useWindowDimensions()
 
     const usersQueries = useQueries({
         queries: connections.map((connection) => ({
@@ -443,6 +446,39 @@ export default function HomeScreen() {
 
         getUrlAsync()
     }, [registerPlacement])
+
+    useEffect(() => {
+        if (subscriptionStatus.status !== 'INACTIVE') return
+
+        setTimeout(() => {
+            registerPlacement({
+                placement: 'LifetimeOffer_1',
+                feature: () => {
+                    WidgetKitModule.setIsSubscribed(true)
+                    Alert.alert('Congrats, you unlocked lifetime access to Rev.')
+                },
+            }).catch((error) => {
+                console.error('Error registering LifetimeOffer_1', error)
+                Sentry.captureException(error)
+            })
+        }, 1000)
+
+        QuickActions.isSupported().then((supported) => {
+            if (!supported) return
+            QuickActions.setItems([
+                {
+                    id: '0',
+                    title:
+                        Platform.OS === 'android'
+                            ? "Don't delete me ): Tap here!"
+                            : "Don't delete me ):",
+                    subtitle: "Here's 50% off for life!",
+                    icon: 'love',
+                    params: { href: '/showLfo1=1' },
+                },
+            ])
+        })
+    }, [registerPlacement, subscriptionStatus.status])
 
     useNotificationHandler()
     useWebhookCheck(teamsQueries)

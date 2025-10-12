@@ -34,6 +34,9 @@ module.exports = ({ config }) => {
             },
         },
 
+        androidNavigationBar: {
+            enforceContrast: false,
+        },
         android: {
             package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
             adaptiveIcon: {
@@ -42,6 +45,7 @@ module.exports = ({ config }) => {
             },
             googleServicesFile: './google-services.json',
             playStoreUrl: process.env.EXPO_PUBLIC_ANDROID_STORE_URL,
+            predictiveBackGestureEnabled: true,
         },
 
         plugins: [
@@ -64,16 +68,6 @@ module.exports = ({ config }) => {
                 },
             ],
             [
-                'react-native-edge-to-edge',
-                {
-                    'android': {
-                        'parentTheme': 'Material3.Dynamic',
-                        'enforceNavigationBarContrast': false,
-                    },
-                },
-            ],
-            './plugins/withEdgeToEdgeFix',
-            [
                 '@sentry/react-native/expo',
                 {
                     url: 'https://sentry.io/',
@@ -81,7 +75,7 @@ module.exports = ({ config }) => {
                     organization: process.env.EXPO_PUBLIC_SENTRY_ORG,
                 },
             ],
-			'expo-quick-actions',
+            'expo-quick-actions',
             '@bacons/apple-targets',
             // [
             //     './plugins/withAndroidWidget',

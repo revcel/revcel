@@ -10,7 +10,6 @@ import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router'
 import { SuperwallProvider } from 'expo-superwall'
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
-import { SystemBars } from 'react-native-edge-to-edge'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 
@@ -79,7 +78,6 @@ function RootLayout() {
     return (
         <GestureHandlerRootView>
             <KeyboardProvider>
-                <SystemBars />
                 <SuperwallProvider
                     apiKeys={{
                         ios: process.env.EXPO_PUBLIC_IOS_SUPERWALL_API_KEY,
