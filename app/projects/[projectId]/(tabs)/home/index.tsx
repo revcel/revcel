@@ -101,7 +101,7 @@ export default function ProjectHomeScreen() {
     return (
         <>
             <Stack.Screen
-                name="index"
+                // name="index"
                 options={{
                     title: project?.name || 'Project',
                 }}

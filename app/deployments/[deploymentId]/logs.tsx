@@ -78,7 +78,7 @@ export default function DeploymentLogs() {
     return (
         <>
             <Stack.Screen
-                name="logs"
+                // name="logs"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,

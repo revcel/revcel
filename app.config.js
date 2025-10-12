@@ -73,6 +73,7 @@ module.exports = ({ config }) => {
                     organization: process.env.EXPO_PUBLIC_SENTRY_ORG,
                 },
             ],
+			'expo-quick-actions',
             '@bacons/apple-targets',
             [
                 './plugins/withAndroidWidget',

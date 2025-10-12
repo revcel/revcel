@@ -6,16 +6,9 @@ import { useMutation } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import {
-    Alert,
-    Platform,
-    SafeAreaView,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-} from 'react-native'
+import { Alert, Platform, Switch, Text, TextInput, TouchableOpacity } from 'react-native'
 import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ENVIRONMENTS: { key: CommonEnvironment; name: string }[] = [
     { key: 'development', name: 'Development' },

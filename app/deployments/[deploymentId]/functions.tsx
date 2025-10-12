@@ -57,7 +57,7 @@ export default function DeploymentFunctions() {
     return (
         <>
             <Stack.Screen
-                name="functions"
+                // name="functions"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,

@@ -131,7 +131,7 @@ export default function DeploymentOutput() {
     return (
         <>
             <Stack.Screen
-                name="output"
+                // name="output"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,

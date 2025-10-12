@@ -137,7 +137,7 @@ export default function DeploymentSource() {
     return (
         <>
             <Stack.Screen
-                name="source"
+                // name="source"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,

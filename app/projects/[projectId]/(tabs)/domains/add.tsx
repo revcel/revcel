@@ -8,13 +8,13 @@ import { useState } from 'react'
 import {
     Alert,
     Keyboard,
-    SafeAreaView,
     Text,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function AddDomain() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()

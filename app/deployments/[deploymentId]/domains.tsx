@@ -69,7 +69,7 @@ export default function Deployment() {
     return (
         <>
             <Stack.Screen
-                name="domains"
+                // name="domains"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,
