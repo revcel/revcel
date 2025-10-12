@@ -21,6 +21,7 @@ export default function ProjectFirewallCard() {
     const teamProjectsQuery = useQuery({
         queryKey: ['team', currentTeamId, 'projects'],
         queryFn: () => fetchTeamProjects(),
+        enabled: !!currentTeamId,
     })
 
     const project = useMemo(() => {
@@ -30,6 +31,7 @@ export default function ProjectFirewallCard() {
     const metricsQuery = useQuery({
         queryKey: ['project', projectId, 'firewall', 'metrics'],
         queryFn: () => fetchProjectFirewallMetrics({ projectId }),
+        enabled: !!projectId,
     })
 
     // const attackModeMutation = useMutation({

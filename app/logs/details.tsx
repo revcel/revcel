@@ -27,6 +27,7 @@ export default function LogDetailsScreen() {
             }),
         staleTime: ms('1m'),
         gcTime: ms('1m'),
+        enabled: !!projectId,
     })
 
     const log = useMemo(() => {

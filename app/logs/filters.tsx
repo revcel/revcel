@@ -37,6 +37,7 @@ export default function LogFiltersScreen() {
                 startDate: '1',
                 endDate: Date.now().toString(),
             }),
+        enabled: !!projectId,
     })
 
     if (availableFiltersQuery.isLoading) {

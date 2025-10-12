@@ -21,6 +21,7 @@ export default function Deployment() {
     const deploymentQuery = useQuery({
         queryKey: ['deployment', deploymentId],
         queryFn: () => fetchTeamDeployment({ deploymentId }),
+        enabled: !!deploymentId,
     })
 
     const aliases = useMemo(() => {

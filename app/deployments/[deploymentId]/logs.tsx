@@ -22,6 +22,7 @@ export default function DeploymentLogs() {
     const deploymentQuery = useQuery({
         queryKey: ['deployment', deploymentId],
         queryFn: () => fetchTeamDeployment({ deploymentId }),
+        enabled: !!deploymentId,
     })
 
     const deploymentBuildMetadataQuery = useQuery({

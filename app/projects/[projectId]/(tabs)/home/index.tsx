@@ -34,6 +34,7 @@ export default function ProjectHomeScreen() {
     const teamProjectsQuery = useQuery({
         queryKey: ['team', currentTeamId, 'projects'],
         queryFn: () => fetchTeamProjects(),
+        enabled: !!currentTeamId,
     })
 
     const project = useMemo(() => {

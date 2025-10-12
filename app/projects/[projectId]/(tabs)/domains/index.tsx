@@ -30,6 +30,7 @@ export default function Domains() {
     const domainsQuery = useQuery({
         queryKey: ['project', projectId, 'domains'],
         queryFn: () => fetchTeamProjectDomains({ projectId }),
+        enabled: !!projectId,
     })
 
     const emptyListComponent = useMemo(() => {

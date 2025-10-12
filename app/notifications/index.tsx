@@ -202,6 +202,7 @@ function TeamRow({
     const teamAvatarQuery = useQuery({
         queryKey: ['team', team.id, 'avatar'],
         queryFn: () => fetchTeamAvatar({ connectionId: team.connectionId, teamId: team.id }),
+        enabled: !!team.id,
     })
 
     const webhookQuery = useQuery({
@@ -229,6 +230,7 @@ function TeamRow({
                 teamId: team.id,
             }
         },
+        enabled: !!team.id,
     })
 
     const registerWebhookMutation = useMutation({

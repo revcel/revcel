@@ -27,6 +27,7 @@ export default function Environment() {
     const environmentVariablesQuery = useQuery({
         queryKey: ['project', projectId, 'environmentVariables'],
         queryFn: async () => await fetchTeamProjectEnvironment({ projectId }),
+        enabled: !!projectId,
     })
 
     useLayoutEffect(() => {

@@ -17,26 +17,31 @@ export default function ProjectObservabilityScreen() {
     const ttfbQuery = useQuery({
         queryKey: ['project', projectId, 'observability', 'ttfb'],
         queryFn: () => fetchObservabilityTTFB({ projectId, summaryOnly: true }),
+        enabled: !!projectId,
     })
 
     const memoryQuery = useQuery({
         queryKey: ['project', projectId, 'observability', 'memory'],
         queryFn: () => fetchObservabilityMemory({ projectId, summaryOnly: true }),
+        enabled: !!projectId,
     })
 
     const cpuThrottleQuery = useQuery({
         queryKey: ['project', projectId, 'observability', 'cpuThrottle'],
         queryFn: () => fetchObservabilityCpuThrottle({ projectId, summaryOnly: true }),
+        enabled: !!projectId,
     })
 
     const coldStartQuery = useQuery({
         queryKey: ['project', projectId, 'observability', 'coldStart'],
         queryFn: () => fetchObservabilityColdStart({ projectId, summaryOnly: true }),
+        enabled: !!projectId,
     })
 
     const routesQuery = useQuery({
         queryKey: ['project', projectId, 'observability', 'routes'],
         queryFn: () => fetchObservabilityRouteSummary({ projectId, summaryOnly: true }),
+        enabled: !!projectId,
     })
 
     const ttfb = useMemo(() => {

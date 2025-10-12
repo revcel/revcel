@@ -40,6 +40,7 @@ export default function Logs() {
             }),
         staleTime: ms('1m'),
         gcTime: ms('1m'),
+        enabled: !!projectId,
     })
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>

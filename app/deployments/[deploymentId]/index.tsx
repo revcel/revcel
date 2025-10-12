@@ -5,11 +5,7 @@ import {
     redeployDeployment,
     rollbackDeployment,
 } from '@/api/mutations'
-import {
-    fetchProductionDeployment,
-    fetchTeamDeployment,
-    fetchTeamDeploymentBuildMetadata,
-} from '@/api/queries'
+import { fetchProductionDeployment, fetchTeamDeployment } from '@/api/queries'
 import { formatDeploymentShortId, formatFrameworkName } from '@/lib/format'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
@@ -47,6 +43,7 @@ export default function Deployment() {
     const deploymentQuery = useQuery({
         queryKey: ['deployment', deploymentId],
         queryFn: () => fetchTeamDeployment({ deploymentId }),
+        enabled: !!deploymentId,
     })
 
     const deployment = useMemo(() => deploymentQuery.data, [deploymentQuery.data])
@@ -156,11 +153,11 @@ export default function Deployment() {
         },
     })
 
-    const deploymentBuildMetadataQuery = useQuery({
-        queryKey: ['deployment', deploymentId, 'buildMetadata'],
-        queryFn: () => fetchTeamDeploymentBuildMetadata({ deployment: deploymentQuery.data! }),
-        enabled: !!deploymentQuery.data,
-    })
+    // const deploymentBuildMetadataQuery = useQuery({
+    //     queryKey: ['deployment', deploymentId, 'buildMetadata'],
+    //     queryFn: () => fetchTeamDeploymentBuildMetadata({ deployment: deploymentQuery.data! }),
+    //     enabled: !!deploymentQuery.data,
+    // })
 
     useLayoutEffect(() => {
         if (!deployment) return
