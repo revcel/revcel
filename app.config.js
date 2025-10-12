@@ -45,6 +45,14 @@ module.exports = ({ config }) => {
         },
 
         plugins: [
+            [
+                'expo-build-properties',
+                {
+                    'android': {
+                        'minSdkVersion': 26,
+                    },
+                },
+            ],
             'expo-router',
             [
                 'expo-splash-screen',
