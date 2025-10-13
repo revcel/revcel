@@ -89,18 +89,20 @@ export default function ProjectCard({
                 }}
             >
                 <View style={{ flexDirection: 'row' }}>
-                    {faviconQuery.data && (
-                        <Image
-                            source={{ uri: faviconQuery.data }}
-                            style={{
-                                width: 16,
-                                height: 16,
-                                marginRight: 4,
-                                marginTop: 4,
-                                borderRadius: 8,
-                            }}
-                        />
-                    )}
+                    <Image
+                        source={
+                            faviconQuery.data
+                                ? { uri: faviconQuery.data }
+                                : require('@/assets/icon.png')
+                        }
+                        style={{
+                            width: 16,
+                            height: 16,
+                            marginRight: 4,
+                            marginTop: 3,
+                            borderRadius: 8,
+                        }}
+                    />
 
                     {/* {DUMMY_FAVICONS[project.name] && (
                         <Image

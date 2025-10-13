@@ -21,6 +21,11 @@ import type { User } from '@/types/user'
 import type { Webhook } from '@/types/webhooks'
 import ms from 'ms'
 
+const TRAILING_SLASHES_REGEX = /\/+$/
+const ABSOLUTE_URL_REGEX = /^https?:\/\//i
+const LINK_ICON_HREF_REGEX =
+    /<link[^>]*rel=["'][^"']*(?:icon|shortcut icon|apple-touch-icon)[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>/i
+
 function roundToGranularity(
     date: Date,
     granularity: '5m' | '1h',
@@ -217,26 +222,101 @@ export async function fetchTeamProjectFavicon({ projectId }: { projectId: string
     //! thx G
     // @ts-ignore
     const deploymentId = readyDeployments?.deployments?.[0].uid
+    const deploymentHost = readyDeployments?.deployments?.[0]?.url
 
-    if (!deploymentId) return null
+    if (!deploymentId && !deploymentHost) return null
 
-    try {
-        const response = await fetch(
-            `https://vercel.com/api/v0/deployments/${deploymentId}/favicon?${params.toString()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${currentConnection.apiToken}`,
-                },
+    // First attempt: Vercel deployment favicon endpoint
+    if (deploymentId) {
+        try {
+            const response = await fetch(
+                `https://vercel.com/api/v0/deployments/${deploymentId}/favicon?${params.toString()}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${currentConnection.apiToken}`,
+                    },
+                }
+            )
+
+            if (response.status === 200) {
+                return response.url
             }
-        )
-
-        if (response.status !== 200) return null
-
-        return response.url
-    } catch (error) {
-        console.log('[Error] Error fetching deployment favicon', error)
-        throw error
+        } catch (error) {
+            console.log('[Error] Error fetching deployment favicon', error)
+            // continue to website fallback below
+        }
     }
+
+    // Fallback: try to resolve favicon from the website itself
+    if (deploymentHost) {
+        const websiteBaseUrl = `https://${deploymentHost}`
+        try {
+            const fallbackUrl = await resolveWebsiteFaviconUrl(websiteBaseUrl)
+            if (fallbackUrl) {
+                return fallbackUrl
+            }
+        } catch (error) {
+            console.log('[Error] Error resolving website favicon', error)
+        }
+    }
+
+    return null
+}
+
+async function resolveWebsiteFaviconUrl(siteBaseUrl: string): Promise<string | null> {
+    const base = siteBaseUrl.replace(TRAILING_SLASHES_REGEX, '')
+    const candidatePaths = [
+        '/favicon.ico',
+        '/favicon.png',
+        '/favicon.svg',
+        '/apple-touch-icon.png',
+        '/apple-touch-icon-precomposed.png',
+    ]
+
+    for (const path of candidatePaths) {
+        const url = `${base}${path}`
+        try {
+            const res = await fetch(url)
+            const contentType = res.headers.get('content-type') || ''
+            if (
+                res.status === 200 &&
+                (contentType.includes('image') ||
+                    path.endsWith('.ico') ||
+                    path.endsWith('.png') ||
+                    path.endsWith('.svg'))
+            ) {
+                return url
+            }
+        } catch (_e) {
+            // ignore and try next candidate
+        }
+    }
+
+    // As a last resort, try parsing the homepage for a <link rel="icon" ...>
+    try {
+        const homeRes = await fetch(base)
+        if (homeRes.status === 200) {
+            const html = await homeRes.text()
+            const href = extractIconHrefFromHtml(html)
+            if (href) {
+                if (ABSOLUTE_URL_REGEX.test(href)) {
+                    return href
+                }
+                const normalized = href.startsWith('/') ? `${base}${href}` : `${base}/${href}`
+                return normalized
+            }
+        }
+    } catch (_e) {
+        // ignore
+    }
+
+    return null
+}
+
+function extractIconHrefFromHtml(html: string): string | null {
+    const match = html.match(LINK_ICON_HREF_REGEX)
+    const href = match?.[1]
+    return href || null
 }
 
 /* DEPLOYMENTS */
