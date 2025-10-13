@@ -53,12 +53,17 @@ async function http<T>(path: string, config: RequestInit, connectionId?: string)
         throw new VercelError(errJson.error.message, errJson.error.code, errJson.error.invalidToken)
     }
 
+    const textResponse = await response.text()
     let parsed = {}
 
     try {
-        parsed = config.method === 'DELETE' ? null : await response.json()
+        parsed =
+            config.method === 'DELETE' || path.includes('edge-cache')
+                ? null
+                : JSON.parse(textResponse)
     } catch (error) {
         console.log('[vercel.http] Error parsing response', error)
+        console.log('[vercel.http] textResponse', textResponse)
     }
 
     return parsed as T

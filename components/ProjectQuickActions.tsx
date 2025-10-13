@@ -76,24 +76,10 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
                             {
                                 text: 'Purge',
                                 style: 'destructive',
-                                onPress: () => {
-                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                                    Alert.alert(
-                                        'Are you sure?',
-                                        'This will purge the data cache for this project.',
-                                        [
-                                            { text: 'Cancel', style: 'cancel' },
-                                            {
-                                                text: 'Purge',
-                                                style: 'destructive',
-                                                onPress: async () => {
-                                                    await purgeCacheMutation.mutateAsync({
-                                                        projectId,
-                                                    })
-                                                },
-                                            },
-                                        ]
-                                    )
+                                onPress: async () => {
+                                    await purgeCacheMutation.mutateAsync({
+                                        projectId,
+                                    })
                                 },
                             },
                         ]

@@ -525,7 +525,7 @@ export async function purgeCdnCache({ projectId }: { projectId: string }) {
     console.log('[purgeCdnCache] params', params.toString())
 
     try {
-        await vercel.delete(`/v1/edge-cache/purge-all?${params.toString()}`)
+        await vercel.post(`/v1/edge-cache/purge-all?${params.toString()}`)
     } catch (error) {
         console.log('[purgeCdnCache] Error purging cache', error)
         Sentry.captureException(error)
