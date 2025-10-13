@@ -329,8 +329,20 @@ export default function HomeScreen() {
                 </ContextMenu>
             ),
             headerRight: () => (
-                <HeaderTouchableOpacity
-                    onPress={async () => {
+                <ContextMenu
+                    actions={[
+                        {
+                            title: 'Vercel v0',
+                            systemIcon: 'arrow.up.circle',
+                        },
+                        {
+                            title: 'Vercel Domains',
+                            systemIcon: 'globe',
+                        },
+                    ]}
+                    dropdownMenuMode={true}
+                    onPress={async (e) => {
+                        e.persist()
                         const useWebkit = false
 
                         console.log(
@@ -360,7 +372,7 @@ export default function HomeScreen() {
                             path: '/',
                             secure: true,
                             httpOnly: true,
-                            expires: '2026-03-22T13:00:50.148Z',
+                            expires: '2026-09-22T13:00:50.148Z',
                         }
 
                         const loggedInCookie: Cookie = {
@@ -370,7 +382,7 @@ export default function HomeScreen() {
                             path: '/',
                             secure: true,
                             httpOnly: false,
-                            expires: '2026-03-22T13:00:50.148Z',
+                            expires: '2026-09-22T13:00:50.148Z',
                         }
 
                         await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
@@ -385,11 +397,23 @@ export default function HomeScreen() {
                             )
                         )
 
-                        router.push('/v0')
+                        if (e.nativeEvent.name === 'Vercel v0') {
+                            router.push('/v0')
+                            return
+                        }
+                        if (e.nativeEvent.name === 'Vercel Domains') {
+                            router.push('/domains')
+                            return
+                        }
                     }}
                 >
-                    <Image source={require('@/assets/v0.png')} style={{ width: 32, height: 16 }} />
-                </HeaderTouchableOpacity>
+                    <HeaderTouchableOpacity>
+                        <Image
+                            source={require('@/assets/v0.png')}
+                            style={{ width: 32, height: 16 }}
+                        />
+                    </HeaderTouchableOpacity>
+                </ContextMenu>
             ),
         })
     }, [
