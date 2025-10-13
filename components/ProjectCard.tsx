@@ -119,6 +119,7 @@ export default function ProjectCard({
                         numberOfLines={2}
                         style={{
                             flex: 1,
+                            fontFamily: 'Geist',
                             color: COLORS.gray1000,
                             fontSize: 16,
                             overflow: 'hidden',
@@ -158,6 +159,7 @@ export default function ProjectCard({
                                 color: COLORS.gray900,
                                 fontSize: 12,
                                 fontWeight: 'bold',
+                                fontFamily: 'Geist',
                             }}
                             numberOfLines={1}
                         >
@@ -168,7 +170,7 @@ export default function ProjectCard({
                     <View
                         style={{
                             flexDirection: 'row',
-                            alignItems: 'flex-start',
+                            alignItems: 'center',
                             // backgroundColor: 'blue',
                             paddingRight: 14,
                         }}
@@ -186,6 +188,7 @@ export default function ProjectCard({
                                 color: COLORS.gray900,
                                 fontSize: 12,
                                 lineHeight: 14,
+                                fontFamily: 'Geist',
                             }}
                             numberOfLines={2}
                         >
@@ -216,10 +219,20 @@ export default function ProjectCard({
                 }}
             >
                 <View style={{ maxWidth: '80%', flexDirection: 'column', gap: 2 }}>
-                    <Text style={{ color: COLORS.gray1000, fontSize: 10 }} numberOfLines={1}>
+                    <Text
+                        style={{ color: COLORS.gray1000, fontSize: 10, fontFamily: 'Geist' }}
+                        numberOfLines={1}
+                    >
                         {project.latestDeployments[0]?.meta?.githubCommitMessage || 'Manual deploy'}
                     </Text>
-                    <Text style={{ color: COLORS.gray900, fontSize: 10, fontWeight: 'semibold' }}>
+                    <Text
+                        style={{
+                            color: COLORS.gray900,
+                            fontSize: 10,
+                            fontWeight: 'semibold',
+                            fontFamily: 'Geist',
+                        }}
+                    >
                         {latestDeploymentTime}
                     </Text>
                 </View>

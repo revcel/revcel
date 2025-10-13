@@ -11,6 +11,10 @@ export default function ProjectIndexLayout() {
                 headerBlurEffect: 'regular',
                 headerLargeTitleStyle: {
                     color: COLORS.gray1000,
+                    fontFamily: 'Geist',
+                },
+                headerTitleStyle: {
+                    fontFamily: 'Geist',
                 },
                 headerTintColor: COLORS.gray1000,
                 headerStyle: {

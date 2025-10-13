@@ -53,7 +53,13 @@ function RootLayout() {
             backgroundColor: COLORS.background,
         },
         headerTintColor: COLORS.gray1000,
-        headerShadowVisible: false,
+        headerShadowVisible: true,
+        headerTitleStyle: {
+            fontFamily: 'Geist',
+        },
+        headerLargeTitleStyle: {
+            fontFamily: 'Geist',
+        },
     }
 
     const commonContentStyle = {
@@ -119,6 +125,7 @@ function RootLayout() {
                                     ...commonHeaderStyle,
                                     ...commonContentStyle,
                                     autoHideHomeIndicator: true,
+                                    headerShadowVisible: false,
                                 }}
                             />
 
@@ -181,6 +188,7 @@ function RootLayout() {
                                     headerLargeTitle: true,
                                     ...commonHeaderStyle,
                                     ...commonContentStyle,
+                                    headerShadowVisible: false,
                                 }}
                             />
 

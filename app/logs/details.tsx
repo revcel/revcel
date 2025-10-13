@@ -1,6 +1,6 @@
 import { fetchProjectLogs } from '@/api/queries'
+import InfoRow from '@/components/base/InfoRow'
 import { COLORS } from '@/theme/colors'
-import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useLocalSearchParams } from 'expo-router'
@@ -47,36 +47,31 @@ export default function LogDetailsScreen() {
                 label="Timestamp"
                 icon="time-outline"
                 value={format(log.timestamp, 'HH:mm:ss')}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow label="Method" icon="code-outline" value={log.requestMethod} />
             <InfoRow
                 label="Status"
                 icon="stats-chart-outline"
                 value={log.statusCode.toString()}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow label="Domain" icon="globe-outline" value={log.domain} />
             <InfoRow
                 label="Path"
                 icon="trail-sign-outline"
                 value={log.requestPath}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow label="Route" icon="navigate-outline" value={log.route} />
-            <InfoRow
-                label="Cache"
-                icon="save-outline"
-                value={log.cache}
-                backgroundColor={COLORS.gray100}
-            />
+            <InfoRow label="Cache" icon="save-outline" value={log.cache} isLight={true} />
             <InfoRow label="Agent" icon="person-outline" value={log.clientUserAgent} />
             {log.events[0].source !== 'static' && (
                 <InfoRow
                     label="Memory"
                     icon="hardware-chip-outline"
                     value={`${log.events[0].functionMaxMemoryUsed} MB`}
-                    backgroundColor={COLORS.gray100}
+                    isLight={true}
                 />
             )}
             {log.events[0].source !== 'static' && (
@@ -90,7 +85,7 @@ export default function LogDetailsScreen() {
                 label="Type"
                 icon="information-circle-outline"
                 value={upperFirst(log.events[0].source)}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow
                 label="Region"
@@ -111,7 +106,7 @@ export default function LogDetailsScreen() {
                                 logLineIndex % 2 === 0 ? COLORS.gray100 : 'transparent',
                         }}
                     >
-                        <Text style={{ fontSize: 12, color: COLORS.gray900 }}>
+                        <Text style={{ fontSize: 12, color: COLORS.gray900, fontFamily: 'Geist' }}>
                             {format(logLine.timestamp, 'HH:mm:ss')}
                         </Text>
                         <TextInput
@@ -120,6 +115,7 @@ export default function LogDetailsScreen() {
                                 flex: 1,
                                 color:
                                     logLine.level === 'error' ? COLORS.errorLight : COLORS.gray1000,
+                                fontFamily: 'Geist',
                             }}
                             multiline={true}
                             value={logLine.message}
@@ -134,48 +130,6 @@ export default function LogDetailsScreen() {
                 ))}
             </View>
         </ScrollView>
-    )
-}
-
-function InfoRow({
-    label,
-    icon,
-    value,
-    backgroundColor,
-}: {
-    label: string
-    icon: keyof typeof Ionicons.glyphMap
-    value: string
-    backgroundColor?: string
-}) {
-    return (
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 16,
-                width: '100%',
-                backgroundColor: backgroundColor,
-            }}
-        >
-            <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Ionicons name={icon} size={20} color="#666" />
-                <Text style={{ color: '#666', fontSize: 14 }}>{label}</Text>
-            </View>
-            <View style={{ flex: 3, alignItems: 'flex-end', justifyContent: 'center' }}>
-                <Text
-                    style={{
-                        color: COLORS.gray1000,
-                        fontSize: 14,
-                        textAlign: 'right',
-                    }}
-                    numberOfLines={2}
-                >
-                    {value}
-                </Text>
-            </View>
-        </View>
     )
 }
 

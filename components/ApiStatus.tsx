@@ -64,6 +64,7 @@ export default function ApiStatus() {
             <Text
                 style={{
                     color: isOperational ? COLORS.successDark : COLORS.gray1000,
+                    fontFamily: 'Geist',
                 }}
             >
                 {isOperational ? 'All systems normal' : apiStatusQuery?.data?.[0]?.name}

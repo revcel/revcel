@@ -8,9 +8,14 @@ export default function EnvironmentLayout() {
             screenOptions={{
                 headerLargeTitle: true,
                 headerTransparent: Platform.OS === 'ios',
+                headerShadowVisible: true,
                 headerBlurEffect: 'regular',
                 headerLargeTitleStyle: {
                     color: COLORS.gray1000,
+                    fontFamily: 'Geist',
+                },
+                headerTitleStyle: {
+                    fontFamily: 'Geist',
                 },
                 headerTintColor: COLORS.gray1000,
                 headerStyle: {
@@ -22,7 +27,12 @@ export default function EnvironmentLayout() {
                 title: 'Environment',
             }}
         >
-            <Stack.Screen name="index" />
+            <Stack.Screen
+                name="index"
+                options={{
+                    headerShadowVisible: false,
+                }}
+            />
             <Stack.Screen
                 name="add"
                 options={{

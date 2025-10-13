@@ -4,13 +4,15 @@ import {
     fetchTeamDeploymentBuildMetadata,
 } from '@/api/queries'
 import { type DeploymentAsset, FileTreeAsset } from '@/components/DeploymentFileTree'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
 import { COLORS } from '@/theme/colors'
 import { useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 
 export default function DeploymentSource() {
     const { deploymentId } = useLocalSearchParams<{ deploymentId: string }>()
@@ -113,7 +115,7 @@ export default function DeploymentSource() {
     if (deploymentQuery.isLoading || deploymentBuildMetadataQuery.isLoading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={COLORS.success} />
+                <ActivityIndicator />
             </View>
         )
     }
@@ -121,7 +123,9 @@ export default function DeploymentSource() {
     if (!deploymentQuery.data) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>Missing deployment</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Missing deployment
+                </Text>
             </View>
         )
     }
@@ -129,7 +133,9 @@ export default function DeploymentSource() {
     if (!fileTree.length) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>No source files found</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    No source files found
+                </Text>
             </View>
         )
     }
@@ -148,16 +154,7 @@ export default function DeploymentSource() {
                 style={{ flex: 1 }}
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={deploymentBuildMetadataQuery.isRefetching}
-                        onRefresh={deploymentBuildMetadataQuery.refetch}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
-                    />
-                }
+                refreshControl={<RefreshControl onRefresh={deploymentBuildMetadataQuery.refetch} />}
             >
                 <View style={{ padding: 16 }}>
                     {fileTree.map((item, index) => (

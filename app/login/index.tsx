@@ -194,6 +194,7 @@ export default function Login() {
                                 fontWeight: '700',
                                 textAlign: 'center',
                                 color: COLORS.gray1000,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {isModal ? 'Add Connection' : 'Welcome to Rev'}
@@ -204,6 +205,7 @@ export default function Login() {
                                 fontWeight: '400',
                                 textAlign: 'center',
                                 color: COLORS.gray900,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {isModal
@@ -213,7 +215,9 @@ export default function Login() {
                     </View>
 
                     <View style={{ flexDirection: 'column', gap: 10 }}>
-                        <Text style={{ color: COLORS.gray1000 }}>API Token</Text>
+                        <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                            API Token
+                        </Text>
                         <TextInput
                             style={{
                                 height: 48,
@@ -222,6 +226,7 @@ export default function Login() {
                                 backgroundColor: COLORS.gray200,
                                 color: COLORS.gray1000,
                                 fontSize: 16,
+                                fontFamily: 'Geist',
                             }}
                             placeholder="Add an API token"
                             placeholderTextColor={COLORS.gray900}
@@ -286,6 +291,7 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: COLORS.gray1000,
         marginBottom: 4,
+        fontFamily: 'Geist',
     },
-    helpText: { fontSize: 12, fontWeight: '400', color: COLORS.gray900 },
+    helpText: { fontSize: 12, fontWeight: '400', color: COLORS.gray900, fontFamily: 'Geist' },
 })

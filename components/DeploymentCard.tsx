@@ -76,7 +76,8 @@ export default function DeploymentCard({
                     <Text
                         style={{
                             color: COLORS.gray1000,
-                            fontSize: 14,
+                            fontSize: 15,
+                            fontFamily: 'Geist',
                         }}
                     >
                         {upperFirst(deployment.target ?? 'No target')}
@@ -113,6 +114,7 @@ export default function DeploymentCard({
                             color: COLORS.gray1000,
                             fontSize: 12,
                             fontWeight: '500',
+                            fontFamily: 'Geist',
                         }}
                     >
                         {deployment.meta.githubCommitAuthorName ?? deployment.creator.username} (
@@ -152,6 +154,7 @@ export default function DeploymentCard({
                             style={{
                                 color: COLORS.gray1000,
                                 fontSize: 14,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {deployment.meta.githubCommitRef ?? 'No branch set'}
@@ -160,6 +163,7 @@ export default function DeploymentCard({
                             style={{
                                 color: COLORS.gray900,
                                 fontSize: 12,
+                                fontFamily: 'Geist',
                             }}
                         >
                             (#{deployment.meta.githubCommitSha?.substring(0, 7)})
@@ -170,6 +174,7 @@ export default function DeploymentCard({
                             color: COLORS.gray900,
                             fontSize: 12,
                             paddingRight: 20,
+                            fontFamily: 'Geist',
                         }}
                         numberOfLines={1}
                     >

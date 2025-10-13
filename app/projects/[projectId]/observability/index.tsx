@@ -5,11 +5,13 @@ import {
     fetchObservabilityRouteSummary,
     fetchObservabilityTTFB,
 } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import RefreshControl from '@/components/base/RefreshControl'
 import { COLORS } from '@/theme/colors'
 import { useQuery } from '@tanstack/react-query'
 import { useGlobalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 
 export default function ProjectObservabilityScreen() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
@@ -97,7 +99,7 @@ export default function ProjectObservabilityScreen() {
     ) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={COLORS.success} />
+                <ActivityIndicator />
             </View>
         )
     }
@@ -111,7 +113,14 @@ export default function ProjectObservabilityScreen() {
     ) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: COLORS.gray1000 }}>
+                <Text
+                    style={{
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        color: COLORS.gray1000,
+                        fontFamily: 'Geist',
+                    }}
+                >
                     Error fetching observability data
                 </Text>
             </View>
@@ -131,18 +140,16 @@ export default function ProjectObservabilityScreen() {
             }}
             refreshControl={
                 <RefreshControl
-                    tintColor={COLORS.successLight}
-                    refreshing={false} // this is handled above before returning
-                    onRefresh={() => {
-                        ttfbQuery.refetch()
-                        memoryQuery.refetch()
-                        cpuThrottleQuery.refetch()
-                        coldStartQuery.refetch()
-                        routesQuery.refetch()
+                    // refreshing={false} // this is handled above before returning
+                    onRefresh={async () => {
+                        await Promise.all([
+                            ttfbQuery.refetch(),
+                            memoryQuery.refetch(),
+                            cpuThrottleQuery.refetch(),
+                            coldStartQuery.refetch(),
+                            routesQuery.refetch(),
+                        ])
                     }}
-                    // android
-                    progressBackgroundColor={COLORS.backgroundSecondary}
-                    colors={[COLORS.successLight]}
                 />
             }
         >
@@ -156,7 +163,9 @@ export default function ProjectObservabilityScreen() {
                     gap: 20,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Time To First Byte</Text>
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Time To First Byte
+                </Text>
 
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                     <View
@@ -173,6 +182,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {ttfb.avg}
@@ -184,6 +194,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Average
@@ -203,6 +214,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {ttfb.p75}
@@ -213,6 +225,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             P75
@@ -232,6 +245,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {ttfb.p95}
@@ -242,6 +256,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             P95
@@ -260,7 +275,9 @@ export default function ProjectObservabilityScreen() {
                     gap: 20,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Memory</Text>
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Memory
+                </Text>
 
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                     <View
@@ -277,6 +294,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {memory.max}
@@ -288,6 +306,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Average
@@ -307,6 +326,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {memory.provisioned}
@@ -317,6 +337,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Provisioned
@@ -335,7 +356,9 @@ export default function ProjectObservabilityScreen() {
                     gap: 20,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>CPU Throttle</Text>
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    CPU Throttle
+                </Text>
 
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                     <View
@@ -352,6 +375,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {cpuThrottle.average}
@@ -363,6 +387,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Average
@@ -382,6 +407,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {cpuThrottle.p75}
@@ -392,6 +418,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             P75
@@ -411,6 +438,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {cpuThrottle.p95}
@@ -421,6 +449,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             P95
@@ -439,7 +468,9 @@ export default function ProjectObservabilityScreen() {
                     gap: 20,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Cold Starts</Text>
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Cold Starts
+                </Text>
 
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                     <View
@@ -456,6 +487,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {coldStart}
@@ -467,6 +499,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Cold
@@ -486,6 +519,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: '900',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {hotStart}
@@ -496,6 +530,7 @@ export default function ProjectObservabilityScreen() {
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
                                 textAlign: 'center',
+                                fontFamily: 'Geist',
                             }}
                         >
                             Hot
@@ -514,7 +549,9 @@ export default function ProjectObservabilityScreen() {
                     gap: 12,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Routes</Text>
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Routes
+                </Text>
 
                 {routesQuery.data?.map((route) => (
                     <View
@@ -531,6 +568,7 @@ export default function ProjectObservabilityScreen() {
                                 fontSize: 16,
                                 fontWeight: 'bold',
                                 color: COLORS.gray1000,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {route.route}
@@ -550,6 +588,7 @@ export default function ProjectObservabilityScreen() {
                                         fontWeight: '900',
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     {route.p75DurationMS ? `${route.p75DurationMS}ms` : 'No data'}
@@ -559,6 +598,7 @@ export default function ProjectObservabilityScreen() {
                                         fontSize: 12,
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     P75 Duration
@@ -578,6 +618,7 @@ export default function ProjectObservabilityScreen() {
                                         fontWeight: '900',
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     {route.invocations ?? 'No data'}
@@ -587,6 +628,7 @@ export default function ProjectObservabilityScreen() {
                                         fontSize: 12,
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     Invocations
@@ -606,6 +648,7 @@ export default function ProjectObservabilityScreen() {
                                         fontWeight: '900',
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     {route.errors ?? 'No data'}
@@ -615,6 +658,7 @@ export default function ProjectObservabilityScreen() {
                                         fontSize: 12,
                                         color: COLORS.gray1000,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     Errors
@@ -631,6 +675,7 @@ export default function ProjectObservabilityScreen() {
                             color: COLORS.gray1000,
                             textAlign: 'center',
                             padding: 20,
+                            fontFamily: 'Geist',
                         }}
                     >
                         No routes data available

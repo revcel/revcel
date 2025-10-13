@@ -42,9 +42,7 @@ async function http<T>(path: string, config: RequestInit, connectionId?: string)
     // console.log('[vercel.http] response', response)
 
     if (!response.ok) {
-        const errJson = (await response.json()) as {
-            error: { message: string; code: string; invalidToken: boolean }
-        }
+        const errJson = (await response.json()) as { error: VercelError }
 
         console.log('[vercel.http] errJson', errJson)
 

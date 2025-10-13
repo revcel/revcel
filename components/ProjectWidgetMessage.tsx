@@ -36,7 +36,14 @@ export default function ProjectWidgetMessage() {
                 })
             }}
         >
-            <Text style={{ color: COLORS.alphaGray1000, fontSize: 14, fontWeight: 500 }}>
+            <Text
+                style={{
+                    color: COLORS.alphaGray1000,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    fontFamily: 'Geist',
+                }}
+            >
                 Add this project as a widget on your homescreen!
             </Text>
         </TouchableOpacity>

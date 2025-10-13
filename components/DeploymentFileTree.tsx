@@ -1,8 +1,9 @@
+import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { COLORS } from '@/theme/colors'
 import type { DeploymentDirectory, DeploymentFile } from '@/types/deployments'
 import { Ionicons } from '@expo/vector-icons'
 import { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, Text, TouchableOpacity } from 'react-native'
+import { Text, TouchableOpacity } from 'react-native'
 import { View } from 'react-native'
 
 export type DeploymentAsset =
@@ -60,7 +61,14 @@ export function FileTreeAsset({
                 }}
             >
                 <Ionicons name="document-outline" size={20} color={COLORS.gray900} />
-                <Text style={{ marginLeft: 8, color: COLORS.gray1000, fontSize: 14 }}>
+                <Text
+                    style={{
+                        marginLeft: 8,
+                        color: COLORS.gray1000,
+                        fontSize: 14,
+                        fontFamily: 'Geist',
+                    }}
+                >
                     {asset.name}
                 </Text>
             </View>
@@ -80,7 +88,7 @@ export function FileTreeAsset({
                 }}
             >
                 {isLoading ? (
-                    <ActivityIndicator size="small" color={COLORS.gray900} />
+                    <ActivityIndicator sm={true} monochrome={true} />
                 ) : (
                     <Ionicons
                         name={asset.isExpanded ? 'folder-open-outline' : 'folder-outline'}
@@ -93,6 +101,7 @@ export function FileTreeAsset({
                     style={{
                         color: COLORS.gray1000,
                         fontSize: 14,
+                        fontFamily: 'Geist',
                     }}
                 >
                     {asset.name}

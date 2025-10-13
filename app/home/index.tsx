@@ -2,8 +2,9 @@ import { fetchAllTeams, fetchTeamAvatar, fetchTeamProjects, fetchUserInfo } from
 import ApiStatus from '@/components/ApiStatus'
 import BottomGradient from '@/components/BottomGradient'
 import DeploymentCard from '@/components/DeploymentCard'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import ProjectCard from '@/components/ProjectCard'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
+import RefreshControl from '@/components/base/RefreshControl'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { storage } from '@/lib/storage'
@@ -21,15 +22,7 @@ import { SquircleView } from 'expo-squircle-view'
 import { usePlacement, useUser } from 'expo-superwall'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
-import {
-    Alert,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useWindowDimensions,
-} from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
 
@@ -498,15 +491,12 @@ export default function HomeScreen() {
                 }}
                 refreshControl={
                     <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={teamProjectsQuery.isRefetching}
-                        onRefresh={() => {
-                            queryClient.invalidateQueries({ queryKey: ['apiStatus'] })
-                            teamProjectsQuery.refetch()
+                        onRefresh={async () => {
+                            await Promise.all([
+                                queryClient.invalidateQueries({ queryKey: ['apiStatus'] }),
+                                teamProjectsQuery.refetch(),
+                            ])
                         }}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
                     />
                 }
                 showsVerticalScrollIndicator={false}
@@ -530,6 +520,7 @@ export default function HomeScreen() {
                                     // backgroundColor: '#ff00ff05',
                                     textAlign: 'center',
                                     paddingTop: 16,
+                                    fontFamily: 'Geist',
                                 }}
                             >
                                 Tap to view deployment details →
@@ -577,7 +568,9 @@ export default function HomeScreen() {
                                     size={32}
                                     color={COLORS.gray1000}
                                 />
-                                <Text style={{ color: COLORS.gray1000 }}>View All Projects</Text>
+                                <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                                    View All Projects
+                                </Text>
                             </TouchableOpacity>
                         </SquircleView>
                     </View>

@@ -6,6 +6,9 @@ import {
     rollbackDeployment,
 } from '@/api/mutations'
 import { fetchProductionDeployment, fetchTeamDeployment } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import InfoRow from '@/components/base/InfoRow'
+import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId, formatFrameworkName } from '@/lib/format'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
@@ -20,16 +23,7 @@ import {
 import * as Haptics from 'expo-haptics'
 import { type Href, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
-import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native'
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu, { type ContextMenuAction } from 'react-native-context-menu-view'
 
 export default function Deployment() {
@@ -209,7 +203,7 @@ export default function Deployment() {
             headerLargeTitle: true,
             title: formatDeploymentShortId(deployment),
             headerRight: isWorking
-                ? () => <ActivityIndicator size="small" color={COLORS.gray1000} />
+                ? () => <ActivityIndicator sm={true} monochrome={true} />
                 : () => (
                       <ContextMenu
                           dropdownMenuMode={true}
@@ -327,7 +321,7 @@ export default function Deployment() {
     if (deploymentQuery.isLoading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={COLORS.success} />
+                <ActivityIndicator />
             </View>
         )
     }
@@ -335,7 +329,9 @@ export default function Deployment() {
     if (!deployment) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>No deployment found</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    No deployment found
+                </Text>
             </View>
         )
     }
@@ -356,15 +352,10 @@ export default function Deployment() {
                 contentContainerStyle={{ gap: 20, flexDirection: 'column' }}
                 refreshControl={
                     <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={deploymentQuery.isRefetching}
-                        onRefresh={() => {
-                            deploymentQuery.refetch()
+                        onRefresh={async () => {
+                            await deploymentQuery.refetch()
                             // deploymentScreenshotQuery.refetch()
                         }}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
                     />
                 }
             >
@@ -400,7 +391,8 @@ export default function Deployment() {
                         label="Status"
                         icon="checkmark-circle-outline"
                         value={deployment.readyState}
-                        backgroundColor={COLORS.gray100}
+                        isLight={true}
+                        borderTop={false}
                     />
                     <InfoRow
                         label="Created"
@@ -411,7 +403,7 @@ export default function Deployment() {
                         label="Framework"
                         icon="color-wand-outline"
                         value={formatFrameworkName(deployment.project.framework)}
-                        backgroundColor={COLORS.gray100}
+                        isLight={true}
                     />
                     <InfoRow
                         label="Region"
@@ -422,7 +414,7 @@ export default function Deployment() {
                         label="Commit"
                         icon="git-commit-outline"
                         value={deployment.meta.githubCommitMessage || 'No commit'}
-                        backgroundColor={COLORS.gray100}
+                        isLight={true}
                     />
                     <InfoRow
                         label="Branch"
@@ -438,7 +430,7 @@ export default function Deployment() {
                         label="Duration"
                         icon="timer-outline"
                         value={formatDuration(deployment.buildingAt, deployment.ready)}
-                        backgroundColor={COLORS.gray100}
+                        isLight={true}
                     />
 
                     {deployment.readyState === 'READY' && (
@@ -486,48 +478,6 @@ export default function Deployment() {
     )
 }
 
-function InfoRow({
-    label,
-    icon,
-    value,
-    backgroundColor,
-}: {
-    label: string
-    icon: keyof typeof Ionicons.glyphMap
-    value: string
-    backgroundColor?: string
-}) {
-    return (
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 16,
-                width: '100%',
-                backgroundColor: backgroundColor,
-            }}
-        >
-            <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Ionicons name={icon} size={20} color="#666" />
-                <Text style={{ color: '#666', fontSize: 14 }}>{label}</Text>
-            </View>
-            <View style={{ flex: 3, alignItems: 'flex-end', justifyContent: 'center' }}>
-                <Text
-                    style={{
-                        color: COLORS.gray1000,
-                        fontSize: 14,
-                        textAlign: 'right',
-                    }}
-                    numberOfLines={2}
-                >
-                    {value}
-                </Text>
-            </View>
-        </View>
-    )
-}
-
 function ButtonRow({
     label,
     icon,
@@ -553,7 +503,16 @@ function ButtonRow({
         >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <Ionicons name={icon} size={20} color="#666" />
-                <Text style={{ fontSize: 14, fontWeight: '500', color: '#666' }}>{label}</Text>
+                <Text
+                    style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: '#666',
+                        fontFamily: 'Geist',
+                    }}
+                >
+                    {label}
+                </Text>
             </View>
             <Ionicons name="chevron-forward-outline" size={20} color="#666" />
         </TouchableOpacity>

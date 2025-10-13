@@ -1,11 +1,12 @@
 import { purgeCache } from '@/api/mutations'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useMutation } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams } from 'expo-router'
 import * as StoreReview from 'expo-store-review'
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Text, TouchableOpacity, View } from 'react-native'
 
 export default function ProjectQuickActions() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
@@ -44,7 +45,7 @@ export default function ProjectQuickActions() {
             >
                 {purgeCacheMutation.isPending ? (
                     <ActivityIndicator
-                        size="small"
+                        sm={true}
                         color={COLORS.errorLight}
                         style={{ alignSelf: 'flex-start' }}
                     />
@@ -56,6 +57,7 @@ export default function ProjectQuickActions() {
                         flex: 1,
                         fontSize: 12,
                         color: COLORS.errorLighter,
+                        fontFamily: 'Geist',
                     }}
                 >
                     Purge Cache
@@ -81,6 +83,7 @@ export default function ProjectQuickActions() {
                         flex: 1,
                         fontSize: 12,
                         color: COLORS.gray1000,
+                        fontFamily: 'Geist',
                     }}
                 >
                     Observability
@@ -107,11 +110,14 @@ export default function ProjectQuickActions() {
                         style={{
                             fontSize: 12,
                             color: COLORS.gray1000,
+                            fontFamily: 'Geist',
                         }}
                     >
                         More
                     </Text>
-                    <Text style={{ fontSize: 12, color: COLORS.gray700 }}>Coming Soon</Text>
+                    <Text style={{ fontSize: 12, color: COLORS.gray700, fontFamily: 'Geist' }}>
+                        Coming Soon
+                    </Text>
                 </View>
             </TouchableOpacity>
         </View>

@@ -1,5 +1,7 @@
 import { toggleFirewall } from '@/api/mutations'
 import { fetchProjectFirewallMetrics, fetchTeamProjects } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import { formatNumber } from '@/lib/format'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -8,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { useGlobalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { ActivityIndicator, Alert, Text, View } from 'react-native'
+import { Alert, Text, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function ProjectFirewallCard() {
@@ -65,8 +67,10 @@ export default function ProjectFirewallCard() {
                     padding: 12,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Firewall</Text>
-                <ActivityIndicator style={{ flex: 1 }} size="small" color={COLORS.success} />
+                <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Firewall
+                </Text>
+                <ActivityIndicator style={{ flex: 1 }} sm={true} />
             </View>
         )
     }
@@ -84,7 +88,7 @@ export default function ProjectFirewallCard() {
                     padding: 12,
                 }}
             >
-                <Text style={{ fontSize: 14, color: COLORS.errorLighter }}>
+                <Text style={{ fontSize: 14, color: COLORS.errorLighter, fontFamily: 'Geist' }}>
                     Error fetching firewall metrics or rules.
                 </Text>
             </View>
@@ -155,16 +159,16 @@ export default function ProjectFirewallCard() {
                 }}
             >
                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Firewall</Text>
+                    <Text style={{ fontSize: 14, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                        Firewall
+                    </Text>
 
                     {project?.security?.attackModeEnabled && (
                         <Ionicons name="shield-checkmark" size={16} color={COLORS.success} />
                     )}
 
                     {/* //! using && instead of ternary operator crashes the app */}
-                    {isWorking ? (
-                        <ActivityIndicator size="small" color={COLORS.gray1000} />
-                    ) : undefined}
+                    {isWorking ? <ActivityIndicator sm={true} monochrome={true} /> : undefined}
                 </View>
 
                 <View
@@ -182,10 +186,24 @@ export default function ProjectFirewallCard() {
                             gap: 10,
                         }}
                     >
-                        <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.gray1000 }}>
-                            {allowed?.toLocaleString() || '—'}
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: '900',
+                                color: COLORS.gray1000,
+                                fontFamily: 'Geist',
+                            }}
+                        >
+                            {allowed ? formatNumber(allowed) : '—'}
                         </Text>
-                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: COLORS.success }}>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: COLORS.success,
+                                fontFamily: 'Geist',
+                            }}
+                        >
                             Allowed
                         </Text>
                     </View>
@@ -197,10 +215,24 @@ export default function ProjectFirewallCard() {
                             gap: 10,
                         }}
                     >
-                        <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.gray1000 }}>
-                            {denied?.toLocaleString() || '—'}
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: '900',
+                                color: COLORS.gray1000,
+                                fontFamily: 'Geist',
+                            }}
+                        >
+                            {denied ? formatNumber(denied) : '—'}
                         </Text>
-                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: COLORS.error }}>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: COLORS.error,
+                                fontFamily: 'Geist',
+                            }}
+                        >
                             Denied
                         </Text>
                     </View>
@@ -212,10 +244,24 @@ export default function ProjectFirewallCard() {
                             gap: 10,
                         }}
                     >
-                        <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.gray1000 }}>
-                            {challenged?.toLocaleString() || '—'}
+                        <Text
+                            style={{
+                                fontSize: 20,
+                                fontWeight: '900',
+                                color: COLORS.gray1000,
+                                fontFamily: 'Geist',
+                            }}
+                        >
+                            {challenged ? formatNumber(challenged) : '—'}
                         </Text>
-                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: COLORS.warning }}>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontWeight: 'bold',
+                                color: COLORS.warning,
+                                fontFamily: 'Geist',
+                            }}
+                        >
                             Challenged
                         </Text>
                     </View>

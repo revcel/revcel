@@ -1,10 +1,11 @@
 import { fetchTeamProjects } from '@/api/queries'
 import DeploymentCard from '@/components/DeploymentCard'
-import EmptyListComponent from '@/components/EmptyListComponent'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import ProjectFirewallCard from '@/components/ProjectFirewallCard'
 import ProjectQuickActions from '@/components/ProjectQuickActions'
 import ProjectWidgetMessage from '@/components/ProjectWidgetMessage'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
+import buildPlaceholder from '@/components/base/Placeholder'
+import RefreshControl from '@/components/base/RefreshControl'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -13,7 +14,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { Alert, RefreshControl, View } from 'react-native'
+import { Alert, View } from 'react-native'
 
 export default function ProjectHomeScreen() {
     const { projectId, connectionId, teamId } = useLocalSearchParams<{
@@ -41,17 +42,17 @@ export default function ProjectHomeScreen() {
         return teamProjectsQuery.data?.find((project) => project.id === projectId)
     }, [teamProjectsQuery.data, projectId])
 
-    const emptyListComponent = useMemo(() => {
-        const emptyProject = EmptyListComponent({
+    const Placeholder = useMemo(() => {
+        const emptyProject = buildPlaceholder({
             isLoading: teamProjectsQuery.isLoading,
-            hasValue: !!project,
+            hasData: !!project,
             emptyLabel: 'Missing project',
-            error: teamProjectsQuery.error,
+            isError: teamProjectsQuery.isError,
             errorLabel: 'Failed to fetch project',
         })
 
         return emptyProject
-    }, [teamProjectsQuery.isLoading, project, teamProjectsQuery.error])
+    }, [teamProjectsQuery.isLoading, project, teamProjectsQuery.isError])
 
     useEffect(() => {
         // when navigating from widgets/notifications and the project is on a different connection/team
@@ -109,25 +110,16 @@ export default function ProjectHomeScreen() {
             <FlashList
                 contentInsetAdjustmentBehavior="automatic"
                 data={project?.latestDeployments}
-                refreshControl={
-                    <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={teamProjectsQuery.isRefetching}
-                        onRefresh={teamProjectsQuery.refetch}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
-                    />
-                }
+                refreshControl={<RefreshControl onRefresh={teamProjectsQuery.refetch} />}
                 contentContainerStyle={
-                    emptyListComponent
+                    Placeholder
                         ? undefined
                         : {
                               paddingBottom: 40,
                           }
                 }
                 overrideProps={
-                    emptyListComponent && {
+                    Placeholder && {
                         contentContainerStyle: {
                             flex: 1,
                         },
@@ -147,7 +139,7 @@ export default function ProjectHomeScreen() {
                         <ProjectQuickActions />
                     </View>
                 )}
-                ListEmptyComponent={emptyListComponent}
+                ListEmptyComponent={Placeholder}
                 ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
                 renderItem={({ item }) => (
                     // this is now needed due to overriding the `contentContainerStyle`

@@ -50,6 +50,12 @@ module.exports = ({ config }) => {
 
         plugins: [
             [
+                'expo-font',
+                {
+                    'fonts': ['./assets/fonts/Geist.ttf'],
+                },
+            ],
+            [
                 'expo-build-properties',
                 {
                     'android': {

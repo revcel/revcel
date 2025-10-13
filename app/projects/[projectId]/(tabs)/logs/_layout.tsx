@@ -8,9 +8,14 @@ export default function LogsLayout() {
             screenOptions={{
                 headerLargeTitle: true,
                 headerTransparent: Platform.OS === 'ios',
+                headerShadowVisible: true,
                 headerBlurEffect: 'regular',
                 headerLargeTitleStyle: {
                     color: COLORS.gray1000,
+                    fontFamily: 'Geist',
+                },
+                headerTitleStyle: {
+                    fontFamily: 'Geist',
                 },
                 headerTintColor: COLORS.gray1000,
                 headerStyle: {

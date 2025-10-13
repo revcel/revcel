@@ -1,18 +1,13 @@
 import { fetchTeamDeployment } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
 import { useBrowser } from '@/lib/hooks'
 import { COLORS } from '@/theme/colors'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
-import {
-    ActivityIndicator,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 export default function Deployment() {
     const { deploymentId } = useLocalSearchParams<{ deploymentId: string }>()
@@ -45,7 +40,7 @@ export default function Deployment() {
     if (deploymentQuery.isLoading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={COLORS.success} />
+                <ActivityIndicator />
             </View>
         )
     }
@@ -53,7 +48,9 @@ export default function Deployment() {
     if (!deploymentQuery.data) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>Missing deployment</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    Missing deployment
+                </Text>
             </View>
         )
     }
@@ -61,7 +58,9 @@ export default function Deployment() {
     if (!domains?.length && !aliases?.length) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>No domains found</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    No domains found
+                </Text>
             </View>
         )
     }
@@ -80,16 +79,7 @@ export default function Deployment() {
                 style={{ flex: 1, backgroundColor: COLORS.background }}
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={deploymentQuery.isRefetching}
-                        onRefresh={deploymentQuery.refetch}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
-                    />
-                }
+                refreshControl={<RefreshControl onRefresh={deploymentQuery.refetch} />}
                 contentContainerStyle={{ gap: 20, flexDirection: 'column' }}
             >
                 {domains && (
@@ -101,7 +91,14 @@ export default function Deployment() {
                             width: '100%',
                         }}
                     >
-                        <Text style={{ flex: 2, color: COLORS.gray900, fontSize: 16 }}>
+                        <Text
+                            style={{
+                                flex: 2,
+                                color: COLORS.gray900,
+                                fontSize: 16,
+                                fontFamily: 'Geist',
+                            }}
+                        >
                             Domains
                         </Text>
                         <View
@@ -128,6 +125,7 @@ export default function Deployment() {
                                         style={{
                                             color: COLORS.gray1000,
                                             fontSize: 16,
+                                            fontFamily: 'Geist',
                                         }}
                                     >
                                         {domain}
@@ -147,7 +145,14 @@ export default function Deployment() {
                             width: '100%',
                         }}
                     >
-                        <Text style={{ flex: 2, color: COLORS.gray900, fontSize: 16 }}>
+                        <Text
+                            style={{
+                                flex: 2,
+                                color: COLORS.gray900,
+                                fontSize: 16,
+                                fontFamily: 'Geist',
+                            }}
+                        >
                             Aliases
                         </Text>
                         <View
@@ -174,6 +179,7 @@ export default function Deployment() {
                                         style={{
                                             color: COLORS.gray1000,
                                             fontSize: 16,
+                                            fontFamily: 'Geist',
                                         }}
                                     >
                                         {alias}
@@ -192,7 +198,14 @@ export default function Deployment() {
                         width: '100%',
                     }}
                 >
-                    <Text style={{ flex: 2, color: COLORS.gray900, fontSize: 16 }}>
+                    <Text
+                        style={{
+                            flex: 2,
+                            color: COLORS.gray900,
+                            fontSize: 16,
+                            fontFamily: 'Geist',
+                        }}
+                    >
                         Branch Link
                     </Text>
 
@@ -213,6 +226,7 @@ export default function Deployment() {
                             style={{
                                 color: COLORS.gray1000,
                                 fontSize: 16,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {deploymentQuery.data.meta.branchAlias}
@@ -228,7 +242,14 @@ export default function Deployment() {
                         width: '100%',
                     }}
                 >
-                    <Text style={{ flex: 2, color: COLORS.gray900, fontSize: 16 }}>
+                    <Text
+                        style={{
+                            flex: 2,
+                            color: COLORS.gray900,
+                            fontSize: 16,
+                            fontFamily: 'Geist',
+                        }}
+                    >
                         Commit Link
                     </Text>
 
@@ -249,6 +270,7 @@ export default function Deployment() {
                             style={{
                                 color: COLORS.gray1000,
                                 fontSize: 16,
+                                fontFamily: 'Geist',
                             }}
                         >
                             {deploymentQuery.data.url}

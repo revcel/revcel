@@ -1,8 +1,9 @@
+import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, Share, TouchableOpacity, View } from 'react-native'
+import { Share, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
 
@@ -57,7 +58,7 @@ export default function BrowserScreen() {
                             alignItems: 'center',
                         }}
                     >
-                        <ActivityIndicator size="large" color={COLORS.success} />
+                        <ActivityIndicator />
                     </View>
                 )}
             />
