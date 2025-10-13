@@ -105,6 +105,15 @@ function RootLayout() {
                             }}
                         >
                             <Stack.Screen
+                                name="onboard/index"
+                                options={{
+                                    headerShown: false,
+                                    gestureEnabled: false,
+                                    animation: 'none',
+                                }}
+                            />
+
+                            <Stack.Screen
                                 name="login/index"
                                 options={{
                                     title: 'Login',

@@ -11,8 +11,14 @@ export default function App() {
         showPaywall?: string
         showLfo1?: string
     }>()
+
+    const hasSeenOnboarding = usePersistedStore((state) => state.hasSeenOnboarding)
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
+
+    if (!hasSeenOnboarding) {
+        return <Redirect href="/onboard" />
+    }
 
     if (connections.length === 0) {
         return <Redirect href="/login" />
