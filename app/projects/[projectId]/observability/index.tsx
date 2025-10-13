@@ -82,12 +82,12 @@ export default function ProjectObservabilityScreen() {
 
     const coldStart = useMemo(() => {
         const value = coldStartQuery.data?.find((item) => item.functionStartType === 'cold')?.value
-        return value ? `${value}%` : '—'
+        return value ? `${Math.round(value)}%` : '—'
     }, [coldStartQuery.data])
 
     const hotStart = useMemo(() => {
         const cold = coldStartQuery.data?.find((item) => item.functionStartType === 'cold')?.value
-        return cold ? `${100 - cold}%` : '—'
+        return cold ? `${Math.round(100 - cold)}%` : '—'
     }, [coldStartQuery.data])
 
     if (

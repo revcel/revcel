@@ -27,12 +27,21 @@ export default function LogDetailsScreen() {
             }),
         staleTime: ms('1m'),
         gcTime: ms('1m'),
+        refetchInterval: ms('10s'),
         enabled: !!projectId,
     })
 
     const log = useMemo(() => {
         return reguestLogsQuery.data?.rows.find((log) => log.requestId === logId)
     }, [reguestLogsQuery.data, logId])
+
+    const requestSearchParams = useMemo(() => {
+        if (!log?.requestSearchParams || Object.keys(log.requestSearchParams).length === 0)
+            return 'NONE'
+        return Object.entries(log.requestSearchParams)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&')
+    }, [log?.requestSearchParams])
 
     if (!log) return null
 
@@ -63,15 +72,31 @@ export default function LogDetailsScreen() {
                 value={log.requestPath}
                 isLight={true}
             />
-            <InfoRow label="Route" icon="navigate-outline" value={log.route} />
-            <InfoRow label="Cache" icon="save-outline" value={log.cache} isLight={true} />
-            <InfoRow label="Agent" icon="person-outline" value={log.clientUserAgent} />
+            <InfoRow label="Search Params" icon="search-outline" value={requestSearchParams} />
+            <InfoRow label="Route" icon="navigate-outline" value={log.route} isLight={true} />
+            <InfoRow label="Cache" icon="save-outline" value={log.cache} />
+            <InfoRow
+                label="Agent"
+                icon="person-outline"
+                value={log.clientUserAgent}
+                isLight={true}
+            />
+            <InfoRow
+                label="Received In"
+                icon="map-outline"
+                value={LABEL_FOR_REGION[log.clientRegion as keyof typeof LABEL_FOR_REGION]}
+            />
+            <InfoRow
+                label="Deployment ID"
+                icon="globe-outline"
+                value={log.deploymentId}
+                isLight={true}
+            />
             {log.events[0].source !== 'static' && (
                 <InfoRow
                     label="Memory"
                     icon="hardware-chip-outline"
                     value={`${log.events[0].functionMaxMemoryUsed} MB`}
-                    isLight={true}
                 />
             )}
             {log.events[0].source !== 'static' && (
@@ -79,55 +104,73 @@ export default function LogDetailsScreen() {
                     label="Duration"
                     icon="stopwatch-outline"
                     value={`${log.events[0].durationMs / 1000}s`}
+                    isLight={true}
                 />
             )}
             <InfoRow
                 label="Type"
                 icon="information-circle-outline"
                 value={upperFirst(log.events[0].source)}
-                isLight={true}
             />
             <InfoRow
-                label="Region"
+                label="Routed To"
                 icon="map-outline"
                 value={LABEL_FOR_REGION[log.events[0].region as keyof typeof LABEL_FOR_REGION]}
+                isLight={true}
             />
 
             <View style={{ flexDirection: 'column' }}>
-                {log.logs.map((logLine, logLineIndex) => (
-                    <View
-                        key={logLineIndex}
+                {log.logs.length > 0 ? (
+                    log.logs.map((logLine, logLineIndex) => (
+                        <View
+                            key={logLineIndex}
+                            style={{
+                                flexDirection: 'column',
+                                paddingVertical: 10,
+                                paddingLeft: 16,
+                                // gap: 10,
+                                backgroundColor:
+                                    logLineIndex % 2 === 0 ? COLORS.gray100 : 'transparent',
+                            }}
+                        >
+                            <Text
+                                style={{ fontSize: 12, color: COLORS.gray900, fontFamily: 'Geist' }}
+                            >
+                                {format(logLine.timestamp, 'HH:mm:ss')}
+                            </Text>
+                            <TextInput
+                                style={{
+                                    fontSize: 12,
+                                    flex: 1,
+                                    color:
+                                        logLine.level === 'error'
+                                            ? COLORS.errorLight
+                                            : COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                                multiline={true}
+                                value={logLine.message}
+                                scrollEnabled={false}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
+                                autoFocus={true}
+                                importantForAutofill="no"
+                            />
+                        </View>
+                    ))
+                ) : (
+                    <Text
                         style={{
-                            flexDirection: 'column',
-                            paddingVertical: 10,
-                            paddingLeft: 16,
-                            // gap: 10,
-                            backgroundColor:
-                                logLineIndex % 2 === 0 ? COLORS.gray100 : 'transparent',
+                            padding: 16,
+                            fontSize: 16,
+                            color: COLORS.gray900,
+                            fontFamily: 'Geist',
                         }}
                     >
-                        <Text style={{ fontSize: 12, color: COLORS.gray900, fontFamily: 'Geist' }}>
-                            {format(logLine.timestamp, 'HH:mm:ss')}
-                        </Text>
-                        <TextInput
-                            style={{
-                                fontSize: 12,
-                                flex: 1,
-                                color:
-                                    logLine.level === 'error' ? COLORS.errorLight : COLORS.gray1000,
-                                fontFamily: 'Geist',
-                            }}
-                            multiline={true}
-                            value={logLine.message}
-                            scrollEnabled={false}
-                            autoCapitalize="none"
-                            autoComplete="off"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            importantForAutofill="no"
-                        />
-                    </View>
-                ))}
+                        No console logs for this request.
+                    </Text>
+                )}
             </View>
         </ScrollView>
     )
