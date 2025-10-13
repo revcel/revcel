@@ -329,145 +329,91 @@ export default function HomeScreen() {
                 </ContextMenu>
             ),
             headerRight: () => (
-                <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-                    <HeaderTouchableOpacity
-                        onPress={async () => {
-                            const useWebkit = false
+                <ContextMenu
+                    actions={[
+                        {
+                            title: 'Vercel v0',
+                            systemIcon: 'arrow.up.circle',
+                        },
+                        {
+                            title: 'Vercel Domains',
+                            systemIcon: 'globe',
+                        },
+                    ]}
+                    dropdownMenuMode={true}
+                    onPress={async (e) => {
+                        e.persist()
+                        const useWebkit = false
 
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
+                        console.log(
+                            'COOKIES',
+                            JSON.stringify(
+                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
+                                null,
+                                2
                             )
+                        )
 
-                            await CookieManager.clearAll(useWebkit)
+                        await CookieManager.clearAll(useWebkit)
 
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
+                        console.log(
+                            'COOKIES',
+                            JSON.stringify(
+                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
+                                null,
+                                2
                             )
+                        )
 
-                            const tokenCookie: Cookie = {
-                                name: 'authorization',
-                                value: `Bearer ${currentConnection?.apiToken!}`,
-                                domain: 'vercel.com',
-                                path: '/',
-                                secure: true,
-                                httpOnly: true,
-                                expires: '2026-03-22T13:00:50.148Z',
-                            }
+                        const tokenCookie: Cookie = {
+                            name: 'authorization',
+                            value: `Bearer ${currentConnection?.apiToken!}`,
+                            domain: 'vercel.com',
+                            path: '/',
+                            secure: true,
+                            httpOnly: true,
+                            expires: '2026-09-22T13:00:50.148Z',
+                        }
 
-                            const loggedInCookie: Cookie = {
-                                name: 'isLoggedIn',
-                                value: '1',
-                                domain: 'vercel.com',
-                                path: '/',
-                                secure: true,
-                                httpOnly: false,
-                                expires: '2026-03-22T13:00:50.148Z',
-                            }
+                        const loggedInCookie: Cookie = {
+                            name: 'isLoggedIn',
+                            value: '1',
+                            domain: 'vercel.com',
+                            path: '/',
+                            secure: true,
+                            httpOnly: false,
+                            expires: '2026-09-22T13:00:50.148Z',
+                        }
 
-                            await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
-                            await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
+                        await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
+                        await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
 
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
+                        console.log(
+                            'COOKIES',
+                            JSON.stringify(
+                                Platform.OS === 'ios' ? await CookieManager.getAll(useWebkit) : '',
+                                null,
+                                2
                             )
+                        )
 
-                            router.push('/domains')
-                        }}
-                    >
-                        <Ionicons name="globe-outline" size={24} color={COLORS.white} />
-                    </HeaderTouchableOpacity>
-                    <HeaderTouchableOpacity
-                        onPress={async () => {
-                            const useWebkit = false
-
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
-                            )
-
-                            await CookieManager.clearAll(useWebkit)
-
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
-                            )
-
-                            const tokenCookie: Cookie = {
-                                name: 'authorization',
-                                value: `Bearer ${currentConnection?.apiToken!}`,
-                                domain: 'vercel.com',
-                                path: '/',
-                                secure: true,
-                                httpOnly: true,
-                                expires: '2026-03-22T13:00:50.148Z',
-                            }
-
-                            const loggedInCookie: Cookie = {
-                                name: 'isLoggedIn',
-                                value: '1',
-                                domain: 'vercel.com',
-                                path: '/',
-                                secure: true,
-                                httpOnly: false,
-                                expires: '2026-03-22T13:00:50.148Z',
-                            }
-
-                            await CookieManager.set('https://vercel.com', tokenCookie, useWebkit)
-                            await CookieManager.set('https://vercel.com', loggedInCookie, useWebkit)
-
-                            console.log(
-                                'COOKIES',
-                                JSON.stringify(
-                                    Platform.OS === 'ios'
-                                        ? await CookieManager.getAll(useWebkit)
-                                        : '',
-                                    null,
-                                    2
-                                )
-                            )
-
+                        if (e.nativeEvent.name === 'Vercel v0') {
                             router.push('/v0')
-                        }}
-                    >
+                            return
+                        }
+                        if (e.nativeEvent.name === 'Vercel Domains') {
+                            router.push('/domains')
+                            return
+                        }
+                    }}
+                >
+                    <HeaderTouchableOpacity>
                         <Image
                             source={require('@/assets/v0.png')}
                             style={{ width: 32, height: 16 }}
                         />
                     </HeaderTouchableOpacity>
-                </View>
+                </ContextMenu>
             ),
         })
     }, [

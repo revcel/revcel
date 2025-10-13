@@ -157,16 +157,15 @@ function RootLayout() {
                                 }}
                             />
 
-                        <Stack.Screen
-                            name="domains/index"
-                            options={{
-                                title: 'Domains',
-                                headerShown: false,
-                                ...commonContentStyle,
-                                autoHideHomeIndicator: true,
-                            }}
-                        />
-
+                            <Stack.Screen
+                                name="domains/index"
+                                options={{
+                                    title: 'Domains',
+                                    headerShown: false,
+                                    ...commonContentStyle,
+                                    autoHideHomeIndicator: true,
+                                }}
+                            />
 
                             <Stack.Screen
                                 name="v0/index"
