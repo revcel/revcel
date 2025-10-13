@@ -1,4 +1,4 @@
-import { purgeCache } from '@/api/mutations'
+import { purgeCdnCache, purgeDataCache } from '@/api/mutations'
 import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -6,191 +6,188 @@ import { useMutation } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams } from 'expo-router'
 import * as StoreReview from 'expo-store-review'
-import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
-export default function ProjectQuickActions() {
+export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: boolean }) {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
 
     const purgeCacheMutation = useMutation({
-        mutationFn: purgeCache,
+        mutationFn: purgeDataCache,
+        onError: (error) => {
+            Alert.alert('Error', error.message)
+        },
+    })
+
+    const purgeCdnCacheMutation = useMutation({
+        mutationFn: purgeCdnCache,
         onError: (error) => {
             Alert.alert('Error', error.message)
         },
     })
 
     return (
-        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            <TouchableOpacity
-                style={{
-                    flex: 1,
-                    height: 90,
-                    backgroundColor: COLORS.gray200,
-                    padding: 12,
-                    borderRadius: 10,
-                    gap: 10,
-                }}
-                onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                    Alert.alert('Are you sure?', 'This will purge the cache for this project.', [
-                        { text: 'Cancel', style: 'cancel' },
-                        {
-                            text: 'Purge',
-                            style: 'destructive',
-                            onPress: async () => {
-                                await purgeCacheMutation.mutateAsync({ projectId })
-                            },
-                        },
-                    ])
-                }}
-            >
-                {purgeCacheMutation.isPending ? (
-                    <ActivityIndicator
-                        sm={true}
-                        color={COLORS.errorLight}
-                        style={{ alignSelf: 'flex-start' }}
-                    />
-                ) : (
-                    <Ionicons name="trash-bin" size={20} color={COLORS.errorLight} />
-                )}
-                <Text
-                    style={{
-                        flex: 1,
-                        fontSize: 12,
-                        color: COLORS.errorLighter,
-                        fontFamily: 'Geist',
-                    }}
-                >
-                    Purge Cache
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={{
-                    flex: 1,
-                    height: 90,
-                    backgroundColor: COLORS.gray200,
-                    padding: 12,
-                    borderRadius: 10,
-                    gap: 10,
-                }}
-                onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                    router.push(`/projects/${projectId}/observability`)
-                }}
-            >
-                <Ionicons name="glasses" size={20} color={COLORS.gray1000} />
-                <Text
-                    style={{
-                        flex: 1,
-                        fontSize: 12,
-                        color: COLORS.gray1000,
-                        fontFamily: 'Geist',
-                    }}
-                >
-                    Observability
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={{
-                    flex: 1,
-                    height: 90,
-                    backgroundColor: COLORS.gray200,
-                    padding: 12,
-                    borderRadius: 10,
-                    gap: 10,
-                }}
+        <ScrollView
+            horizontal={true}
+            contentContainerStyle={{ gap: 8 }}
+            showsHorizontalScrollIndicator={false}
+        >
+            <QuickAction
+                label="More"
+                icon="ellipsis-horizontal-sharp"
+                subtitle="Coming Soon"
                 onPress={async () => {
                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                     StoreReview.requestReview()
                 }}
-            >
-                <Ionicons name="ellipsis-horizontal-sharp" size={20} color={COLORS.gray1000} />
+            />
 
-                <View style={{ flex: 1, flexDirection: 'column', gap: 2 }}>
-                    <Text
-                        style={{
-                            fontSize: 12,
-                            color: COLORS.gray1000,
-                            fontFamily: 'Geist',
-                        }}
-                    >
-                        More
-                    </Text>
-                    <Text style={{ fontSize: 12, color: COLORS.gray700, fontFamily: 'Geist' }}>
-                        Coming Soon
-                    </Text>
-                </View>
-            </TouchableOpacity>
-        </View>
+            <QuickAction
+                label="Observability"
+                icon="glasses"
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    router.push(`/projects/${projectId}/observability`)
+                }}
+            />
+
+            <QuickAction
+                label="Analytics"
+                icon="analytics"
+                isDisabled={!hasAnalytics}
+                subtitle={hasAnalytics ? undefined : 'Not enabled'}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    router.push(`/projects/${projectId}/analytics`)
+                }}
+            />
+
+            <QuickAction
+                label="Purge Data Cache"
+                icon="trash-outline"
+                isDanger={true}
+                isLoading={purgeCacheMutation.isPending}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    Alert.alert(
+                        'Are you sure?',
+                        'This will purge the data cache for this project.',
+                        [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                                text: 'Purge',
+                                style: 'destructive',
+                                onPress: () => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                                    Alert.alert(
+                                        'Are you sure?',
+                                        'This will purge the data cache for this project.',
+                                        [
+                                            { text: 'Cancel', style: 'cancel' },
+                                            {
+                                                text: 'Purge',
+                                                style: 'destructive',
+                                                onPress: async () => {
+                                                    await purgeCacheMutation.mutateAsync({
+                                                        projectId,
+                                                    })
+                                                },
+                                            },
+                                        ]
+                                    )
+                                },
+                            },
+                        ]
+                    )
+                }}
+            />
+
+            <QuickAction
+                label="Purge CDN Cache"
+                icon="trash-outline"
+                isDanger={true}
+                isLoading={purgeCdnCacheMutation.isPending}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    Alert.alert(
+                        'Are you sure?',
+                        'This will purge the CDN cache for this project.',
+                        [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                                text: 'Purge',
+                                style: 'destructive',
+                                onPress: async () => {
+                                    await purgeCdnCacheMutation.mutateAsync({ projectId })
+                                },
+                            },
+                        ]
+                    )
+                }}
+            />
+        </ScrollView>
     )
 }
 
-/*
-
-const ACTIONS = [
-	{
-		label: 'Purge Cache',
-		icon: 'rocket',
-		destructive: true,
-		onPress: () => {},
-	},
-	{
-		label: 'Observability',
-		icon: 'shield-outline',
-		onPress: () => {},
-	},
-	{
-		label: 'Logs',
-		icon: 'document-text-outline',
-		onPress: () => {},
-	},
-	{
-		label: 'All Actions',
-		icon: 'ellipsis-horizontal-outline',
-		onPress: () => {
-			// TrueSheet.present('all-actions')
-		},
-	},
-] as const
- 
-return (
-	<View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-		{ACTIONS.map((action) => {
-			const isDestructive = 'destructive' in action && action.destructive
-			return (
-				<TouchableOpacity
-					key={action.label}
-					style={{
-						width: '23.333%',
-						height: 100,
-						backgroundColor: COLORS.gray200,
-						padding: 12,
-						paddingBottom: 16,
-						borderRadius: 10,
-						gap: 5,
-					}}
-					onPress={action.onPress}
-				>
-					<Ionicons
-						name={action.icon}
-						size={22}
-						color={isDestructive ? COLORS.errorLight : COLORS.gray1000}
-						style={{ flex: 1 }}
-					/>
-					<Text
-						style={{
-							flex: 1,
-							fontSize: 12,
-							color: isDestructive
-								? COLORS.errorLighter
-								: COLORS.gray1000,
-						}}
-					>
-						{action.label}
-					</Text>
-				</TouchableOpacity>
-			)
-		})}
-	</View>
-)
-	
-*/
+function QuickAction({
+    label,
+    subtitle,
+    icon,
+    onPress,
+    isDanger,
+    isLoading,
+    isDisabled,
+}: {
+    label: string
+    subtitle?: string
+    icon: keyof typeof Ionicons.glyphMap
+    onPress: () => void
+    isDanger?: boolean
+    isLoading?: boolean
+    isDisabled?: boolean
+}) {
+    return (
+        <TouchableOpacity
+            style={{
+                flex: 1,
+                height: 90,
+                backgroundColor: isDisabled ? COLORS.gray100 : COLORS.gray200,
+                padding: 12,
+                borderRadius: 10,
+                gap: 10,
+                width: 120,
+            }}
+            onPress={onPress}
+            disabled={isDisabled}
+        >
+            {isLoading ? (
+                <ActivityIndicator
+                    sm={true}
+                    color={isDanger ? COLORS.errorLight : COLORS.gray1000}
+                    style={{ alignSelf: 'flex-start' }}
+                />
+            ) : (
+                <Ionicons
+                    name={icon}
+                    size={20}
+                    color={isDanger ? COLORS.errorLight : COLORS.gray1000}
+                />
+            )}
+            <View style={{ flex: 1, flexDirection: 'column', gap: 5 }}>
+                <Text
+                    style={{
+                        fontSize: 12,
+                        color: isDanger ? COLORS.errorLighter : COLORS.gray1000,
+                        fontFamily: 'Geist',
+                    }}
+                >
+                    {label}
+                </Text>
+                {subtitle && (
+                    <Text style={{ fontSize: 12, color: COLORS.gray700, fontFamily: 'Geist' }}>
+                        {subtitle}
+                    </Text>
+                )}
+            </View>
+        </TouchableOpacity>
+    )
+}

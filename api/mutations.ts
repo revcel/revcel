@@ -475,7 +475,7 @@ export async function removeDomain({
 }
 
 /* MISC */
-export async function purgeCache({ projectId }: { projectId: string }) {
+export async function purgeDataCache({ projectId }: { projectId: string }) {
     const currentConnection = usePersistedStore.getState().currentConnection
 
     if (!currentConnection) {
@@ -493,12 +493,42 @@ export async function purgeCache({ projectId }: { projectId: string }) {
         projectIdOrName: projectId,
     })
 
-    console.log('[purgeCache] params', params.toString())
+    console.log('[purgeDataCache] params', params.toString())
 
     try {
         await vercel.delete(`/v1/data-cache/purge-all?${params.toString()}`)
     } catch (error) {
-        console.log('[purgeCache] Error purging cache', error)
+        console.log('[purgeDataCache] Error purging cache', error)
+        Sentry.captureException(error)
+        throw error
+    }
+}
+
+export async function purgeCdnCache({ projectId }: { projectId: string }) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+        projectIdOrName: projectId,
+    })
+
+    console.log('[purgeCdnCache] params', params.toString())
+
+    try {
+        await vercel.delete(`/v1/edge-cache/purge-all?${params.toString()}`)
+    } catch (error) {
+        console.log('[purgeCdnCache] Error purging cache', error)
+        Sentry.captureException(error)
         throw error
     }
 }

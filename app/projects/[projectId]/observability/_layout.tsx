@@ -1,7 +1,7 @@
 import { COLORS } from '@/theme/colors'
 import { Stack } from 'expo-router'
 
-export default function ProjectIndexLayout() {
+export default function ProjectObservabilityLayout() {
     return (
         <Stack
             screenOptions={{
