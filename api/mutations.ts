@@ -1,7 +1,7 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { CommonEnvironmentVariable } from '@/types/common'
-import Superwall from '@superwall/react-native-superwall'
+import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'
 import { fetchWebhook } from './queries'
 
@@ -64,6 +64,7 @@ export async function updateEnvironmentVariable({
         return response
     } catch (error) {
         console.log('[updateEnvironmentVariable] Error updating environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -94,6 +95,7 @@ export async function deleteEnvironmentVariable({
         await vercel.delete(`/v7/projects/${projectId}/env/${id}?${params.toString()}`)
     } catch (error) {
         console.log('[deleteEnvironmentVariable] Error deleting environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -153,6 +155,7 @@ export async function addEnvironmentVariable({
         return response
     } catch (error) {
         console.log('[addEnvironmentVariable] Error adding environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -189,6 +192,7 @@ export async function toggleFirewall({
         )
     } catch (error) {
         console.log('[toggleFirewall] Error toggling firewall', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -217,6 +221,7 @@ export async function deleteDeployment(deploymentId: string) {
         await vercel.delete(`/v13/deployments/${deploymentId}?${params.toString()}`)
     } catch (error) {
         console.log('[deleteDeployment] Error deleting deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -259,6 +264,7 @@ export async function promoteDeployment({
         return response
     } catch (error) {
         console.log('[promoteDeployment] Error promoting deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -300,6 +306,7 @@ export async function rollbackDeployment({
         return response
     } catch (error) {
         console.log('[rollbackDeployment] Error rolling back deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -330,6 +337,7 @@ export async function cancelDeployment(deploymentId: string) {
         return response
     } catch (error) {
         console.log('[cancelDeployment] Error canceling deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -374,6 +382,7 @@ export async function redeployDeployment({
         return response
     } catch (error) {
         console.log('[redeployDeployment] Error redeploying deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -426,6 +435,7 @@ export async function addDomain({
         return response
     } catch (error) {
         console.log('[addDomain] Error adding domain', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -459,12 +469,13 @@ export async function removeDomain({
         await vercel.delete(`/v9/projects/${projectId}/domains/${domain}?${params.toString()}`)
     } catch (error) {
         console.log('[removeDomain] Error removing domain', error)
+        Sentry.captureException(error)
         throw error
     }
 }
 
 /* MISC */
-export async function purgeCache({ projectId }: { projectId: string }) {
+export async function purgeDataCache({ projectId }: { projectId: string }) {
     const currentConnection = usePersistedStore.getState().currentConnection
 
     if (!currentConnection) {
@@ -482,12 +493,42 @@ export async function purgeCache({ projectId }: { projectId: string }) {
         projectIdOrName: projectId,
     })
 
-    console.log('[purgeCache] params', params.toString())
+    console.log('[purgeDataCache] params', params.toString())
 
     try {
         await vercel.delete(`/v1/data-cache/purge-all?${params.toString()}`)
     } catch (error) {
-        console.log('[purgeCache] Error purging cache', error)
+        console.log('[purgeDataCache] Error purging cache', error)
+        Sentry.captureException(error)
+        throw error
+    }
+}
+
+export async function purgeCdnCache({ projectId }: { projectId: string }) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+        projectIdOrName: projectId,
+    })
+
+    console.log('[purgeCdnCache] params', params.toString())
+
+    try {
+        await vercel.post(`/v1/edge-cache/purge-all?${params.toString()}`)
+    } catch (error) {
+        console.log('[purgeCdnCache] Error purging cache', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -497,20 +538,14 @@ export async function registerWebhook({
     pushToken,
     connectionId,
     teamId,
+    isSubscribed,
 }: {
     events: string[]
     pushToken: string
     connectionId: string
     teamId: string
+    isSubscribed: boolean
 }) {
-    let isSubscribed = false
-    try {
-        const { status } = await Superwall.shared.getSubscriptionStatus()
-        isSubscribed = status === 'ACTIVE'
-    } catch (error) {
-        console.error(error)
-        throw new Error('Could not enable notifications at this time, please try again later')
-    }
     if (!isSubscribed) {
         throw new Error('Push Notifications require an active subscription')
     }
@@ -535,6 +570,7 @@ export async function registerWebhook({
                 })
             } catch (error) {
                 console.log('[registerWebhook] Error unregistering webhook', error)
+                Sentry.captureException(error)
                 throw error
             }
         }
@@ -589,6 +625,7 @@ export async function registerWebhook({
             })
         }
         console.log('[registerWebhook] Error registering webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -628,6 +665,7 @@ export async function createWebhook({
         return response
     } catch (error) {
         console.log('[createWebhook] Error creating webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -660,6 +698,7 @@ export async function deleteWebhook({
         return response
     } catch (error) {
         console.log('[unregisterWebhook] Error unregistering webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }

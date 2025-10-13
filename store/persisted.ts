@@ -28,6 +28,8 @@ interface PersistedStoreState {
         swipeLeftv0: boolean
         swipeLeftDomains: boolean
     }
+
+    hasSeenOnboarding: boolean
     acknowledge: (type: keyof PersistedStoreState['acknowledgments']) => void
 }
 
@@ -74,6 +76,8 @@ export const usePersistedStore = create<PersistedStoreState>()(
 
                 // queryClient.invalidateQueries()
             },
+
+            hasSeenOnboarding: false,
 
             acknowledgments: {
                 swipeLeftProject: false,

@@ -115,3 +115,20 @@ struct LineChartData {
   var date: Date
   var value: Int
 }
+
+// MARK: - LargeTeamProjectsWidget & MediumTeamProjectsWidget
+struct WidgetDeploymentMeta: Decodable {
+  let githubCommitMessage: String?
+}
+
+struct WidgetDeploymentFull: Decodable {
+  let id: String
+  let createdAt: Int?
+  let readyState: String?
+  let meta: WidgetDeploymentMeta?
+}
+
+struct ProductionDeploymentResponse: Decodable {
+  let deployment: WidgetDeploymentFull
+  let deploymentIsStale: Bool?
+}

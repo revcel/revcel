@@ -1,4 +1,9 @@
-const { AndroidConfig, withAppBuildGradle, withAndroidManifest } = require('@expo/config-plugins')
+const {
+    AndroidConfig,
+    withAppBuildGradle,
+    withAndroidManifest,
+    withProjectBuildGradle,
+} = require('@expo/config-plugins')
 const { mergeContents } = require('@expo/config-plugins/build/utils/generateCode')
 const withSourceFiles = require('./withSourceFiles')
 
@@ -18,19 +23,36 @@ const withModifiedAppBuildGradle = (config, opts) =>
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     `
 
+        const requestedCompilerExtensionVersion =
+            opts.kotlinCompilerExtensionVersion ?? opts.kotlinExtensionVersion
+        const composeOptionsBlock = requestedCompilerExtensionVersion
+            ? `
+    composeOptions {
+        kotlinCompilerExtensionVersion = "${requestedCompilerExtensionVersion}"
+    }
+`
+            : ''
+
         const gradleAndroidConfig = `
 android {
     buildFeatures {
         compose = true
     }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "${opts.kotlinExtensionVersion}"
-    }
+${composeOptionsBlock}
 }
 `
 
         let newFileContents = config.modResults.contents
+
+        // Apply Kotlin Compose Gradle plugin (required for Kotlin 2.0+ when compose is enabled)
+        newFileContents = mergeContents({
+            src: newFileContents,
+            newSrc: 'apply plugin: "org.jetbrains.kotlin.plugin.compose"',
+            tag: 'KotlinComposeGradlePlugin',
+            anchor: /apply plugin: "org.jetbrains.kotlin.android"/,
+            offset: 1,
+            comment: '//',
+        }).contents
 
         newFileContents = mergeContents({
             src: newFileContents,
@@ -47,6 +69,25 @@ android {
             tag: 'GlanceAndroidConfig',
             anchor: /dependencies \{/,
             offset: -1,
+            comment: '//',
+        }).contents
+
+        config.modResults.contents = newFileContents
+
+        return config
+    })
+
+const withRootKotlinComposeClasspath = (config) =>
+    withProjectBuildGradle(config, (config) => {
+        let newFileContents = config.modResults.contents
+
+        // Ensure the Kotlin Compose Gradle plugin is available on the buildscript classpath
+        newFileContents = mergeContents({
+            src: newFileContents,
+            newSrc: "    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:' + kotlinVersion)",
+            tag: 'KotlinComposeGradlePluginClasspath',
+            anchor: /classpath\('org\.jetbrains\.kotlin:kotlin-gradle-plugin'\)/,
+            offset: 1,
             comment: '//',
         }).contents
 
@@ -104,7 +145,10 @@ const withModifiedAndroidManifest = (config, opts) =>
 const withModifiedAndroidManifestActivity = (config, opts) =>
     withAndroidManifest(config, (config) => {
         const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
-        
+
+        // Ensure the activities array exists before pushing
+        mainApplication.activity = mainApplication.activity ? [...mainApplication.activity] : []
+
         mainApplication.activity.push({
             $: {
                 'android:name': `.${opts.configurationActivity}`,
@@ -127,11 +171,12 @@ const withModifiedAndroidManifestActivity = (config, opts) =>
     })
 
 const withAndroidWidget = (config, opts) => {
+    config = withRootKotlinComposeClasspath(config)
     config = withModifiedAppBuildGradle(config, opts)
-    opts.widgets.forEach(widget => {
+    opts.widgets.forEach((widget) => {
         config = withModifiedAndroidManifest(config, widget)
     })
-    opts.widgets.forEach(widget => {
+    opts.widgets.forEach((widget) => {
         config = withModifiedAndroidManifestActivity(config, widget)
     })
     config = withSourceFiles(config, { src: opts.src })

@@ -1,10 +1,11 @@
 import { fetchProjectLogsFilters } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { useStore } from '@/store/default'
 import { COLORS } from '@/theme/colors'
 import { useQuery } from '@tanstack/react-query'
 import Checkbox from 'expo-checkbox'
 import { useLocalSearchParams } from 'expo-router'
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
 
 const LOG_FILTERS = {
     level: 'Level',
@@ -37,12 +38,13 @@ export default function LogFiltersScreen() {
                 startDate: '1',
                 endDate: Date.now().toString(),
             }),
+        enabled: !!projectId,
     })
 
     if (availableFiltersQuery.isLoading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color={COLORS.success} />
+                <ActivityIndicator />
             </View>
         )
     }
@@ -50,7 +52,9 @@ export default function LogFiltersScreen() {
     if (Object.keys(availableFiltersQuery.data ?? {}).length === 0) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>No filters found</Text>
+                <Text style={{ fontSize: 16, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                    No filters found
+                </Text>
             </View>
         )
     }
@@ -85,6 +89,7 @@ export default function LogFiltersScreen() {
                                             fontSize: 18,
                                             fontWeight: '600',
                                             color: COLORS.gray1000,
+                                            fontFamily: 'Geist',
                                         }}
                                     >
                                         {LOG_FILTERS[attribute as keyof typeof LOG_FILTERS]}
@@ -92,7 +97,13 @@ export default function LogFiltersScreen() {
                                 </View>
 
                                 {filterValues.length === 0 && (
-                                    <Text style={{ fontSize: 16, color: COLORS.gray1000 }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 16,
+                                            color: COLORS.gray1000,
+                                            fontFamily: 'Geist',
+                                        }}
+                                    >
                                         No filters found
                                     </Text>
                                 )}
@@ -144,6 +155,7 @@ export default function LogFiltersScreen() {
                                                         flex: 1,
                                                         fontSize: 16,
                                                         color: COLORS.gray1000,
+                                                        fontFamily: 'Geist',
                                                     }}
                                                 >
                                                     {filterValue.attributeValue}
@@ -154,6 +166,7 @@ export default function LogFiltersScreen() {
                                                         color: isSelected
                                                             ? COLORS.gray1000
                                                             : COLORS.gray900,
+                                                        fontFamily: 'Geist',
                                                     }}
                                                 >
                                                     {filterValue.total}

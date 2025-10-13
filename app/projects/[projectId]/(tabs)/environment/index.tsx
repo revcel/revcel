@@ -1,6 +1,7 @@
 import { fetchTeamProjectEnvironment } from '@/api/queries'
-import EmptyListComponent from '@/components/EmptyListComponent'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
+import buildPlaceholder from '@/components/base/Placeholder'
+import RefreshControl from '@/components/base/RefreshControl'
 import { COLORS } from '@/theme/colors'
 import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
 import { Ionicons } from '@expo/vector-icons'
@@ -9,7 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
-import { FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Text, TouchableOpacity, View } from 'react-native'
 
 const ENVIRONMENTS: { key: CommonEnvironment; name: string }[] = [
     { key: 'development', name: 'Development' },
@@ -27,6 +28,7 @@ export default function Environment() {
     const environmentVariablesQuery = useQuery({
         queryKey: ['project', projectId, 'environmentVariables'],
         queryFn: async () => await fetchTeamProjectEnvironment({ projectId }),
+        enabled: !!projectId,
     })
 
     useLayoutEffect(() => {
@@ -95,12 +97,12 @@ export default function Environment() {
         [environmentVariablesQuery.data, searchString, selectedEnvironments]
     )
 
-    const emptyListComponent = useMemo(() => {
-        const emptyEnvironmentVariables = EmptyListComponent({
+    const Placeholder = useMemo(() => {
+        const emptyEnvironmentVariables = buildPlaceholder({
             isLoading: environmentVariablesQuery.isLoading,
-            hasValue: filteredVariables.length > 0,
+            hasData: filteredVariables.length > 0,
             emptyLabel: 'No environment variables found',
-            error: environmentVariablesQuery.error,
+            isError: environmentVariablesQuery.isError,
             errorLabel: 'Failed to fetch environment variables',
         })
 
@@ -108,22 +110,13 @@ export default function Environment() {
     }, [
         environmentVariablesQuery.isLoading,
         filteredVariables.length,
-        environmentVariablesQuery.error,
+        environmentVariablesQuery.isError,
     ])
 
     return (
         <FlashList
             contentInsetAdjustmentBehavior="automatic"
-            refreshControl={
-                <RefreshControl
-                    tintColor={COLORS.successLight}
-                    refreshing={environmentVariablesQuery.isRefetching}
-                    onRefresh={environmentVariablesQuery.refetch}
-                    // android
-                    progressBackgroundColor={COLORS.backgroundSecondary}
-                    colors={[COLORS.successLight]}
-                />
-            }
+            refreshControl={<RefreshControl onRefresh={environmentVariablesQuery.refetch} />}
             showsVerticalScrollIndicator={false}
             data={filteredVariables}
             ListHeaderComponent={
@@ -168,6 +161,7 @@ export default function Environment() {
                                         fontSize: 12,
                                         color: isSelected ? COLORS.gray1000 : COLORS.gray900,
                                         textAlign: 'center',
+                                        fontFamily: 'Geist',
                                     }}
                                 >
                                     {target.name}
@@ -178,13 +172,13 @@ export default function Environment() {
                 />
             }
             overrideProps={
-                emptyListComponent && {
+                Placeholder && {
                     contentContainerStyle: {
                         flex: 1,
                     },
                 }
             }
-            ListEmptyComponent={emptyListComponent}
+            ListEmptyComponent={Placeholder}
             // extraData={workingKeyId}
             renderItem={({ item: env, index: envIndex }) => (
                 <View
@@ -199,12 +193,12 @@ export default function Environment() {
                     <View style={{ flexDirection: 'column', gap: 4 }}>
                         <Text
                             // replace `maxWidth`
-                            style={{ color: COLORS.gray1000, maxWidth: 280 }}
+                            style={{ color: COLORS.gray1000, maxWidth: 280, fontFamily: 'Geist' }}
                             numberOfLines={1}
                         >
                             {env.key}
                         </Text>
-                        <Text style={{ color: COLORS.gray900 }}>
+                        <Text style={{ color: COLORS.gray900, fontFamily: 'Geist' }}>
                             {env.target.length === 3
                                 ? 'All Environments'
                                 : ENVIRONMENTS.filter((e) => env.target.includes(e.key))

@@ -1,6 +1,6 @@
 import { fetchProjectLogs } from '@/api/queries'
+import InfoRow from '@/components/base/InfoRow'
 import { COLORS } from '@/theme/colors'
-import Ionicons from '@expo/vector-icons/build/Ionicons'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useLocalSearchParams } from 'expo-router'
@@ -27,11 +27,21 @@ export default function LogDetailsScreen() {
             }),
         staleTime: ms('1m'),
         gcTime: ms('1m'),
+        refetchInterval: ms('10s'),
+        enabled: !!projectId,
     })
 
     const log = useMemo(() => {
         return reguestLogsQuery.data?.rows.find((log) => log.requestId === logId)
     }, [reguestLogsQuery.data, logId])
+
+    const requestSearchParams = useMemo(() => {
+        if (!log?.requestSearchParams || Object.keys(log.requestSearchParams).length === 0)
+            return 'NONE'
+        return Object.entries(log.requestSearchParams)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&')
+    }, [log?.requestSearchParams])
 
     if (!log) return null
 
@@ -46,36 +56,47 @@ export default function LogDetailsScreen() {
                 label="Timestamp"
                 icon="time-outline"
                 value={format(log.timestamp, 'HH:mm:ss')}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow label="Method" icon="code-outline" value={log.requestMethod} />
             <InfoRow
                 label="Status"
                 icon="stats-chart-outline"
                 value={log.statusCode.toString()}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
             <InfoRow label="Domain" icon="globe-outline" value={log.domain} />
             <InfoRow
                 label="Path"
                 icon="trail-sign-outline"
                 value={log.requestPath}
-                backgroundColor={COLORS.gray100}
+                isLight={true}
             />
-            <InfoRow label="Route" icon="navigate-outline" value={log.route} />
+            <InfoRow label="Search Params" icon="search-outline" value={requestSearchParams} />
+            <InfoRow label="Route" icon="navigate-outline" value={log.route} isLight={true} />
+            <InfoRow label="Cache" icon="save-outline" value={log.cache} />
             <InfoRow
-                label="Cache"
-                icon="save-outline"
-                value={log.cache}
-                backgroundColor={COLORS.gray100}
+                label="Agent"
+                icon="person-outline"
+                value={log.clientUserAgent}
+                isLight={true}
             />
-            <InfoRow label="Agent" icon="person-outline" value={log.clientUserAgent} />
+            <InfoRow
+                label="Received In"
+                icon="map-outline"
+                value={LABEL_FOR_REGION[log.clientRegion as keyof typeof LABEL_FOR_REGION]}
+            />
+            <InfoRow
+                label="Deployment ID"
+                icon="globe-outline"
+                value={log.deploymentId}
+                isLight={true}
+            />
             {log.events[0].source !== 'static' && (
                 <InfoRow
                     label="Memory"
                     icon="hardware-chip-outline"
                     value={`${log.events[0].functionMaxMemoryUsed} MB`}
-                    backgroundColor={COLORS.gray100}
                 />
             )}
             {log.events[0].source !== 'static' && (
@@ -83,98 +104,75 @@ export default function LogDetailsScreen() {
                     label="Duration"
                     icon="stopwatch-outline"
                     value={`${log.events[0].durationMs / 1000}s`}
+                    isLight={true}
                 />
             )}
             <InfoRow
                 label="Type"
                 icon="information-circle-outline"
                 value={upperFirst(log.events[0].source)}
-                backgroundColor={COLORS.gray100}
             />
             <InfoRow
-                label="Region"
+                label="Routed To"
                 icon="map-outline"
                 value={LABEL_FOR_REGION[log.events[0].region as keyof typeof LABEL_FOR_REGION]}
+                isLight={true}
             />
 
             <View style={{ flexDirection: 'column' }}>
-                {log.logs.map((logLine, logLineIndex) => (
-                    <View
-                        key={logLineIndex}
+                {log.logs.length > 0 ? (
+                    log.logs.map((logLine, logLineIndex) => (
+                        <View
+                            key={logLineIndex}
+                            style={{
+                                flexDirection: 'column',
+                                paddingVertical: 10,
+                                paddingLeft: 16,
+                                // gap: 10,
+                                backgroundColor:
+                                    logLineIndex % 2 === 0 ? COLORS.gray100 : 'transparent',
+                            }}
+                        >
+                            <Text
+                                style={{ fontSize: 12, color: COLORS.gray900, fontFamily: 'Geist' }}
+                            >
+                                {format(logLine.timestamp, 'HH:mm:ss')}
+                            </Text>
+                            <TextInput
+                                style={{
+                                    fontSize: 12,
+                                    flex: 1,
+                                    color:
+                                        logLine.level === 'error'
+                                            ? COLORS.errorLight
+                                            : COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                                multiline={true}
+                                value={logLine.message}
+                                scrollEnabled={false}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
+                                autoFocus={true}
+                                importantForAutofill="no"
+                            />
+                        </View>
+                    ))
+                ) : (
+                    <Text
                         style={{
-                            flexDirection: 'column',
-                            paddingVertical: 10,
-                            paddingLeft: 16,
-                            // gap: 10,
-                            backgroundColor:
-                                logLineIndex % 2 === 0 ? COLORS.gray100 : 'transparent',
+                            padding: 16,
+                            fontSize: 16,
+                            color: COLORS.gray900,
+                            fontFamily: 'Geist',
                         }}
                     >
-                        <Text style={{ fontSize: 12, color: COLORS.gray900 }}>
-                            {format(logLine.timestamp, 'HH:mm:ss')}
-                        </Text>
-                        <TextInput
-                            style={{
-                                fontSize: 12,
-                                flex: 1,
-                                color:
-                                    logLine.level === 'error' ? COLORS.errorLight : COLORS.gray1000,
-                            }}
-                            multiline={true}
-                            value={logLine.message}
-                            scrollEnabled={false}
-                            autoCapitalize="none"
-                            autoComplete="off"
-                            autoCorrect={false}
-                            autoFocus={true}
-                            importantForAutofill="no"
-                        />
-                    </View>
-                ))}
+                        No console logs for this request.
+                    </Text>
+                )}
             </View>
         </ScrollView>
-    )
-}
-
-function InfoRow({
-    label,
-    icon,
-    value,
-    backgroundColor,
-}: {
-    label: string
-    icon: keyof typeof Ionicons.glyphMap
-    value: string
-    backgroundColor?: string
-}) {
-    return (
-        <View
-            style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: 16,
-                width: '100%',
-                backgroundColor: backgroundColor,
-            }}
-        >
-            <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Ionicons name={icon} size={20} color="#666" />
-                <Text style={{ color: '#666', fontSize: 14 }}>{label}</Text>
-            </View>
-            <View style={{ flex: 3, alignItems: 'flex-end', justifyContent: 'center' }}>
-                <Text
-                    style={{
-                        color: COLORS.gray1000,
-                        fontSize: 14,
-                        textAlign: 'right',
-                    }}
-                    numberOfLines={2}
-                >
-                    {value}
-                </Text>
-            </View>
-        </View>
     )
 }
 

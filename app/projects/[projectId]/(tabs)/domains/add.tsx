@@ -8,13 +8,13 @@ import { useState } from 'react'
 import {
     Alert,
     Keyboard,
-    SafeAreaView,
     Text,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function AddDomain() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
@@ -46,7 +46,15 @@ export default function AddDomain() {
                     <View style={{ flexDirection: 'column', gap: 20 }}>
                         {/* Domain field */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Domain</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Domain
+                            </Text>
                             <TextInput
                                 style={{
                                     backgroundColor: COLORS.backgroundSecondary,
@@ -54,6 +62,7 @@ export default function AddDomain() {
                                     padding: 12,
                                     color: COLORS.gray1000,
                                     fontSize: 14,
+                                    fontFamily: 'Geist',
                                 }}
                                 value={editableDomain?.name}
                                 onChangeText={(text) => {
@@ -73,7 +82,15 @@ export default function AddDomain() {
 
                         {/* Redirect field */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Redirect</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Redirect
+                            </Text>
                             <TextInput
                                 style={{
                                     backgroundColor: COLORS.backgroundSecondary,
@@ -81,6 +98,7 @@ export default function AddDomain() {
                                     padding: 12,
                                     color: COLORS.gray1000,
                                     fontSize: 14,
+                                    fontFamily: 'Geist',
                                 }}
                                 value={editableDomain?.redirect || ''}
                                 onChangeText={(text) => {
@@ -143,6 +161,7 @@ export default function AddDomain() {
                                                         statusCode
                                                             ? COLORS.gray1000
                                                             : COLORS.gray900,
+                                                    fontFamily: 'Geist',
                                                 }}
                                             >
                                                 {statusCode}
@@ -188,6 +207,7 @@ export default function AddDomain() {
                                 fontSize: 16,
                                 fontWeight: '600',
                                 textTransform: 'uppercase',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {addDomainMutation.isPending ? 'Creating...' : 'Create'}

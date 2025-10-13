@@ -49,6 +49,8 @@ public class WidgetKitModule: Module {
                 sharedDefaults.set(encodedConnections, forKey: _connectionsKey)
                 
                 self.reloadWidgets()
+            } catch {
+                // for now do nothing
             }
         }
         
@@ -71,6 +73,8 @@ public class WidgetKitModule: Module {
             }
             
             sharedDefaults.removePersistentDomain(forName: _groupName)
+			sharedDefaults.synchronize()
+			
             self.reloadWidgets()
         }
     }

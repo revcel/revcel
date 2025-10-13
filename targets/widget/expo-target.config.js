@@ -32,7 +32,10 @@ function createConfig(config) {
     return {
         type: 'widget',
         icon: '../../assets/icon.png',
-        entitlements: {},
+        entitlements: {
+            'com.apple.security.application-groups':
+                config.ios.entitlements['com.apple.security.application-groups'],
+        },
         colors,
     }
 }

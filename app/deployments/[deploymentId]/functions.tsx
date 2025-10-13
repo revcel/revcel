@@ -1,6 +1,7 @@
 import { fetchTeamDeployment, fetchTeamDeploymentBuildMetadata } from '@/api/queries'
 import BottomGradient from '@/components/BottomGradient'
-import EmptyListComponent from '@/components/EmptyListComponent'
+import buildPlaceholder from '@/components/base/Placeholder'
+import RefreshControl from '@/components/base/RefreshControl'
 import { formatBytes, formatDeploymentShortId } from '@/lib/format'
 import { COLORS } from '@/theme/colors'
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons'
@@ -8,7 +9,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo } from 'react'
-import { RefreshControl, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 
 export default function DeploymentFunctions() {
     const { deploymentId } = useLocalSearchParams<{ deploymentId: string }>()
@@ -16,6 +17,7 @@ export default function DeploymentFunctions() {
     const deploymentQuery = useQuery({
         queryKey: ['deployment', deploymentId],
         queryFn: () => fetchTeamDeployment({ deploymentId }),
+        enabled: !!deploymentId,
     })
 
     const deploymentBuildMetadataQuery = useQuery({
@@ -24,39 +26,39 @@ export default function DeploymentFunctions() {
         enabled: !!deploymentQuery.data,
     })
 
-    const emptyListComponent = useMemo(() => {
-        const emptyDeployment = EmptyListComponent({
+    const Placeholder = useMemo(() => {
+        const emptyDeployment = buildPlaceholder({
             isLoading: deploymentQuery.isLoading,
-            hasValue: !!deploymentQuery.data,
+            hasData: !!deploymentQuery.data,
             emptyLabel: 'Missing deployment',
             errorLabel: 'Error loading deployment',
-            error: deploymentQuery.error,
+            isError: deploymentQuery.isError,
         })
 
         if (emptyDeployment) return emptyDeployment
 
-        const emptyFunctions = EmptyListComponent({
+        const emptyFunctions = buildPlaceholder({
             isLoading: deploymentBuildMetadataQuery.isLoading,
-            hasValue: !!deploymentBuildMetadataQuery.data?.buildFunctions?.length,
+            hasData: !!deploymentBuildMetadataQuery.data?.buildFunctions?.length,
             emptyLabel: 'No functions found',
             errorLabel: 'Error loading functions',
-            error: deploymentBuildMetadataQuery.error,
+            isError: deploymentBuildMetadataQuery.isError,
         })
 
         return emptyFunctions
     }, [
         deploymentQuery.isLoading,
         deploymentQuery.data,
-        deploymentQuery.error,
+        deploymentQuery.isError,
         deploymentBuildMetadataQuery.isLoading,
         deploymentBuildMetadataQuery.data,
-        deploymentBuildMetadataQuery.error,
+        deploymentBuildMetadataQuery.isError,
     ])
 
     return (
         <>
             <Stack.Screen
-                name="functions"
+                // name="functions"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,
@@ -67,27 +69,18 @@ export default function DeploymentFunctions() {
                 data={deploymentBuildMetadataQuery.data?.buildFunctions}
                 contentInsetAdjustmentBehavior="automatic"
                 showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={deploymentBuildMetadataQuery.isRefetching}
-                        onRefresh={deploymentBuildMetadataQuery.refetch}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
-                    />
-                }
+                refreshControl={<RefreshControl onRefresh={deploymentBuildMetadataQuery.refetch} />}
                 ItemSeparatorComponent={() => (
                     <View style={{ height: 1, backgroundColor: COLORS.gray100 }} />
                 )}
                 overrideProps={
-                    emptyListComponent && {
+                    Placeholder && {
                         contentContainerStyle: {
                             flex: 1,
                         },
                     }
                 }
-                ListEmptyComponent={emptyListComponent}
+                ListEmptyComponent={Placeholder}
                 renderItem={({ item }) => {
                     const memorySize = item.type === 'lambda' ? item.lambda?.memorySize : 128
                     const runtime = item.type === 'lambda' ? item.lambda?.runtime : 'Edge'
@@ -100,7 +93,13 @@ export default function DeploymentFunctions() {
                                 gap: 20,
                             }}
                         >
-                            <Text style={{ color: COLORS.gray1000, fontSize: 18 }}>
+                            <Text
+                                style={{
+                                    color: COLORS.gray1000,
+                                    fontSize: 18,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
                                 /{item.path}
                             </Text>
 
@@ -129,6 +128,7 @@ export default function DeploymentFunctions() {
                                             color: COLORS.gray900,
                                             fontSize: 14,
                                             textAlign: 'left',
+                                            fontFamily: 'Geist',
                                         }}
                                         numberOfLines={1}
                                     >
@@ -156,6 +156,7 @@ export default function DeploymentFunctions() {
                                             color: COLORS.gray900,
                                             fontSize: 14,
                                             textAlign: 'left',
+                                            fontFamily: 'Geist',
                                         }}
                                         numberOfLines={1}
                                     >
@@ -188,6 +189,7 @@ export default function DeploymentFunctions() {
                                             color: COLORS.gray900,
                                             fontSize: 14,
                                             textAlign: 'left',
+                                            fontFamily: 'Geist',
                                         }}
                                         numberOfLines={1}
                                     >

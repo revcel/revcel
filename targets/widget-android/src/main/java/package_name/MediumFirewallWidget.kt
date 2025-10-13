@@ -152,7 +152,7 @@ fun StatColumn(value: Int?, label: String, color: ColorProvider) {
             .padding(horizontal = 10.dp),
     ) {
         Text(
-            text = if (value !== null) "${value}" else "-",
+            text = formatNumber(value),
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,
                 fontSize = 30.sp,

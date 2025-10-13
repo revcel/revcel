@@ -1,7 +1,9 @@
 import { removeDomain } from '@/api/mutations'
 import { fetchTeamProjectDomainConfig, fetchTeamProjectDomains } from '@/api/queries'
-import EmptyListComponent from '@/components/EmptyListComponent'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
+import buildPlaceholder from '@/components/base/Placeholder'
+import RefreshControl from '@/components/base/RefreshControl'
 import { useBrowser } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { COLORS } from '@/theme/colors'
@@ -13,14 +15,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
-import {
-    ActivityIndicator,
-    Alert,
-    RefreshControl,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native'
+import { Alert, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function Domains() {
@@ -30,19 +25,20 @@ export default function Domains() {
     const domainsQuery = useQuery({
         queryKey: ['project', projectId, 'domains'],
         queryFn: () => fetchTeamProjectDomains({ projectId }),
+        enabled: !!projectId,
     })
 
-    const emptyListComponent = useMemo(() => {
-        const emptyDomains = EmptyListComponent({
+    const Placeholder = useMemo(() => {
+        const emptyDomains = buildPlaceholder({
             isLoading: domainsQuery.isLoading,
-            hasValue: !!domainsQuery.data?.domains.length,
+            hasData: !!domainsQuery.data?.domains.length,
             emptyLabel: 'No domains found',
-            error: domainsQuery.error,
+            isError: domainsQuery.isError,
             errorLabel: 'Failed to fetch domains',
         })
 
         return emptyDomains
-    }, [domainsQuery.isLoading, domainsQuery.data?.domains.length, domainsQuery.error])
+    }, [domainsQuery.isLoading, domainsQuery.data?.domains.length, domainsQuery.isError])
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -67,27 +63,18 @@ export default function Domains() {
         <FlashList
             contentInsetAdjustmentBehavior="automatic"
             // endFillColor={'blue'}
-            refreshControl={
-                <RefreshControl
-                    tintColor={COLORS.successLight}
-                    refreshing={domainsQuery.isRefetching}
-                    onRefresh={domainsQuery.refetch}
-                    // android
-                    progressBackgroundColor={COLORS.backgroundSecondary}
-                    colors={[COLORS.successLight]}
-                />
-            }
+            refreshControl={<RefreshControl onRefresh={domainsQuery.refetch} />}
             showsVerticalScrollIndicator={false}
             data={domainsQuery.data?.domains}
             overrideProps={
-                emptyListComponent && {
+                Placeholder && {
                     contentContainerStyle: {
                         flex: 1,
                     },
                 }
             }
             keyExtractor={(item) => item.name}
-            ListEmptyComponent={emptyListComponent}
+            ListEmptyComponent={Placeholder}
             renderItem={({ item: domain, index: domainIndex }) => (
                 <DomainRow
                     domain={domain}
@@ -157,6 +144,7 @@ function DomainRow({ domain, backgroundColor }: { domain: Domain; backgroundColo
                                     : COLORS.red600,
                             fontSize: 16,
                             fontWeight: '600',
+                            fontFamily: 'Geist',
                         }}
                         numberOfLines={1}
                         ellipsizeMode="middle"
@@ -165,7 +153,7 @@ function DomainRow({ domain, backgroundColor }: { domain: Domain; backgroundColo
                     </Text>
 
                     {domainConfigQuery.isLoading && (
-                        <ActivityIndicator size="small" color={COLORS.gray900} />
+                        <ActivityIndicator sm={true} monochrome={true} />
                     )}
                 </View>
                 {domain.verified &&
@@ -178,7 +166,9 @@ function DomainRow({ domain, backgroundColor }: { domain: Domain; backgroundColo
                                     color={COLORS.success}
                                     size={16}
                                 />
-                                <Text style={{ color: COLORS.gray900 }}>Valid Configuration</Text>
+                                <Text style={{ color: COLORS.gray900, fontFamily: 'Geist' }}>
+                                    Valid Configuration
+                                </Text>
                             </View>
                             {domain.redirect && (
                                 <View
@@ -193,11 +183,12 @@ function DomainRow({ domain, backgroundColor }: { domain: Domain; backgroundColo
                                         color={COLORS.success}
                                         size={16}
                                     />
-                                    <Text style={{ color: COLORS.gray900 }}>
+                                    <Text style={{ color: COLORS.gray900, fontFamily: 'Geist' }}>
                                         Redirects to{' '}
                                         <Text
                                             style={{
                                                 color: COLORS.gray1000,
+                                                fontFamily: 'Geist',
                                             }}
                                         >
                                             {domain.redirect}
@@ -211,7 +202,9 @@ function DomainRow({ domain, backgroundColor }: { domain: Domain; backgroundColo
                 {domainConfigQuery.data?.misconfigured && (
                     <View style={{ flexDirection: 'row', gap: 2, alignItems: 'center' }}>
                         <Ionicons name="alert-circle" color={COLORS.red600} size={16} />
-                        <Text style={{ color: COLORS.red600 }}>Invalid configuration</Text>
+                        <Text style={{ color: COLORS.red600, fontFamily: 'Geist' }}>
+                            Invalid configuration
+                        </Text>
                     </View>
                 )}
 
@@ -247,7 +240,9 @@ function DomainVerificationRow({
     if (!copyValue)
         return (
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                <Text style={{ color: COLORS.gray900, width: 50 }}>{label}</Text>
+                <Text style={{ color: COLORS.gray900, width: 50, fontFamily: 'Geist' }}>
+                    {label}
+                </Text>
                 <View
                     style={{
                         flexDirection: 'row',
@@ -256,7 +251,7 @@ function DomainVerificationRow({
                     }}
                 >
                     <Text
-                        style={{ color: COLORS.gray1000, flex: 1 }}
+                        style={{ color: COLORS.gray1000, flex: 1, fontFamily: 'Geist' }}
                         numberOfLines={1}
                         ellipsizeMode="middle"
                     >
@@ -268,7 +263,7 @@ function DomainVerificationRow({
 
     return (
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-            <Text style={{ color: COLORS.gray900, width: 50 }}>{label}</Text>
+            <Text style={{ color: COLORS.gray900, width: 50, fontFamily: 'Geist' }}>{label}</Text>
             <TouchableOpacity
                 style={{
                     flexDirection: 'row',
@@ -284,7 +279,7 @@ function DomainVerificationRow({
                 }}
             >
                 <Text
-                    style={{ color: COLORS.gray1000, flex: 1 }}
+                    style={{ color: COLORS.gray1000, flex: 1, fontFamily: 'Geist' }}
                     numberOfLines={1}
                     ellipsizeMode="middle"
                 >

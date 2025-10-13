@@ -47,3 +47,11 @@ fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String {
 
     return "revcel://?showPaywall=1"
 }
+
+fun formatNumber(value: Int?): String {
+    if (value == null) return "-"
+    val number = value.toLong()
+    if (number < 1000) return number.toString()
+    if (number < 1_000_000) return String.format(Locale.US, "%.1fK", number / 1000.0)
+    return String.format(Locale.US, "%.1fM", number / 1_000_000.0)
+}

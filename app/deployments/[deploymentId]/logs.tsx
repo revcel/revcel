@@ -1,7 +1,8 @@
 import { fetchTeamDeployment, fetchTeamDeploymentBuildMetadata } from '@/api/queries'
 import BottomGradient from '@/components/BottomGradient'
-import EmptyListComponent from '@/components/EmptyListComponent'
 import { SelectableText } from '@/components/SelectableText'
+import buildPlaceholder from '@/components/base/Placeholder'
+import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,7 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Platform, RefreshControl, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function DeploymentLogs() {
@@ -22,6 +23,7 @@ export default function DeploymentLogs() {
     const deploymentQuery = useQuery({
         queryKey: ['deployment', deploymentId],
         queryFn: () => fetchTeamDeployment({ deploymentId }),
+        enabled: !!deploymentId,
     })
 
     const deploymentBuildMetadataQuery = useQuery({
@@ -43,12 +45,12 @@ export default function DeploymentLogs() {
         return filteredLogs.map((log) => log.text).join('\n')
     }, [filteredLogs])
 
-    const emptyListComponent = useMemo(() => {
-        const emptyDeployment = EmptyListComponent({
+    const Placeholder = useMemo(() => {
+        const emptyDeployment = buildPlaceholder({
             isLoading: deploymentQuery.isLoading,
-            hasValue: !!deploymentQuery.data,
+            hasData: !!deploymentQuery.data,
             emptyLabel: 'Missing deployment',
-            error: deploymentQuery.error,
+            isError: deploymentQuery.isError,
             errorLabel: 'Failed to fetch deployment',
         })
 
@@ -56,11 +58,11 @@ export default function DeploymentLogs() {
             return emptyDeployment
         }
 
-        const emptyBuildMetadata = EmptyListComponent({
+        const emptyBuildMetadata = buildPlaceholder({
             isLoading: deploymentBuildMetadataQuery.isLoading,
-            hasValue: !!deploymentBuildMetadataQuery.data?.buildLogs.length,
+            hasData: !!deploymentBuildMetadataQuery.data?.buildLogs.length,
             emptyLabel: 'No logs found',
-            error: deploymentBuildMetadataQuery.error,
+            isError: deploymentBuildMetadataQuery.isError,
             errorLabel: 'Failed to fetch logs',
         })
 
@@ -68,16 +70,16 @@ export default function DeploymentLogs() {
     }, [
         deploymentQuery.isLoading,
         deploymentQuery.data,
-        deploymentQuery.error,
+        deploymentQuery.isError,
         deploymentBuildMetadataQuery.isLoading,
         deploymentBuildMetadataQuery.data?.buildLogs.length,
-        deploymentBuildMetadataQuery.error,
+        deploymentBuildMetadataQuery.isError,
     ])
 
     return (
         <>
             <Stack.Screen
-                name="logs"
+                // name="logs"
                 options={{
                     headerShown: true,
                     headerLargeTitle: true,
@@ -156,17 +158,10 @@ export default function DeploymentLogs() {
                     contentInsetAdjustmentBehavior="automatic"
                     showsVerticalScrollIndicator={false}
                     refreshControl={
-                        <RefreshControl
-                            tintColor={COLORS.successLight}
-                            refreshing={deploymentBuildMetadataQuery.isRefetching}
-                            onRefresh={deploymentBuildMetadataQuery.refetch}
-                            // android
-                            progressBackgroundColor={COLORS.backgroundSecondary}
-                            colors={[COLORS.successLight]}
-                        />
+                        <RefreshControl onRefresh={deploymentBuildMetadataQuery.refetch} />
                     }
                     overrideProps={
-                        emptyListComponent
+                        Placeholder
                             ? {
                                   contentContainerStyle: {
                                       flex: 1,
@@ -180,7 +175,7 @@ export default function DeploymentLogs() {
                                   },
                               })
                     }
-                    ListEmptyComponent={emptyListComponent}
+                    ListEmptyComponent={Placeholder}
                     ItemSeparatorComponent={() => (
                         <View style={{ height: viewMode === 'expanded' ? 16 : 8 }} />
                     )}
@@ -191,6 +186,7 @@ export default function DeploymentLogs() {
                                     color: COLORS.gray900,
                                     marginRight: 8,
                                     fontVariant: ['tabular-nums'],
+                                    fontFamily: 'Geist',
                                 }}
                             >
                                 {format(log.created, 'HH:mm:ss')}
@@ -199,6 +195,7 @@ export default function DeploymentLogs() {
                                 style={{
                                     color: COLORS.gray1000,
                                     flex: 1,
+                                    fontFamily: 'Geist',
                                 }}
                                 numberOfLines={viewMode === 'expanded' ? undefined : 1}
                             >

@@ -205,9 +205,10 @@ export function useNotificationHandler() {
     useEffect(() => {
         Notifications.setNotificationHandler({
             handleNotification: async () => ({
-                shouldShowAlert: true,
-                shouldPlaySound: false,
+                shouldPlaySound: Platform.OS === 'android',
                 shouldSetBadge: false,
+                shouldShowBanner: true,
+                shouldShowList: true,
             }),
         })
 
@@ -269,7 +270,7 @@ export function useNotificationHandler() {
         )
         return () => {
             if (notificationTapListener.current) {
-                Notifications.removeNotificationSubscription(notificationTapListener.current)
+                notificationTapListener.current.remove()
             }
         }
     }, [])

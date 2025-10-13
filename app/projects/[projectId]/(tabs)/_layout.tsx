@@ -1,7 +1,8 @@
 import { COLORS } from '@/theme/colors'
-import { Ionicons } from '@expo/vector-icons'
+import Ionicons from '@expo/vector-icons/Ionicons'
 import { Tabs } from 'expo-router'
 import { Platform } from 'react-native'
+
 export default function TabsLayout() {
     return (
         <Tabs
@@ -44,18 +45,18 @@ export default function TabsLayout() {
                 }}
             />
             {/* <Tabs.Screen
-                name="observability"
-                options={{
-                    title: 'Observability',
-                    tabBarIcon: ({ color, focused, size }) => (
-                        <Ionicons
-                            name={focused ? 'bar-chart' : 'bar-chart-outline'}
-                            size={size}
-                            color={color}
-                        />
-                    ),
-                }}
-            /> */}
+			name="observability"
+			options={{
+				title: 'Observability',
+				tabBarIcon: ({ color, focused, size }) => (
+					<Ionicons
+						name={focused ? 'bar-chart' : 'bar-chart-outline'}
+						size={size}
+						color={color}
+					/>
+				),
+			}}
+		/> */}
             <Tabs.Screen
                 name="environment"
                 options={{

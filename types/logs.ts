@@ -9,6 +9,7 @@ export interface Log {
     requestPath: string
     route: string
     clientUserAgent: string
+    clientRegion: string
     requestSearchParams: Record<string, string>
     requestMethod: string
     cache: string

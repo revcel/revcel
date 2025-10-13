@@ -1,5 +1,7 @@
 import { registerWebhook } from '@/api/mutations'
 import { fetchAllTeams, fetchTeamAvatar, fetchWebhook } from '@/api/queries'
+import ActivityIndicator from '@/components/base/ActivityIndicator'
+import RefreshControl from '@/components/base/RefreshControl'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -7,17 +9,9 @@ import type { Team } from '@/types/teams'
 import { useQuery } from '@tanstack/react-query'
 import { useMutation, useQueries } from '@tanstack/react-query'
 import * as Notifications from 'expo-notifications'
+import { useUser } from 'expo-superwall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    RefreshControl,
-    ScrollView,
-    Switch,
-    Text,
-    View,
-} from 'react-native'
+import { Alert, Platform, ScrollView, Switch, Text, View } from 'react-native'
 import { SvgUri } from 'react-native-svg'
 import { useDebouncedCallback } from 'use-debounce'
 
@@ -133,17 +127,51 @@ export default function NotificationsScreen() {
             style={{ flex: 1 }}
             refreshControl={
                 <RefreshControl
-                    refreshing={false}
-                    onRefresh={() => {
-                        queryClient.resetQueries({ queryKey: ['webhook'] })
+                    onRefresh={async () => {
+                        await queryClient.resetQueries({ queryKey: ['webhook'] })
                     }}
-                    // android
-                    progressBackgroundColor={COLORS.backgroundSecondary}
-                    colors={[COLORS.successLight]}
                 />
             }
         >
             <View style={{ marginTop: 20 }}>
+                {Object.keys(dataForTeamId).length !== proTeamIds.length && (
+                    <View
+                        style={{
+                            marginHorizontal: 20,
+                            marginVertical: 10,
+                            padding: 10,
+                            flexDirection: 'column',
+                            gap: 10,
+                            borderRadius: 10,
+                            backgroundColor: COLORS.successDark,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontSize: 18,
+                                color: COLORS.gray1000,
+                                fontWeight: 500,
+                                fontFamily: 'Geist',
+                            }}
+                        >
+                            Don't see your team here?
+                        </Text>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                color: COLORS.gray1000,
+                                lineHeight: 20,
+                                fontFamily: 'Geist',
+                            }}
+                        >
+                            This means the team is not on the Vercel Pro or Enterprise plan. Do not
+                            worry, you can subscribe and then refund on the same day. Vercel will
+                            refund almost the entire payment (minus the few hours you used it) and
+                            your push notifications will remain active until you disable them.
+                        </Text>
+                    </View>
+                )}
+
                 {proTeamIds.map((teamId, teamIndex) => (
                     <TeamRow
                         key={teamId}
@@ -172,11 +200,13 @@ function TeamRow({
     pushToken: string | null
     backgroundColor: string
 }) {
+    const { subscriptionStatus } = useUser()
     const [enabledEvents, setEnabledEvents] = useState<string[]>([])
 
     const teamAvatarQuery = useQuery({
         queryKey: ['team', team.id, 'avatar'],
         queryFn: () => fetchTeamAvatar({ connectionId: team.connectionId, teamId: team.id }),
+        enabled: !!team.id,
     })
 
     const webhookQuery = useQuery({
@@ -204,6 +234,7 @@ function TeamRow({
                 teamId: team.id,
             }
         },
+        enabled: !!team.id,
     })
 
     const registerWebhookMutation = useMutation({
@@ -215,6 +246,7 @@ function TeamRow({
                 teamId: team.id,
                 events: enabledEvents,
                 pushToken: pushToken,
+                isSubscribed: subscriptionStatus.status === 'ACTIVE',
             })
         },
         onSuccess: () => {
@@ -277,59 +309,61 @@ function TeamRow({
                             />
                         )}
                     </View>
-                    <Text style={{ fontSize: 24, color: COLORS.gray1000 }}>{team.name}</Text>
+                    <Text style={{ fontSize: 24, color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                        {team.name}
+                    </Text>
                 </View>
 
                 {registerWebhookMutation.isPending && (
-                    <ActivityIndicator size="small" color={COLORS.gray1000} />
+                    <ActivityIndicator sm={true} monochrome={true} />
                 )}
             </View>
 
             <View style={{ flexDirection: 'column', gap: 10 }}>
-                {['pro', 'enterprise'].includes(team.billing.plan) ? (
-                    Object.entries(LABEL_FOR_EVENT).map(([event, label]) => (
-                        <View
-                            key={event}
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                gap: 10,
-                            }}
-                        >
-                            <View style={{ flexDirection: 'column', gap: 2 }}>
-                                <Text
-                                    style={{
-                                        fontSize: 14,
-                                        fontWeight: 'bold',
-                                        color: COLORS.gray1000,
-                                    }}
-                                >
-                                    {label}
-                                </Text>
-
-                                <Text style={{ fontSize: 14, color: COLORS.gray900 }}>{event}</Text>
-                            </View>
-
-                            <Switch
-                                value={enabledEvents.includes(event)}
-                                onValueChange={() => toggleEvent(event)}
-                                trackColor={{
-                                    true: COLORS.success,
-                                    false: undefined,
+                {Object.entries(LABEL_FOR_EVENT).map(([event, label]) => (
+                    <View
+                        key={event}
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 10,
+                        }}
+                    >
+                        <View style={{ flexDirection: 'column', gap: 2 }}>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontWeight: 'bold',
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
                                 }}
-                                thumbColor={
-                                    Platform.OS === 'android' ? COLORS.successDark : undefined
-                                }
-                            />
+                            >
+                                {label}
+                            </Text>
+
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray900,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                {event}
+                            </Text>
                         </View>
-                    ))
-                ) : (
-                    <Text style={{ fontSize: 14, color: COLORS.gray900 }}>
-                        Push notifications work with Vercel Pro or Enterprise accounts. Hobby
-                        accounts are not supported (by Vercel).
-                    </Text>
-                )}
+
+                        <Switch
+                            value={enabledEvents.includes(event)}
+                            onValueChange={() => toggleEvent(event)}
+                            trackColor={{
+                                true: COLORS.success,
+                                false: undefined,
+                            }}
+                            thumbColor={Platform.OS === 'android' ? COLORS.successDark : undefined}
+                        />
+                    </View>
+                ))}
             </View>
         </View>
     )

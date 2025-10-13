@@ -73,3 +73,13 @@ func fetchProjectAnalyticsTimeseries(connection: Connection, connectionTeam: Con
   
   return try await httpRequest(params: params)
 }
+
+func fetchProductionDeployment(connection: Connection, connectionTeam: ConnectionTeam, projectId: String) async throws -> ProductionDeploymentResponse {
+  let params = FetchParams<NoBody>(
+    method: HTTPMethod.GET,
+    url: "/projects/\(projectId)/production-deployment?teamId=\(connectionTeam.id)",
+    connection: connection
+  )
+  
+  return try await httpRequest(params: params)
+}

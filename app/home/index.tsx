@@ -2,8 +2,9 @@ import { fetchAllTeams, fetchTeamAvatar, fetchTeamProjects, fetchUserInfo } from
 import ApiStatus from '@/components/ApiStatus'
 import BottomGradient from '@/components/BottomGradient'
 import DeploymentCard from '@/components/DeploymentCard'
-import { HeaderTouchableOpacity } from '@/components/HeaderTouchableOpacity'
 import ProjectCard from '@/components/ProjectCard'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
+import RefreshControl from '@/components/base/RefreshControl'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { storage } from '@/lib/storage'
@@ -12,33 +13,30 @@ import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import CookieManager, { type Cookie } from '@react-native-cookies/cookies'
-import Superwall from '@superwall/react-native-superwall'
+import * as Sentry from '@sentry/react-native'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
+import * as QuickActions from 'expo-quick-actions'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
+import { usePlacement, useUser } from 'expo-superwall'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { Image, Platform } from 'react-native'
-import {
-    Alert,
-    RefreshControl,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-    useWindowDimensions,
-} from 'react-native'
+import { Image, Linking, Platform } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
 
 export default function HomeScreen() {
     const navigation = useNavigation()
+    const { registerPlacement } = usePlacement()
+    const { subscriptionStatus } = useUser()
+    const { width: windowWidth } = useWindowDimensions()
+
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
     const currentTeamId = useMemo(() => currentConnection?.currentTeamId, [currentConnection])
     const removeConnection = usePersistedStore((state) => state.removeConnection)
     const switchConnection = usePersistedStore((state) => state.switchConnection)
-    const { width: windowWidth } = useWindowDimensions()
 
     const usersQueries = useQueries({
         queries: connections.map((connection) => ({
@@ -240,34 +238,46 @@ export default function HomeScreen() {
                         }
 
                         if (e.nativeEvent.name === 'Add Connection') {
-                            Superwall.shared
-                                .register({
-                                    placement: 'AddConnection',
-                                    feature: () => {
-                                        router.push('/login')
-                                        WidgetKitModule.setIsSubscribed(true)
-                                    },
-                                })
-                                .catch((error) => {
-                                    console.error('Error registering AddConnection', error)
-                                    Alert.alert('Error', 'Something went wrong, please try again.')
-                                })
+                            const featureFn = () => {
+                                router.push('/login')
+                                WidgetKitModule.setIsSubscribed(true)
+                            }
+
+                            if (__DEV__) {
+                                featureFn()
+                                return
+                            }
+
+                            registerPlacement({
+                                placement: 'AddConnection',
+                                feature: featureFn,
+                            }).catch((error) => {
+                                Sentry.captureException(error)
+                                console.error('Error registering AddConnection', error)
+                                Alert.alert('Error', 'Something went wrong, please try again.')
+                            })
                             return
                         }
 
                         if (e.nativeEvent.name === 'Notifications') {
-                            Superwall.shared
-                                .register({
-                                    placement: 'OpenNotifications',
-                                    feature: () => {
-                                        router.push('/notifications')
-                                        WidgetKitModule.setIsSubscribed(true)
-                                    },
-                                })
-                                .catch((error) => {
-                                    console.error('Error registering OpenNotifications', error)
-                                    Alert.alert('Error', 'Something went wrong, please try again.')
-                                })
+                            const featureFn = () => {
+                                router.push('/notifications')
+                                WidgetKitModule.setIsSubscribed(true)
+                            }
+
+                            if (__DEV__) {
+                                featureFn()
+                                return
+                            }
+
+                            registerPlacement({
+                                placement: 'OpenNotifications',
+                                feature: featureFn,
+                            }).catch((error) => {
+                                Sentry.captureException(error)
+                                console.error('Error registering OpenNotifications', error)
+                                Alert.alert('Error', 'Something went wrong, please try again.')
+                            })
                             return
                         }
 
@@ -472,7 +482,74 @@ export default function HomeScreen() {
         removeConnection,
         switchConnection,
         connections.length,
+        registerPlacement,
     ])
+
+    useEffect(() => {
+        const getUrlAsync = async () => {
+            // Get the deep link used to open the app
+            const initialUrl = await Linking.getInitialURL()
+
+            const eventId = initialUrl?.split('revcel:///?event=')[1]
+
+            if (!eventId) return
+
+            if (eventId === 'push') {
+                registerPlacement({
+                    placement: 'OpenNotifications',
+                    feature: () => {
+                        router.push('/notifications')
+                        WidgetKitModule.setIsSubscribed(true)
+                    },
+                }).catch((error) => {
+                    Sentry.captureException(error)
+                    console.error('Error registering OpenNotifications', error)
+                    Alert.alert('Error', 'Something went wrong, please try again.')
+                })
+                return
+            }
+
+            if (eventId === 'v0') {
+                router.push('/v0')
+                return
+            }
+        }
+
+        getUrlAsync()
+    }, [registerPlacement])
+
+    useEffect(() => {
+        if (subscriptionStatus.status !== 'INACTIVE') return
+
+        setTimeout(() => {
+            registerPlacement({
+                placement: 'LifetimeOffer_1',
+                feature: () => {
+                    WidgetKitModule.setIsSubscribed(true)
+                    Alert.alert('Congrats, you unlocked lifetime access to Rev.')
+                },
+            }).catch((error) => {
+                console.error('Error registering LifetimeOffer_1', error)
+                Sentry.captureException(error)
+            })
+        }, 1000)
+
+        QuickActions.isSupported().then((supported) => {
+            if (!supported) return
+            QuickActions.setItems([
+                {
+                    id: '0',
+                    title:
+                        Platform.OS === 'android'
+                            ? "Don't delete me ): Tap here!"
+                            : "Don't delete me ):",
+                    subtitle: "Here's 50% off for life!",
+                    icon: 'love',
+                    params: { href: '/showLfo1=1' },
+                },
+            ])
+        })
+    }, [registerPlacement, subscriptionStatus.status])
 
     useNotificationHandler()
     useWebhookCheck(teamsQueries)
@@ -492,15 +569,12 @@ export default function HomeScreen() {
                 }}
                 refreshControl={
                     <RefreshControl
-                        tintColor={COLORS.successLight}
-                        refreshing={teamProjectsQuery.isRefetching}
-                        onRefresh={() => {
-                            queryClient.invalidateQueries({ queryKey: ['apiStatus'] })
-                            teamProjectsQuery.refetch()
+                        onRefresh={async () => {
+                            await Promise.all([
+                                queryClient.invalidateQueries({ queryKey: ['apiStatus'] }),
+                                teamProjectsQuery.refetch(),
+                            ])
                         }}
-                        // android
-                        progressBackgroundColor={COLORS.backgroundSecondary}
-                        colors={[COLORS.successLight]}
                     />
                 }
                 showsVerticalScrollIndicator={false}
@@ -524,6 +598,7 @@ export default function HomeScreen() {
                                     // backgroundColor: '#ff00ff05',
                                     textAlign: 'center',
                                     paddingTop: 16,
+                                    fontFamily: 'Geist',
                                 }}
                             >
                                 Tap to view deployment details →
@@ -571,7 +646,9 @@ export default function HomeScreen() {
                                     size={32}
                                     color={COLORS.gray1000}
                                 />
-                                <Text style={{ color: COLORS.gray1000 }}>View All Projects</Text>
+                                <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                                    View All Projects
+                                </Text>
                             </TouchableOpacity>
                         </SquircleView>
                     </View>

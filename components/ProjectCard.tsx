@@ -50,13 +50,13 @@ export default function ProjectCard({
 
     const latestDeploymentTime = useMemo(() => {
         if (!project.latestDeployments?.[0]?.createdAt) {
-            return "No deployment"
+            return 'No deployment'
         }
         try {
             return format(new Date(project.latestDeployments?.[0]?.createdAt), 'dd/MM/yyyy')
         } catch (error) {
             console.error('Error formatting latest deployment time', error)
-            return "No deployment"
+            return 'Bad date'
         }
     }, [project.latestDeployments])
 
@@ -89,18 +89,20 @@ export default function ProjectCard({
                 }}
             >
                 <View style={{ flexDirection: 'row' }}>
-                    {faviconQuery.data && (
-                        <Image
-                            source={{ uri: faviconQuery.data }}
-                            style={{
-                                width: 16,
-                                height: 16,
-                                marginRight: 4,
-                                marginTop: 4,
-                                borderRadius: 8,
-                            }}
-                        />
-                    )}
+                    <Image
+                        source={
+                            faviconQuery.data
+                                ? { uri: faviconQuery.data }
+                                : require('@/assets/icon.png')
+                        }
+                        style={{
+                            width: 16,
+                            height: 16,
+                            marginRight: 4,
+                            marginTop: 3,
+                            borderRadius: 8,
+                        }}
+                    />
 
                     {/* {DUMMY_FAVICONS[project.name] && (
                         <Image
@@ -119,6 +121,7 @@ export default function ProjectCard({
                         numberOfLines={2}
                         style={{
                             flex: 1,
+                            fontFamily: 'Geist',
                             color: COLORS.gray1000,
                             fontSize: 16,
                             overflow: 'hidden',
@@ -158,6 +161,7 @@ export default function ProjectCard({
                                 color: COLORS.gray900,
                                 fontSize: 12,
                                 fontWeight: 'bold',
+                                fontFamily: 'Geist',
                             }}
                             numberOfLines={1}
                         >
@@ -168,7 +172,7 @@ export default function ProjectCard({
                     <View
                         style={{
                             flexDirection: 'row',
-                            alignItems: 'flex-start',
+                            alignItems: 'center',
                             // backgroundColor: 'blue',
                             paddingRight: 14,
                         }}
@@ -186,6 +190,7 @@ export default function ProjectCard({
                                 color: COLORS.gray900,
                                 fontSize: 12,
                                 lineHeight: 14,
+                                fontFamily: 'Geist',
                             }}
                             numberOfLines={2}
                         >
@@ -216,10 +221,20 @@ export default function ProjectCard({
                 }}
             >
                 <View style={{ maxWidth: '80%', flexDirection: 'column', gap: 2 }}>
-                    <Text style={{ color: COLORS.gray1000, fontSize: 10 }} numberOfLines={1}>
+                    <Text
+                        style={{ color: COLORS.gray1000, fontSize: 10, fontFamily: 'Geist' }}
+                        numberOfLines={1}
+                    >
                         {project.latestDeployments[0]?.meta?.githubCommitMessage || 'Manual deploy'}
                     </Text>
-                    <Text style={{ color: COLORS.gray900, fontSize: 10, fontWeight: 'semibold' }}>
+                    <Text
+                        style={{
+                            color: COLORS.gray900,
+                            fontSize: 10,
+                            fontWeight: 'semibold',
+                            fontFamily: 'Geist',
+                        }}
+                    >
                         {latestDeploymentTime}
                     </Text>
                 </View>

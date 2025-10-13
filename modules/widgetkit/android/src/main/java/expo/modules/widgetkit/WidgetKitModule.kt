@@ -80,6 +80,7 @@ class WidgetKitModule : Module() {
             }
         }
 
+		// also clears isSubscribed
         Function("clearAllConnections") {
             appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
                 prefs.edit() {

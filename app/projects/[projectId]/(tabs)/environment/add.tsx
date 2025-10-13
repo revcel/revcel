@@ -6,16 +6,9 @@ import { useMutation } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useState } from 'react'
-import {
-    Alert,
-    Platform,
-    SafeAreaView,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-} from 'react-native'
+import { Alert, Platform, Switch, Text, TextInput, TouchableOpacity } from 'react-native'
 import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ENVIRONMENTS: { key: CommonEnvironment; name: string }[] = [
     { key: 'development', name: 'Development' },
@@ -68,7 +61,15 @@ export default function AddEnvironmentVariableScreen() {
                     <View style={{ flexDirection: 'column', gap: 20 }}>
                         {/* Name field */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Name</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Name
+                            </Text>
                             <TextInput
                                 style={{
                                     backgroundColor: COLORS.backgroundSecondary,
@@ -76,6 +77,7 @@ export default function AddEnvironmentVariableScreen() {
                                     padding: 12,
                                     color: COLORS.gray1000,
                                     fontSize: 14,
+                                    fontFamily: 'Geist',
                                 }}
                                 onChangeText={(text) => {
                                     setEditableVariable({
@@ -85,12 +87,23 @@ export default function AddEnvironmentVariableScreen() {
                                 }}
                                 placeholder="Enter name"
                                 placeholderTextColor={COLORS.gray900}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 
                         {/* Value field */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Value</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Value
+                            </Text>
                             <TextInput
                                 style={{
                                     backgroundColor: COLORS.backgroundSecondary,
@@ -98,6 +111,7 @@ export default function AddEnvironmentVariableScreen() {
                                     padding: 12,
                                     color: COLORS.gray1000,
                                     fontSize: 14,
+                                    fontFamily: 'Geist',
                                 }}
                                 onChangeText={(text) => {
                                     setEditableVariable({
@@ -108,12 +122,23 @@ export default function AddEnvironmentVariableScreen() {
                                 placeholder="Enter value"
                                 placeholderTextColor={COLORS.gray900}
                                 multiline={true}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 
                         {/* Comment field */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Comment</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Comment
+                            </Text>
                             <TextInput
                                 style={{
                                     backgroundColor: COLORS.backgroundSecondary,
@@ -123,6 +148,7 @@ export default function AddEnvironmentVariableScreen() {
                                     fontSize: 14,
                                     height: 80,
                                     textAlignVertical: 'top',
+                                    fontFamily: 'Geist',
                                 }}
                                 onChangeText={(text) => {
                                     setEditableVariable({
@@ -133,12 +159,21 @@ export default function AddEnvironmentVariableScreen() {
                                 placeholder="Add a comment (optional)"
                                 placeholderTextColor={COLORS.gray900}
                                 multiline={true}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
                             />
                         </View>
 
                         {/* Environments */}
                         <View style={{ flexDirection: 'column', gap: 8 }}>
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
                                 Environments
                             </Text>
                             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -173,6 +208,7 @@ export default function AddEnvironmentVariableScreen() {
                                                     color: isSelected
                                                         ? COLORS.gray1000
                                                         : COLORS.gray900,
+                                                    fontFamily: 'Geist',
                                                 }}
                                             >
                                                 {env.name}
@@ -191,7 +227,15 @@ export default function AddEnvironmentVariableScreen() {
                                 alignItems: 'center',
                             }}
                         >
-                            <Text style={{ fontSize: 14, color: COLORS.gray1000 }}>Sensitive</Text>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                Sensitive
+                            </Text>
                             <Switch
                                 value={editableVariable.type === 'sensitive'}
                                 onValueChange={(value) => {
@@ -250,6 +294,7 @@ export default function AddEnvironmentVariableScreen() {
                                 fontSize: 16,
                                 fontWeight: '600',
                                 textTransform: 'uppercase',
+                                fontFamily: 'Geist',
                             }}
                         >
                             {createEnvironmentVariableMutation.isPending ? 'Creating...' : 'Create'}

@@ -1,7 +1,7 @@
+import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { usePersistedStore } from '@/store/persisted'
-import { COLORS } from '@/theme/colors'
 import { useEffect, useRef, useState } from 'react'
-import { ActivityIndicator, Alert, View } from 'react-native'
+import { Alert, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
 
@@ -61,7 +61,7 @@ export default function v0Screen() {
                         bottom: 0,
                     }}
                 >
-                    <ActivityIndicator size="large" color={COLORS.success} />
+                    <ActivityIndicator />
                 </View>
             )}
         </SafeAreaView>
