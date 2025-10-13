@@ -319,6 +319,167 @@ function extractIconHrefFromHtml(html: string): string | null {
     return href || null
 }
 
+/* ANALYTICS */
+export async function fetchProjectAnalyticsAvailability({
+    projectId,
+}: {
+    projectId: string
+}): Promise<{ isEnabled: boolean; hasData: boolean }> {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        projectId,
+        teamId: currentTeamId!,
+    })
+
+    const url = `https://vercel.com/api/v1/web/insights/enabled?${params.toString()}`
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${currentConnection.apiToken}`,
+            Accept: 'application/json',
+        },
+    })
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Error fetching analytics availability: ${response.status} ${text}`)
+    }
+
+    return (await response.json()) as { isEnabled: boolean; hasData: boolean }
+}
+
+export async function fetchProjectAnalyticsOverview({
+    projectId,
+    from,
+    to,
+}: {
+    projectId: string
+    from: string
+    to: string
+}): Promise<{ total: number; devices: number; bounceRate: number }> {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        environment: 'production',
+        // empty filter {}
+        'filter{}': '',
+        from,
+        projectId,
+        teamId: currentTeamId,
+        to,
+    })
+
+    const url = `https://vercel.com/api/web-analytics/overview?${params.toString()}`
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${currentConnection.apiToken}`,
+            Accept: 'application/json',
+        },
+    })
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Error fetching analytics overview: ${response.status} ${text}`)
+    }
+
+    return (await response.json()) as { total: number; devices: number; bounceRate: number }
+}
+
+export async function fetchProjectAnalyticsOverviewLast24h({
+    projectId,
+}: {
+    projectId: string
+}) {
+    const endTime = roundToGranularity(new Date(), '5m', 'down').toISOString()
+    const startTime = roundToGranularity(new Date(Date.now() - ms('24h')), '5m', 'up').toISOString()
+    return await fetchProjectAnalyticsOverview({ projectId, from: startTime, to: endTime })
+}
+
+export async function fetchProjectAnalyticsTimeseries({
+    projectId,
+    from,
+    to,
+}: {
+    projectId: string
+    from: string
+    to: string
+}): Promise<{ data: { key: string; total: number; devices: number; bounceRate: number }[] }> {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        environment: 'production',
+        filter: '{}',
+        from,
+        projectId,
+        teamId: currentTeamId,
+        to,
+    })
+
+    const url = `https://vercel.com/api/web-analytics/timeseries?${params.toString()}`
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization: `Bearer ${currentConnection.apiToken}`,
+            Accept: 'application/json',
+        },
+    })
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Error fetching analytics timeseries: ${response.status} ${text}`)
+    }
+
+    return (await response.json()) as {
+        data: { key: string; total: number; devices: number; bounceRate: number }[]
+    }
+}
+
+export async function fetchProjectAnalyticsTimeseriesLast7d({
+    projectId,
+}: {
+    projectId: string
+}) {
+    const endTime = roundToGranularity(new Date(), '1h', 'up').toISOString()
+    const startTime = roundToGranularity(
+        new Date(Date.now() - ms('7d')),
+        '1h',
+        'down'
+    ).toISOString()
+    return await fetchProjectAnalyticsTimeseries({ projectId, from: startTime, to: endTime })
+}
+
 /* DEPLOYMENTS */
 export async function fetchTeamDeployments(
     {

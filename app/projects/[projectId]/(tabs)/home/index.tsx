@@ -140,7 +140,7 @@ export default function ProjectHomeScreen() {
                     >
                         <ProjectWidgetMessage />
                         <ProjectFirewallCard />
-                        <ProjectQuickActions />
+                        <ProjectQuickActions hasAnalytics={!!project?.webAnalytics?.enabledAt} />
                     </View>
                 )}
                 ListEmptyComponent={Placeholder}

@@ -202,6 +202,18 @@ function RootLayout() {
                             />
 
                             <Stack.Screen
+                                name="projects/[projectId]/analytics"
+                                options={{
+                                    title: 'Analytics',
+                                    headerShown: true,
+                                    headerLargeTitle: true,
+                                    ...commonHeaderStyle,
+                                    ...commonContentStyle,
+                                    headerShadowVisible: false,
+                                }}
+                            />
+
+                            <Stack.Screen
                                 name="deployments/[deploymentId]/index"
                                 options={{
                                     title: 'Deployment',
