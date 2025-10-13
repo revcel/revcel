@@ -1,6 +1,7 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { CommonEnvironmentVariable } from '@/types/common'
+import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'
 import { fetchWebhook } from './queries'
 
@@ -63,6 +64,7 @@ export async function updateEnvironmentVariable({
         return response
     } catch (error) {
         console.log('[updateEnvironmentVariable] Error updating environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -93,6 +95,7 @@ export async function deleteEnvironmentVariable({
         await vercel.delete(`/v7/projects/${projectId}/env/${id}?${params.toString()}`)
     } catch (error) {
         console.log('[deleteEnvironmentVariable] Error deleting environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -152,6 +155,7 @@ export async function addEnvironmentVariable({
         return response
     } catch (error) {
         console.log('[addEnvironmentVariable] Error adding environment variable', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -188,6 +192,7 @@ export async function toggleFirewall({
         )
     } catch (error) {
         console.log('[toggleFirewall] Error toggling firewall', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -216,6 +221,7 @@ export async function deleteDeployment(deploymentId: string) {
         await vercel.delete(`/v13/deployments/${deploymentId}?${params.toString()}`)
     } catch (error) {
         console.log('[deleteDeployment] Error deleting deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -258,6 +264,7 @@ export async function promoteDeployment({
         return response
     } catch (error) {
         console.log('[promoteDeployment] Error promoting deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -299,6 +306,7 @@ export async function rollbackDeployment({
         return response
     } catch (error) {
         console.log('[rollbackDeployment] Error rolling back deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -329,6 +337,7 @@ export async function cancelDeployment(deploymentId: string) {
         return response
     } catch (error) {
         console.log('[cancelDeployment] Error canceling deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -373,6 +382,7 @@ export async function redeployDeployment({
         return response
     } catch (error) {
         console.log('[redeployDeployment] Error redeploying deployment', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -425,6 +435,7 @@ export async function addDomain({
         return response
     } catch (error) {
         console.log('[addDomain] Error adding domain', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -458,6 +469,7 @@ export async function removeDomain({
         await vercel.delete(`/v9/projects/${projectId}/domains/${domain}?${params.toString()}`)
     } catch (error) {
         console.log('[removeDomain] Error removing domain', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -528,6 +540,7 @@ export async function registerWebhook({
                 })
             } catch (error) {
                 console.log('[registerWebhook] Error unregistering webhook', error)
+                Sentry.captureException(error)
                 throw error
             }
         }
@@ -582,6 +595,7 @@ export async function registerWebhook({
             })
         }
         console.log('[registerWebhook] Error registering webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -621,6 +635,7 @@ export async function createWebhook({
         return response
     } catch (error) {
         console.log('[createWebhook] Error creating webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }
@@ -653,6 +668,7 @@ export async function deleteWebhook({
         return response
     } catch (error) {
         console.log('[unregisterWebhook] Error unregistering webhook', error)
+        Sentry.captureException(error)
         throw error
     }
 }
