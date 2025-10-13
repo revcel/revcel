@@ -89,7 +89,11 @@ export default function ProjectHomeScreen() {
                                     { text: 'Good to know!', style: 'cancel' },
                                 ])
                             }
-                            router.back()
+                            if (router.canGoBack()) {
+                                router.back()
+                            } else {
+                                router.replace('/home')
+                            }
                         }}
                     >
                         <Ionicons name="close" size={18} color={COLORS.gray1000} />

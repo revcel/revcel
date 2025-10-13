@@ -10,5 +10,7 @@ struct exportWidgets: WidgetBundle {
       MediumAnalyticsWidget()
     }
     MediumFirewallWidget()
+    LargeTeamProjectsWidget()
+    MediumTeamProjectsWidget()
   }
 }

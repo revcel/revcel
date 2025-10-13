@@ -34,6 +34,32 @@ data class Deployment(
     val uid: String
 )
 
+// For LargeTeamProjectsWidget & MediumTeamProjectsWidget
+data class DeploymentMeta(
+    val githubCommitMessage: String?
+)
+
+data class DeploymentFull(
+    val id: String,
+    val createdAt: Long?,
+    val readyState: String?,
+    val meta: DeploymentMeta?
+)
+
+data class ProductionDeploymentResponse(
+    val deployment: DeploymentFull,
+    val deploymentIsStale: Boolean? = null
+)
+ 
+data class TeamProjectItem(
+    val id: String,
+    val projectId: String,
+    val name: String,
+    val commitMessage: String?,
+    val createdAt: Long?,
+    val status: String?
+)
+
 data class FirewallMetricsResponse(
     val summary: Array<FirewallMetricsSummary>
 )

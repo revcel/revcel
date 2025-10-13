@@ -123,7 +123,7 @@ struct MediumFirewallInfoItemView: View {
   
   var body: some View {
     VStack(alignment: .center, spacing: 10.0) {
-      Text(value != nil ? "\(value ?? 0)" : "-")
+      Text(value != nil ? "\(formatNumber(value ?? 0))" : "-")
         .font(.system(size: 24, weight: .bold))
         .foregroundStyle(Color("gray1000"))
       Text(label)

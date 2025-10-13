@@ -44,3 +44,15 @@ func getAppUrl(project: ProjectListItem?) -> String {
 
   return "revcel://?showPaywall=1"
 }
+
+func formatNumber(_ number: Int) -> String {
+  if number < 1000 {
+    return String(number)
+  }
+  if number < 1_000_000 {
+    let value = Double(number) / 1000.0
+    return String(format: "%.1fK", value)
+  }
+  let value = Double(number) / 1_000_000.0
+  return String(format: "%.1fM", value)
+}

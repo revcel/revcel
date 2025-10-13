@@ -7,6 +7,7 @@ import ConnectionTeam
 import ConnectionTeamsResponse
 import ConnectionProject
 import DeploymentResponse
+import ProductionDeploymentResponse
 import FirewallMetricsRequest
 import FirewallMetricsResponse
 import com.google.gson.Gson
@@ -16,6 +17,15 @@ suspend fun fetchConnectionTeams(connection: Connection): ConnectionTeamsRespons
     val params = FetchParams(
         method = HTTPMethod.GET,
         url =  "/teams",
+        connection = connection
+    )
+
+    return httpRequest(params)
+}
+suspend fun fetchProductionDeployment(connection: Connection, connectionTeam: ConnectionTeam, projectId: String): ProductionDeploymentResponse {
+    val params = FetchParams(
+        method = HTTPMethod.GET,
+        url = "/projects/${projectId}/production-deployment?teamId=${connectionTeam.id}",
         connection = connection
     )
 
