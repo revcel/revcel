@@ -1,10 +1,12 @@
 package com.revcel.mobile
 
 import TeamProjectItem
+import WidgetIntentState
 import android.content.Context
 import android.content.Intent
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.google.gson.Gson
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -93,5 +95,3 @@ class LargeTeamProjectsWidgetReceiver: GlanceAppWidgetReceiver() {
         }
     }
 }
-
-

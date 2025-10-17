@@ -10,16 +10,15 @@ const withSourceFiles = require('./withSourceFiles')
 const withModifiedAppBuildGradle = (config, opts) =>
     withAppBuildGradle(config, (config) => {
         const gradleDependencies = `
-    implementation("androidx.glance:glance:${opts.glanceVersion}")
-    implementation("androidx.glance:glance-appwidget:${opts.glanceVersion}")
-    implementation("androidx.glance:glance-preview:${opts.glanceVersion}")
-    implementation("androidx.glance:glance-material3:${opts.glanceVersion}")
-    implementation("androidx.glance:glance-appwidget-preview:${opts.glanceVersion}")
-    implementation("com.google.code.gson:gson:2.12.1")
-    implementation("androidx.activity:activity-compose:1.10.0")
-    implementation("androidx.compose.ui:ui:1.7.8")
-    implementation("androidx.compose.material3:material3:1.3.1")
-    implementation("androidx.work:work-runtime:2.10.0")
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.glance:glance-preview:1.1.1")
+    implementation("androidx.glance:glance-material3:1.1.1")
+    implementation("androidx.glance:glance-appwidget-preview:1.1.1")
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("androidx.activity:activity-compose:1.11.0")
+    implementation("androidx.compose.ui:ui:1.9.3")
+    implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.work:work-runtime:2.10.5")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     `
 
@@ -84,7 +83,7 @@ const withRootKotlinComposeClasspath = (config) =>
         // Ensure the Kotlin Compose Gradle plugin is available on the buildscript classpath
         newFileContents = mergeContents({
             src: newFileContents,
-            newSrc: "    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:' + kotlinVersion)",
+            newSrc: "    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.0')",
             tag: 'KotlinComposeGradlePluginClasspath',
             anchor: /classpath\('org\.jetbrains\.kotlin:kotlin-gradle-plugin'\)/,
             offset: 1,
