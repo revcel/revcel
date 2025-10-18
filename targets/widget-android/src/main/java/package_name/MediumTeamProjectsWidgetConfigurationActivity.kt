@@ -1,6 +1,7 @@
 package com.revcel.mobile
 
 import ProjectListItem
+import TeamProjectItem
 import WidgetIntentState
 import appGroupName
 import connectionsKey
