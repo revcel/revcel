@@ -5,4 +5,6 @@
     <string name="medium_analytics_description">See the analytics for your project.</string>
     <string name="medium_firewall_widget_title">Firewall</string>
     <string name="medium_firewall_widget_description">See the firewall metrics for your project.</string>
+	<string name="large_team_projects_widget_title">Team Projects</string>
+    <string name="large_team_projects_widget_description">See the latest info for up to 6 projects.</string>
 </resources>

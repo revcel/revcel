@@ -65,6 +65,7 @@ module.exports = ({ config }) => {
                     },
                 },
             ],
+            './plugins/withAndroidHeap',
             'expo-router',
             [
                 'expo-splash-screen',
@@ -120,6 +121,13 @@ module.exports = ({ config }) => {
                             'resource': '@xml/medium_firewall_widget_info',
                             'description': '@string/medium_firewall_widget_description',
                             'title': '@string/medium_firewall_widget_title',
+                        },
+                        {
+                            'receiverName': 'LargeTeamProjectsWidgetReceiver',
+                            'configurationActivity': 'LargeTeamProjectsWidgetConfigurationActivity',
+                            'resource': '@xml/large_team_projects_widget_info',
+                            'description': '@string/large_team_projects_widget_description',
+                            'title': '@string/large_team_projects_widget_title',
                         },
                     ],
                 },

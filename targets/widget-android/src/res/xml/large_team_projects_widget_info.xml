@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/sample_widget"
+    android:previewImage="@drawable/team_projects_preview"
+    android:minWidth="320dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="5"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="900000"
+    android:description="@string/large_team_projects_widget_description"
+    android:widgetCategory="home_screen"
+    android:configure="com.revcel.mobile.LargeTeamProjectsWidgetConfigurationActivity"
+    android:widgetFeatures="reconfigurable"
+/>

@@ -34,7 +34,7 @@ data class Deployment(
     val uid: String
 )
 
-// For LargeTeamProjectsWidget & MediumTeamProjectsWidget
+// For LargeTeamProjectsWidget (& MediumTeamProjectsWidget)
 data class DeploymentMeta(
     val githubCommitMessage: String?
 )
@@ -57,7 +57,8 @@ data class TeamProjectItem(
     val name: String,
     val commitMessage: String?,
     val createdAt: Long?,
-    val status: String?
+    val status: String?,
+    val faviconPath: String? = null
 )
 
 data class FirewallMetricsResponse(

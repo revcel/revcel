@@ -5,7 +5,7 @@ const {
     withProjectBuildGradle,
 } = require('@expo/config-plugins')
 const { mergeContents } = require('@expo/config-plugins/build/utils/generateCode')
-const withSourceFiles = require('./withSourceFiles')
+const withAndroidSourceFiles = require('./withAndroidSourceFiles')
 
 const withModifiedAppBuildGradle = (config, opts) =>
     withAppBuildGradle(config, (config) => {
@@ -22,24 +22,12 @@ const withModifiedAppBuildGradle = (config, opts) =>
     implementation("com.github.PhilJay:MPAndroidChart:v${opts.versions.chart}")
     `
 
-        const requestedCompilerExtensionVersion =
-            opts.kotlinCompilerExtensionVersion ?? opts.kotlinExtensionVersion
-        const composeOptionsBlock = requestedCompilerExtensionVersion
-            ? `
-    composeOptions {
-        kotlinCompilerExtensionVersion = "${requestedCompilerExtensionVersion}"
-    }
-`
-            : ''
-
         const gradleAndroidConfig = `
 android {
     buildFeatures {
         compose = true
     }
-${composeOptionsBlock}
-}
-`
+}`
 
         let newFileContents = config.modResults.contents
 
@@ -178,7 +166,7 @@ const withAndroidWidget = (config, opts) => {
     opts.widgets.forEach((widget) => {
         config = withModifiedAndroidManifestActivity(config, widget)
     })
-    config = withSourceFiles(config, { src: opts.src })
+    config = withAndroidSourceFiles(config, { src: opts.src })
 
     return config
 }

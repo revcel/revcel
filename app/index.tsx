@@ -47,7 +47,7 @@ export default function App() {
 
     if (showLfo1) {
         registerPlacement({
-            placement: 'LifetimeOffer_1',
+            placement: 'LifetimeOffer_1_Show',
             feature: () => {
                 WidgetKitModule.setIsSubscribed(true)
                 Alert.alert('Congrats, you unlocked lifetime access to Rev.')

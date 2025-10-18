@@ -4,13 +4,10 @@ const { withDangerousMod, AndroidConfig } = require('@expo/config-plugins')
 const path = require('node:path')
 const fs = require('node:fs')
 
-const withSourceFiles = (
-    config,
-    options,
-) => {
+const withAndroidSourceFiles = (config, options) => {
     return withDangerousMod(config, [
         'android',
-        async newConfig => {
+        async (newConfig) => {
             const { modRequest } = newConfig
 
             const projectRoot = modRequest.projectRoot
@@ -19,7 +16,9 @@ const withSourceFiles = (
             const packageName = AndroidConfig.Package.getPackage(config)
 
             if (!packageName) {
-                throw new Error(`ExpoWidgets:: app.(ts/json) must provide a value for android.package.`)
+                throw new Error(
+                    `ExpoWidgets:: app.(ts/json) must provide a value for android.package.`
+                )
             }
 
             copyResourceFiles(widgetFolderPath, platformRoot)
@@ -29,7 +28,7 @@ const withSourceFiles = (
             modifySourceFiles(options.distPlaceholder, sourceFiles, packageName)
 
             return newConfig
-        }
+        },
     ])
 }
 
@@ -38,7 +37,9 @@ const copyResourceFiles = (widgetFolderPath, platformRoot) => {
     const destinationFolder = path.join(platformRoot, 'app/src/main/res')
 
     if (!fs.existsSync(resourcesFolder)) {
-        console.log(`No resource 'res' folder found in the widget source directory ${widgetFolderPath}. No resource files copied over.`)
+        console.log(
+            `No resource 'res' folder found in the widget source directory ${widgetFolderPath}. No resource files copied over.`
+        )
 
         return
     }
@@ -55,10 +56,7 @@ const safeCopy = (sourcePath, destinationPath) => {
                 fs.mkdirSync(destinationPath, { recursive: true })
             }
             for (const file of fs.readdirSync(sourcePath)) {
-                safeCopy(
-                    path.join(sourcePath, file),
-                    path.join(destinationPath, file)
-                )
+                safeCopy(path.join(sourcePath, file), path.join(destinationPath, file))
             }
         } else {
             fs.copyFileSync(sourcePath, destinationPath)
@@ -67,7 +65,6 @@ const safeCopy = (sourcePath, destinationPath) => {
         console.warn(error)
     }
 }
-
 
 const getSourceFileDestinationFolder = (packageName, widgetFolderPath, platformRoot) => {
     const packageNameAsPath = packageName?.replace(/\./g, '/')
@@ -84,13 +81,13 @@ function emptyDirSync(dir) {
     }
 }
 
-const copySourceFiles = (
-    widgetFolderPath,
-    platformRoot,
-    packageName,
-) => {
+const copySourceFiles = (widgetFolderPath, platformRoot, packageName) => {
     const originalSourceFolder = path.join(widgetFolderPath, 'src/main/java/package_name')
-    const destinationFolder = getSourceFileDestinationFolder(packageName, widgetFolderPath, platformRoot)
+    const destinationFolder = getSourceFileDestinationFolder(
+        packageName,
+        widgetFolderPath,
+        platformRoot
+    )
 
     if (!fs.existsSync(destinationFolder)) {
         fs.mkdirSync(destinationFolder)
@@ -109,13 +106,21 @@ const copySourceFiles = (
         if (fs.lstatSync(sourcePath).isDirectory()) {
             emptyDirSync(destinationPath)
             fs.cpSync(sourcePath, destinationPath, { recursive: true })
+
+            const subFiles = fs.readdirSync(sourcePath)
+            for (const subFile of subFiles) {
+                if (subFile.endsWith('.kt')) {
+                    sourceFiles.push(path.join(destinationPath, subFile))
+                }
+            }
+
+            continue
         }
 
         const file = path.basename(relativePath)
 
         if (file === 'Module.kt') {
             console.log('Module file skipped during source file copy.')
-
             continue
         }
 
@@ -128,7 +133,7 @@ const copySourceFiles = (
     return sourceFiles
 }
 
-const escapeRegExp = str => {
+const escapeRegExp = (str) => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -141,14 +146,15 @@ const modifySourceFiles = (distPlaceholder, sourceFiles, packageName) => {
         console.log('No distPlaceholder set. Modification of source files not required.')
 
         return
-    }
-    else if (sourceFiles.length === 0) {
+    } else if (sourceFiles.length === 0) {
         console.log('No source files provided for modification.')
 
         return
     }
 
-    console.log(`Modifying source files with placeholder ${distPlaceholder} to package ${packageName}`)
+    console.log(
+        `Modifying source files with placeholder ${distPlaceholder} to package ${packageName}`
+    )
 
     const packageSearchStr = `package ${distPlaceholder}`
     const packageReplaceStr = `package ${packageName}`
@@ -167,4 +173,4 @@ const modifySourceFiles = (distPlaceholder, sourceFiles, packageName) => {
     }
 }
 
-module.exports = withSourceFiles
+module.exports = withAndroidSourceFiles

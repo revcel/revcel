@@ -1,6 +1,8 @@
 package com.revcel.mobile
 
+import AnalyticsTimeseries
 import AnalyticsWidgetData
+import ConnectionTeam
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
@@ -19,9 +21,6 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
-import androidx.glance.state.GlanceStateDefinition
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.datastore.preferences.core.Preferences
@@ -30,14 +29,12 @@ import androidx.glance.ImageProvider
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.cornerRadius
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.size
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
@@ -47,17 +44,7 @@ import androidx.glance.LocalContext
 import androidx.glance.layout.ContentScale
 
 class MediumAnalyticsWidget: GlanceAppWidget() {
-	companion object {
-        private val MEDIUM = DpSize(100.dp, 115.dp)
-    }
-
-    override val sizeMode = SizeMode.Responsive(
-        setOf(
-            MEDIUM
-        )
-    )
-	
-    override var stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
+    override val sizeMode = SizeMode.Single
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
@@ -70,7 +57,6 @@ class MediumAnalyticsWidget: GlanceAppWidget() {
 
 @Composable
 fun MediumAnalyticsWidgetContent() {
-    val imageSize = 42.dp
     val context = LocalContext.current
     val state = currentState<Preferences>()
     val isSubscribed = state[MediumAnalyticsWidgetReceiver.isSubscribedValueKey] ?: false
@@ -79,6 +65,23 @@ fun MediumAnalyticsWidgetContent() {
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
     val rawAnalyticsData = state[MediumAnalyticsWidgetReceiver.analyticsDataKey]
     val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java) ?: null
+    
+    MediumAnalyticsWidgetUI(
+        project = project,
+        analyticsData = analyticsData,
+        faviconPath = faviconPath,
+        isSubscribed = isSubscribed
+    )
+}
+
+@Composable
+fun MediumAnalyticsWidgetUI(
+    project: ProjectListItem?,
+    analyticsData: AnalyticsWidgetData?,
+    faviconPath: String?,
+    isSubscribed: Boolean
+) {
+    val context = LocalContext.current
     val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
 
@@ -158,21 +161,8 @@ fun MediumAnalyticsWidgetContent() {
                 horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
                 verticalAlignment = Alignment.Vertical.CenterVertically
             ) {
-                if (faviconPath != null && faviconPath !== "") {
-                    Image(
-                        provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
-                        contentDescription = null,
-                        modifier = GlanceModifier.size(imageSize, imageSize)
-                            .cornerRadius(imageSize / 2)
-                    )
-                } else {
-                    Box(
-                        modifier = GlanceModifier
-                            .size(imageSize)
-                            .cornerRadius(imageSize / 2)
-                            .background(backgroundSecondary)
-                    ) {}
-                }
+                ProjectFavicon(faviconPath)
+                
                 Text(
                     text = project.projectName,
                     style = TextStyle(
@@ -200,8 +190,50 @@ fun MediumAnalyticsWidgetContent() {
 }
 
 @OptIn(ExperimentalGlancePreviewApi::class)
-@Preview(widthDp = 200, heightDp = 160)
+@Preview(widthDp = 500, heightDp = 200)
 @Composable
 fun MediumAnalyticsWidgetContentPreview1() {
-    MediumAnalyticsWidgetContent()
+    RevcelGlanceTheme {
+        // Create mock data for preview
+        val mockConnection = expo.modules.widgetkit.Connection().apply {
+            id = "preview-connection-id"
+            apiToken = "preview-token"
+        }
+        
+        val mockConnectionTeam = ConnectionTeam(
+            id = "preview-team-id",
+            name = "My Team"
+        )
+        
+        val mockProject = ProjectListItem(
+            id = "preview-project-id",
+            projectName = "My Project",
+            connection = mockConnection,
+            connectionTeam = mockConnectionTeam
+        )
+        
+        val mockTimeseriesData = arrayOf(
+            AnalyticsTimeseries(key = "2024-01-01", total = 10, devices = 5, bounceRate = 20),
+            AnalyticsTimeseries(key = "2024-01-02", total = 20, devices = 10, bounceRate = 25),
+            AnalyticsTimeseries(key = "2024-01-03", total = 15, devices = 8, bounceRate = 15),
+            AnalyticsTimeseries(key = "2024-01-04", total = 30, devices = 15, bounceRate = 30),
+            AnalyticsTimeseries(key = "2024-01-05", total = 25, devices = 12, bounceRate = 20),
+            AnalyticsTimeseries(key = "2024-01-06", total = 35, devices = 18, bounceRate = 22),
+            AnalyticsTimeseries(key = "2024-01-07", total = 40, devices = 20, bounceRate = 18)
+        )
+        
+        val mockAnalyticsData = AnalyticsWidgetData(
+            visitorsNumber = 1234,
+            isEnabled = true,
+            hasData = true,
+            data = mockTimeseriesData
+        )
+        
+        MediumAnalyticsWidgetUI(
+            project = mockProject,
+            analyticsData = mockAnalyticsData,
+            faviconPath = null,
+            isSubscribed = true
+        )
+    }
 }
