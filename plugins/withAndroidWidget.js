@@ -10,16 +10,16 @@ const withSourceFiles = require('./withSourceFiles')
 const withModifiedAppBuildGradle = (config, opts) =>
     withAppBuildGradle(config, (config) => {
         const gradleDependencies = `
-    implementation("androidx.glance:glance-appwidget:1.1.1")
-    implementation("androidx.glance:glance-preview:1.1.1")
-    implementation("androidx.glance:glance-material3:1.1.1")
-    implementation("androidx.glance:glance-appwidget-preview:1.1.1")
-    implementation("com.google.code.gson:gson:2.13.2")
-    implementation("androidx.activity:activity-compose:1.11.0")
-    implementation("androidx.compose.ui:ui:1.9.3")
-    implementation("androidx.compose.material3:material3:1.4.0")
-    implementation("androidx.work:work-runtime:2.10.5")
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.glance:glance-appwidget:${opts.versions.glance}")
+    implementation("androidx.glance:glance-preview:${opts.versions.glance}")
+    implementation("androidx.glance:glance-material3:${opts.versions.glance}")
+    implementation("androidx.glance:glance-appwidget-preview:${opts.versions.glance}")
+    implementation("com.google.code.gson:gson:${opts.versions.gson}")
+    implementation("androidx.activity:activity-compose:${opts.versions.activityCompose}")
+    implementation("androidx.compose.ui:ui:${opts.versions.composeUi}")
+    implementation("androidx.compose.material3:material3:${opts.versions.material3}")
+    implementation("androidx.work:work-runtime:${opts.versions.workRuntime}")
+    implementation("com.github.PhilJay:MPAndroidChart:v${opts.versions.chart}")
     `
 
         const requestedCompilerExtensionVersion =
@@ -76,14 +76,14 @@ ${composeOptionsBlock}
         return config
     })
 
-const withRootKotlinComposeClasspath = (config) =>
+const withRootKotlinComposeClasspath = (config, opts) =>
     withProjectBuildGradle(config, (config) => {
         let newFileContents = config.modResults.contents
 
         // Ensure the Kotlin Compose Gradle plugin is available on the buildscript classpath
         newFileContents = mergeContents({
             src: newFileContents,
-            newSrc: "    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.0')",
+            newSrc: `    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:${opts.versions.kotlinExtension}')`,
             tag: 'KotlinComposeGradlePluginClasspath',
             anchor: /classpath\('org\.jetbrains\.kotlin:kotlin-gradle-plugin'\)/,
             offset: 1,
@@ -170,7 +170,7 @@ const withModifiedAndroidManifestActivity = (config, opts) =>
     })
 
 const withAndroidWidget = (config, opts) => {
-    config = withRootKotlinComposeClasspath(config)
+    config = withRootKotlinComposeClasspath(config, opts)
     config = withModifiedAppBuildGradle(config, opts)
     opts.widgets.forEach((widget) => {
         config = withModifiedAndroidManifest(config, widget)

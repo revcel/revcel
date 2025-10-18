@@ -89,8 +89,16 @@ module.exports = ({ config }) => {
                 './plugins/withAndroidWidget',
                 {
                     'src': './targets/widget-android',
-                    'glanceVersion': '1.1.1',
-                    'kotlinExtensionVersion': '1.7.0',
+                    'versions': {
+                        'glance': '1.1.1',
+                        'kotlinExtension': '2.0.0',
+                        'gson': '2.13.2',
+                        'activityCompose': '1.11.0',
+                        'composeUi': '1.9.3',
+                        'material3': '1.4.0',
+                        'workRuntime': '2.10.5',
+                        'chart': '3.1.0',
+                    },
                     'widgets': [
                         {
                             'receiverName': 'SmallShortcutWidgetReceiver',
