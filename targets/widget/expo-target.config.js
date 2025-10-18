@@ -37,6 +37,9 @@ function createConfig(config) {
                 config.ios.entitlements['com.apple.security.application-groups'],
         },
         colors,
+        images: {
+            AppIconImage: '../../assets/icon.png',
+        },
     }
 }
 

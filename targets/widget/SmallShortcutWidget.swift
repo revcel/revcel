@@ -69,17 +69,7 @@ struct SmallShortcutEntryView: View {
         .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
     } else {
       VStack(alignment: .center, spacing: 10.0) {
-        if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
-          Image(uiImage: uiImage)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(width: 75.0, height: 75.0)
-            .clipShape(Circle())
-        } else {
-          Circle()
-            .fill(Color("backgroundSecondary"))
-            .frame(width: 75.0, height: 75.0)
-        }
+        ProjectFavicon(faviconPath: entry.faviconPath, imageSize: 75.0)
         if let project = entry.configuration.project {
           Text("\(project.projectName)")
             .font(.system(size: 16, weight: .bold))

@@ -58,19 +58,33 @@ struct MediumTeamProjectsProvider: AppIntentTimelineProvider {
             commitMessage: nil,
             createdAt: nil,
             status: nil,
-            project: project
+            project: project,
+            faviconPath: nil
           )
           
           do {
             let response = try await fetchProductionDeployment(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
             let deployment = response.deployment
+            
+            var faviconPath: String? = nil
+            do {
+              let latestDeployment = try await fetchLatestDeplyment(connection: project.connection, projectId: project.id)
+              if let uid = latestDeployment.deployments.first?.uid,
+                 let url = URL(string: "https://vercel.com/api/v0/deployments/\(uid)/favicon?teamId=\(project.connectionTeam.id)") {
+                faviconPath = try await downloadAndSaveImage(from: url, name: project.id)
+              }
+            } catch {
+              // Favicon fetch failed, continue without it
+            }
+            
             return MediumTeamProjectsItem(
               id: "\(project.id)-\(index)",
               name: project.projectName,
               commitMessage: deployment.meta?.githubCommitMessage,
               createdAt: deployment.createdAt,
               status: deployment.readyState,
-              project: project
+              project: project,
+              faviconPath: faviconPath
             )
           } catch {
             return fallbackItem
@@ -103,6 +117,7 @@ struct MediumTeamProjectsItem: Identifiable {
   let createdAt: Int?
   let status: String?
   let project: ProjectListItem
+  let faviconPath: String?
 }
 
 struct MediumTeamProjectsEntry: TimelineEntry {
@@ -134,7 +149,8 @@ struct MediumTeamProjectsRow: View {
   }
   
   var body: some View {
-    HStack(alignment: .center) {
+    HStack(alignment: .center, spacing: 12.0) {
+      ProjectFavicon(faviconPath: item.faviconPath, imageSize: 36.0)
       VStack(alignment: .leading, spacing: 4.0) {
         Text(item.name)
           .font(.system(size: 16, weight: .bold))
@@ -281,7 +297,7 @@ struct MediumTeamProjectsWidget: Widget {
         }
     }
     .configurationDisplayName("Team Projects")
-    .description("See latest for up to 3 projects.")
+    .description("See the latest info for up to 6 projects.")
     .supportedFamilies([.systemMedium])
   }
 }
@@ -300,9 +316,9 @@ extension MediumTeamProjectsAppIntentConfiguration {
   MediumTeamProjectsWidget()
 } timeline: {
   MediumTeamProjectsEntry(date: .now, configuration: .sample, isSubscribed: true, items: [
-    .init(id: "1-0", name: "Revcel", commitMessage: "Initial release", createdAt: Int(Date().timeIntervalSince1970 * 1000), status: "READY", project: .init(id: "1", projectName: "Revcel", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team"))),
-    .init(id: "2-1", name: "Docs", commitMessage: "Update readme", createdAt: Int(Date().addingTimeInterval(-86400).timeIntervalSince1970 * 1000), status: "BUILDING", project: .init(id: "2", projectName: "Docs", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team"))),
-    .init(id: "3-2", name: "API", commitMessage: "Improve endpoints", createdAt: Int(Date().addingTimeInterval(-172800).timeIntervalSince1970 * 1000), status: "QUEUED", project: .init(id: "3", projectName: "API", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team")))
+    .init(id: "1-0", name: "Revcel", commitMessage: "Initial release", createdAt: Int(Date().timeIntervalSince1970 * 1000), status: "READY", project: .init(id: "1", projectName: "Revcel", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team")), faviconPath: nil),
+    .init(id: "2-1", name: "Docs", commitMessage: "Update readme", createdAt: Int(Date().addingTimeInterval(-86400).timeIntervalSince1970 * 1000), status: "BUILDING", project: .init(id: "2", projectName: "Docs", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team")), faviconPath: nil),
+    .init(id: "3-2", name: "API", commitMessage: "Improve endpoints", createdAt: Int(Date().addingTimeInterval(-172800).timeIntervalSince1970 * 1000), status: "QUEUED", project: .init(id: "3", projectName: "API", connection: .init(id: "1", apiToken: "2"), connectionTeam: .init(id: "1", name: "Team")), faviconPath: nil)
   ])
 }
 

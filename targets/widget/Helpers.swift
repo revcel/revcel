@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum Granularity {
   case fiveMinutes
@@ -55,4 +56,30 @@ func formatNumber(_ number: Int) -> String {
   }
   let value = Double(number) / 1_000_000.0
   return String(format: "%.1fM", value)
+}
+
+struct ProjectFavicon: View {
+  let faviconPath: String?
+  let imageSize: CGFloat
+  
+  init(faviconPath: String?, imageSize: CGFloat = 42.0) {
+    self.faviconPath = faviconPath
+    self.imageSize = imageSize
+  }
+  
+  var body: some View {
+    if let path = faviconPath, let uiImage = UIImage(contentsOfFile: path) {
+      Image(uiImage: uiImage)
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: imageSize, height: imageSize)
+        .clipShape(Circle())
+    } else {
+      Image("AppIconImage")
+        .resizable()
+        .aspectRatio(contentMode: .fit)
+        .frame(width: imageSize, height: imageSize)
+        .clipShape(Circle())
+    }
+  }
 }

@@ -143,17 +143,7 @@ struct MediumFirewallEntryView: View {
     } else {
       VStack(alignment: .leading, spacing: 30.0) {
         HStack(alignment: .center, spacing: 10.0) {
-          if let path = entry.faviconPath, let uiImage = UIImage(contentsOfFile: path) {
-            Image(uiImage: uiImage)
-              .resizable()
-              .aspectRatio(contentMode: .fit)
-              .frame(width: 30.0, height: 30.0)
-              .clipShape(Circle())
-          } else {
-            Circle()
-              .fill(Color("backgroundSecondary"))
-              .frame(width: 30.0, height: 30.0)
-          }
+          ProjectFavicon(faviconPath: entry.faviconPath, imageSize: 30.0)
           if let project = entry.configuration.project {
             Text("\(project.projectName)")
               .font(.system(size: 16, weight: .bold))
