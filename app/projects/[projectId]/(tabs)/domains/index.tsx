@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { FlashList } from '@shopify/flash-list'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
@@ -44,16 +45,24 @@ export default function Domains() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={{
-                        height: 32,
-                        width: 32,
-                    }}
+                    style={
+                        isLiquidGlassAvailable()
+                            ? undefined
+                            : {
+                                  height: 32,
+                                  width: 32,
+                              }
+                    }
                     onPress={() => {
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
                         router.push(`/projects/${projectId}/domains/add`)
                     }}
                 >
-                    <Ionicons name="add-circle-sharp" size={32} color={COLORS.success} />
+                    <Ionicons
+                        name="add-circle-sharp"
+                        size={32}
+                        color={isLiquidGlassAvailable() ? COLORS.gray1000 : COLORS.success}
+                    />
                 </HeaderTouchableOpacity>
             ),
         })

@@ -1,6 +1,7 @@
 import { fetchTeamDeployment, fetchTeamDeploymentBuildMetadata } from '@/api/queries'
 import BottomGradient from '@/components/BottomGradient'
 import { SelectableText } from '@/components/SelectableText'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
@@ -9,9 +10,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
-import { Platform, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, Text, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function DeploymentLogs() {
@@ -121,22 +123,26 @@ export default function DeploymentLogs() {
                                 }
                             }}
                         >
-                            <TouchableOpacity
-                                style={{
-                                    backgroundColor: COLORS.gray200,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    borderRadius: 16,
-                                    height: 32,
-                                    width: 32,
-                                }}
+                            <HeaderTouchableOpacity
+                                style={
+                                    isLiquidGlassAvailable()
+                                        ? undefined
+                                        : {
+                                              backgroundColor: COLORS.gray200,
+                                              justifyContent: 'center',
+                                              alignItems: 'center',
+                                              borderRadius: 16,
+                                              height: 32,
+                                              width: 32,
+                                          }
+                                }
                             >
                                 <Ionicons
                                     name="ellipsis-horizontal-sharp"
-                                    size={18}
+                                    size={isLiquidGlassAvailable() ? 32 : 18}
                                     color={COLORS.gray1000}
                                 />
-                            </TouchableOpacity>
+                            </HeaderTouchableOpacity>
                         </ContextMenu>
                     ),
                     headerSearchBarOptions: {

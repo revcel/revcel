@@ -53,8 +53,8 @@ export default function App() {
                 Alert.alert('Congrats, you unlocked lifetime access to Rev.')
             },
         }).catch((error) => {
-            console.error('Error registering LifetimeOffer_1', error)
             Sentry.captureException(error)
+            console.error('Error registering LifetimeOffer_1', error)
         })
     }
 

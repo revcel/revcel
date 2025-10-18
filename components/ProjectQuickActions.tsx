@@ -28,7 +28,12 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
     return (
         <ScrollView
             horizontal={true}
-            contentContainerStyle={{ gap: 8 }}
+            style={{
+                borderRadius: 10,
+            }}
+            contentContainerStyle={{
+                gap: 8,
+            }}
             showsHorizontalScrollIndicator={false}
         >
             <QuickAction

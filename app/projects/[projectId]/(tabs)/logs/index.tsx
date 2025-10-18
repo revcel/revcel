@@ -13,6 +13,7 @@ import * as Sentry from '@sentry/react-native'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { usePlacement } from 'expo-superwall'
@@ -53,14 +54,18 @@ export default function Logs() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={{
-                        backgroundColor: COLORS.gray200,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderRadius: 16,
-                        height: 32,
-                        width: 32,
-                    }}
+                    style={
+                        isLiquidGlassAvailable()
+                            ? undefined
+                            : {
+                                  backgroundColor: COLORS.gray200,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  borderRadius: 16,
+                                  height: 32,
+                                  width: 32,
+                              }
+                    }
                     onPress={() => {
                         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
                         router.push({
@@ -71,7 +76,11 @@ export default function Logs() {
                         })
                     }}
                 >
-                    <Ionicons name="filter-outline" size={18} color={COLORS.gray1000} />
+                    <Ionicons
+                        name="filter-outline"
+                        size={isLiquidGlassAvailable() ? 32 : 18}
+                        color={COLORS.gray1000}
+                    />
                 </HeaderTouchableOpacity>
             ),
         })

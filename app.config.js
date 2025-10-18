@@ -20,6 +20,7 @@ module.exports = ({ config }) => {
         newArchEnabled: true,
 
         ios: {
+            ...(config.ios || {}),
             appleTeamId: process.env.EXPO_PUBLIC_APPLE_TEAM_ID,
             bundleIdentifier: process.env.EXPO_PUBLIC_BUNDLE_IDENTIFIER,
             supportsTablet: true,
@@ -38,6 +39,7 @@ module.exports = ({ config }) => {
             enforceContrast: false,
         },
         android: {
+            ...(config.android || {}),
             package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
             adaptiveIcon: {
                 foregroundImage: './assets/icon.png',

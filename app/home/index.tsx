@@ -15,11 +15,12 @@ import { Ionicons } from '@expo/vector-icons'
 import CookieManager, { type Cookie } from '@react-native-cookies/cookies'
 import * as Sentry from '@sentry/react-native'
 import { useQueries, useQuery } from '@tanstack/react-query'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import * as Haptics from 'expo-haptics'
 import * as QuickActions from 'expo-quick-actions'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
-import { usePlacement, useUser } from 'expo-superwall'
+import { usePlacement, useSuperwall, useUser } from 'expo-superwall'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
 import { Alert, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
@@ -30,6 +31,7 @@ export default function HomeScreen() {
     const navigation = useNavigation()
     const { registerPlacement } = usePlacement()
     const { subscriptionStatus } = useUser()
+    const { getPresentationResult } = useSuperwall()
     const { width: windowWidth } = useWindowDimensions()
 
     const connections = usePersistedStore((state) => state.connections)
@@ -151,6 +153,102 @@ export default function HomeScreen() {
         return '18.9%'
     }, [windowWidth])
 
+    useEffect(() => {
+        const getUrlAsync = async () => {
+            // Get the deep link used to open the app
+            const initialUrl = await Linking.getInitialURL()
+
+            const eventId = initialUrl?.split('revcel:///?event=')[1]
+
+            if (!eventId) return
+
+            if (eventId === 'push') {
+                registerPlacement({
+                    placement: 'OpenNotifications',
+                    feature: () => {
+                        router.push('/notifications')
+                        WidgetKitModule.setIsSubscribed(true)
+                    },
+                }).catch((error) => {
+                    Sentry.captureException(error)
+                    console.error('Error registering OpenNotifications', error)
+                    Alert.alert('Error', 'Something went wrong, please try again.')
+                })
+                return
+            }
+
+            if (eventId === 'v0') {
+                router.push('/v0')
+                return
+            }
+        }
+
+        getUrlAsync()
+    }, [registerPlacement])
+
+    useEffect(() => {
+        if (subscriptionStatus.status !== 'INACTIVE') {
+            QuickActions.isSupported().then((supported) => {
+                if (!supported) return
+                QuickActions.setItems(
+                    Platform.OS === 'ios'
+                        ? [
+                              {
+                                  id: '0',
+                                  title: 'Bugs?',
+                                  subtitle: 'Open an issue on GitHub!',
+                                  icon: 'mail',
+                              },
+                          ]
+                        : []
+                )
+            })
+            return
+        }
+
+        try {
+            getPresentationResult('LifetimeOffer_1').then((presentationResult) => {
+                if (
+                    ['placementnotfound', 'noaudiencematch'].includes(
+                        presentationResult.type.toLowerCase()
+                    )
+                ) {
+                    return
+                }
+                setTimeout(() => {
+                    registerPlacement({
+                        placement: 'LifetimeOffer_1',
+                        feature: () => {
+                            WidgetKitModule.setIsSubscribed(true)
+                            Alert.alert('Congrats, you unlocked lifetime access to Rev.')
+                        },
+                    }).catch((error) => {
+                        Sentry.captureException(error)
+                        console.error('Error registering LifetimeOffer_1', error)
+                    })
+                }, 1000)
+            })
+
+            QuickActions.isSupported().then((supported) => {
+                if (!supported) return
+                QuickActions.setItems([
+                    {
+                        id: '0',
+                        title:
+                            Platform.OS === 'android'
+                                ? "Don't delete me ): Tap here!"
+                                : "Don't delete me ):",
+                        subtitle: "Here's 50% off for life!",
+                        icon: 'love',
+                        params: { href: '/showLfo1=1' },
+                    },
+                ])
+            })
+        } catch (error) {
+            Sentry.captureException(error)
+        }
+    }, [registerPlacement, getPresentationResult, subscriptionStatus.status])
+
     useLayoutEffect(() => {
         if (!currentUser) return
         if (!currentTeam) return
@@ -177,6 +275,11 @@ export default function HomeScreen() {
                                         teams.map((team) => ({
                                             title: team.name,
                                             destructive: false,
+                                            systemIcon: isLiquidGlassAvailable()
+                                                ? team.id === currentTeamId
+                                                    ? 'smallcircle.filled.circle.fill'
+                                                    : 'smallcircle.filled.circle'
+                                                : undefined,
                                             disabled: team.id === currentTeamId,
                                         }))
                                     ) || []),
@@ -299,23 +402,48 @@ export default function HomeScreen() {
                     }}
                 >
                     <HeaderTouchableOpacity
-                        style={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: 10,
-                            overflow: 'hidden',
-                            marginRight: 10,
-                        }}
+                        style={
+                            isLiquidGlassAvailable()
+                                ? undefined
+                                : {
+                                      width: 20,
+                                      height: 20,
+                                      borderRadius: 10,
+                                      overflow: 'hidden',
+                                      marginRight: 10,
+                                  }
+                        }
                     >
                         {teamAvatarQuery.data ? (
                             <SvgUri
                                 uri={teamAvatarQuery.data}
-                                style={{
-                                    flex: 1,
-                                }}
+                                width={isLiquidGlassAvailable() ? 32 : undefined}
+                                height={isLiquidGlassAvailable() ? 32 : undefined}
+                                style={
+                                    isLiquidGlassAvailable()
+                                        ? {
+                                              borderRadius: 16,
+                                              overflow: 'hidden',
+                                          }
+                                        : {
+                                              flex: 1,
+                                          }
+                                }
                             />
                         ) : (
-                            <View style={{ flex: 1, backgroundColor: COLORS.successDark }} />
+                            <View
+                                style={
+                                    isLiquidGlassAvailable()
+                                        ? {
+                                              width: 32,
+                                              height: 32,
+                                              borderRadius: 16,
+                                              overflow: 'hidden',
+                                              backgroundColor: COLORS.successDark,
+                                          }
+                                        : { flex: 1, backgroundColor: COLORS.successDark }
+                                }
+                            />
                         )}
                         {/* <Image
                             source={{
@@ -430,72 +558,6 @@ export default function HomeScreen() {
         connections.length,
         registerPlacement,
     ])
-
-    useEffect(() => {
-        const getUrlAsync = async () => {
-            // Get the deep link used to open the app
-            const initialUrl = await Linking.getInitialURL()
-
-            const eventId = initialUrl?.split('revcel:///?event=')[1]
-
-            if (!eventId) return
-
-            if (eventId === 'push') {
-                registerPlacement({
-                    placement: 'OpenNotifications',
-                    feature: () => {
-                        router.push('/notifications')
-                        WidgetKitModule.setIsSubscribed(true)
-                    },
-                }).catch((error) => {
-                    Sentry.captureException(error)
-                    console.error('Error registering OpenNotifications', error)
-                    Alert.alert('Error', 'Something went wrong, please try again.')
-                })
-                return
-            }
-
-            if (eventId === 'v0') {
-                router.push('/v0')
-                return
-            }
-        }
-
-        getUrlAsync()
-    }, [registerPlacement])
-
-    useEffect(() => {
-        if (subscriptionStatus.status !== 'INACTIVE') return
-
-        setTimeout(() => {
-            registerPlacement({
-                placement: 'LifetimeOffer_1',
-                feature: () => {
-                    WidgetKitModule.setIsSubscribed(true)
-                    Alert.alert('Congrats, you unlocked lifetime access to Rev.')
-                },
-            }).catch((error) => {
-                console.error('Error registering LifetimeOffer_1', error)
-                Sentry.captureException(error)
-            })
-        }, 1000)
-
-        QuickActions.isSupported().then((supported) => {
-            if (!supported) return
-            QuickActions.setItems([
-                {
-                    id: '0',
-                    title:
-                        Platform.OS === 'android'
-                            ? "Don't delete me ): Tap here!"
-                            : "Don't delete me ):",
-                    subtitle: "Here's 50% off for life!",
-                    icon: 'love',
-                    params: { href: '/showLfo1=1' },
-                },
-            ])
-        })
-    }, [registerPlacement, subscriptionStatus.status])
 
     useNotificationHandler()
     useWebhookCheck(teamsQueries)

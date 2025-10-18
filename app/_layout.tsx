@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/react-native'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { isRunningInExpoGo } from 'expo'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { activateKeepAwakeAsync } from 'expo-keep-awake'
 import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router'
 import { SuperwallProvider } from 'expo-superwall'
@@ -49,9 +50,11 @@ const mmkvPersister = createSyncStoragePersister({
 function RootLayout() {
     const commonHeaderStyle = {
         headerTransparent: Platform.OS === 'ios',
-        headerStyle: {
-            backgroundColor: COLORS.background,
-        },
+        headerStyle: isLiquidGlassAvailable()
+            ? undefined
+            : {
+                  backgroundColor: COLORS.background,
+              },
         headerTintColor: COLORS.gray1000,
         headerShadowVisible: true,
         headerTitleStyle: {

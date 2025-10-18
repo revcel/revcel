@@ -7,6 +7,7 @@ import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/commo
 import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
@@ -35,10 +36,14 @@ export default function Environment() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={{
-                        height: 32,
-                        width: 32,
-                    }}
+                    style={
+                        isLiquidGlassAvailable()
+                            ? undefined
+                            : {
+                                  height: 32,
+                                  width: 32,
+                              }
+                    }
                     onPress={() => {
                         // stops working on android
                         // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
@@ -62,7 +67,11 @@ export default function Environment() {
                         router.push(`/projects/${projectId}/environment/add`)
                     }}
                 >
-                    <Ionicons name="add-circle-sharp" size={32} color={COLORS.success} />
+                    <Ionicons
+                        name="add-circle-sharp"
+                        size={32}
+                        color={isLiquidGlassAvailable() ? COLORS.gray1000 : COLORS.success}
+                    />
                 </HeaderTouchableOpacity>
             ),
             headerSearchBarOptions: {

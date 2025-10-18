@@ -1,0 +1,13 @@
+{
+    "cSpell.words": ["grayscale"],
+    "files.exclude": {
+        "**/.bruno/**": true,
+        "**/.expo/**": true,
+        // "**/.vscode/**": true,
+        // "**/babel.config.js": true,
+        // "**/metro.config.js": true,
+        // "**/tsconfig.json": true,
+        "**/expo-env.d.ts": true,
+        "**/node_modules/**": true
+    }
+}

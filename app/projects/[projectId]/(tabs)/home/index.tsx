@@ -12,6 +12,7 @@ import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { Stack, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Alert, View } from 'react-native'
@@ -74,14 +75,18 @@ export default function ProjectHomeScreen() {
                 title: project.name || 'Project',
                 headerRight: () => (
                     <HeaderTouchableOpacity
-                        style={{
-                            backgroundColor: COLORS.gray200,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderRadius: 16,
-                            height: 32,
-                            width: 32,
-                        }}
+                        style={
+                            isLiquidGlassAvailable()
+                                ? undefined
+                                : {
+                                      backgroundColor: COLORS.gray200,
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      borderRadius: 16,
+                                      height: 32,
+                                      width: 32,
+                                  }
+                        }
                         onPress={() => {
                             if (!acknowledged.swipeLeftProject) {
                                 acknowledge('swipeLeftProject')
@@ -96,7 +101,11 @@ export default function ProjectHomeScreen() {
                             }
                         }}
                     >
-                        <Ionicons name="close" size={18} color={COLORS.gray1000} />
+                        <Ionicons
+                            name="close"
+                            size={isLiquidGlassAvailable() ? 32 : 18}
+                            color={COLORS.gray1000}
+                        />
                     </HeaderTouchableOpacity>
                 ),
             })

@@ -7,6 +7,8 @@ import {
 } from '@/api/mutations'
 import { fetchProductionDeployment, fetchTeamDeployment } from '@/api/queries'
 import ActivityIndicator from '@/components/base/ActivityIndicator'
+import HeaderItem from '@/components/base/HeaderItem'
+import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import InfoRow from '@/components/base/InfoRow'
 import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId, formatFrameworkName } from '@/lib/format'
@@ -20,6 +22,7 @@ import {
     formatDistanceToNow,
     intervalToDuration,
 } from 'date-fns'
+import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import * as Haptics from 'expo-haptics'
 import { type Href, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
@@ -203,7 +206,11 @@ export default function Deployment() {
             headerLargeTitle: true,
             title: formatDeploymentShortId(deployment),
             headerRight: isWorking
-                ? () => <ActivityIndicator sm={true} monochrome={true} />
+                ? () => (
+                      <HeaderItem>
+                          <ActivityIndicator sm={true} monochrome={true} />
+                      </HeaderItem>
+                  )
                 : () => (
                       <ContextMenu
                           dropdownMenuMode={true}
@@ -287,22 +294,26 @@ export default function Deployment() {
                               }
                           }}
                       >
-                          <TouchableOpacity
-                              style={{
-                                  backgroundColor: COLORS.gray200,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  borderRadius: 16,
-                                  height: 32,
-                                  width: 32,
-                              }}
+                          <HeaderTouchableOpacity
+                              style={
+                                  isLiquidGlassAvailable()
+                                      ? undefined
+                                      : {
+                                            backgroundColor: COLORS.gray200,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            borderRadius: 16,
+                                            height: 32,
+                                            width: 32,
+                                        }
+                              }
                           >
                               <Ionicons
                                   name="ellipsis-horizontal-sharp"
-                                  size={18}
+                                  size={isLiquidGlassAvailable() ? 32 : 18}
                                   color={COLORS.gray1000}
                               />
-                          </TouchableOpacity>
+                          </HeaderTouchableOpacity>
                       </ContextMenu>
                   ),
         })
