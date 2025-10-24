@@ -26,7 +26,8 @@ export default function ProjectWidgetMessage() {
                     feature: () => {
                         WidgetKitModule.setIsSubscribed(true)
                         Alert.alert(
-                            'Congrats, you can now go to your homescreen and search for "Rev" widgets'
+                            'Congrats!',
+                            'You can now go to your homescreen and search for "Rev" widgets'
                         )
                     },
                 }).catch((error) => {

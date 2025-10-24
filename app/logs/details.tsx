@@ -154,6 +154,7 @@ export default function LogDetailsScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                                 autoFocus={true}
                                 importantForAutofill="no"
                             />

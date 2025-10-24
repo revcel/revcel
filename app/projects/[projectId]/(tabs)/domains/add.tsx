@@ -77,6 +77,7 @@ export default function AddDomain() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                             />
                         </View>
 
@@ -117,6 +118,7 @@ export default function AddDomain() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                             />
 
                             {editableDomain?.redirect && (

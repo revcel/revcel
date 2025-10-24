@@ -220,7 +220,7 @@ export default function HomeScreen() {
                         placement: 'LifetimeOffer_1',
                         feature: () => {
                             WidgetKitModule.setIsSubscribed(true)
-                            Alert.alert('Congrats, you unlocked lifetime access to Rev.')
+                            Alert.alert('Congrats!', 'You unlocked lifetime access to Rev.')
                         },
                     }).catch((error) => {
                         Sentry.captureException(error)
@@ -240,7 +240,7 @@ export default function HomeScreen() {
                                 : "Don't delete me ):",
                         subtitle: "Here's 50% off for life!",
                         icon: 'love',
-                        params: { href: '/showLfo1=1' },
+                        params: { href: '/?showLfo1=1' },
                     },
                 ])
             })

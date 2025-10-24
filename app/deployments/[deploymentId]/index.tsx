@@ -23,7 +23,6 @@ import {
     intervalToDuration,
 } from 'date-fns'
 import { isLiquidGlassAvailable } from 'expo-glass-effect'
-import * as Haptics from 'expo-haptics'
 import { type Href, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
@@ -216,8 +215,6 @@ export default function Deployment() {
                           dropdownMenuMode={true}
                           actions={headerActions}
                           onPress={(e) => {
-                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-
                               if (e.nativeEvent.name === 'Promote') {
                                   Alert.alert(
                                       'Promote',

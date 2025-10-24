@@ -67,7 +67,6 @@ export default function Logs() {
                               }
                     }
                     onPress={() => {
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
                         router.push({
                             pathname: '/logs/filters',
                             params: {

@@ -90,6 +90,7 @@ export default function AddEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                             />
                         </View>
 
@@ -125,6 +126,7 @@ export default function AddEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                             />
                         </View>
 
@@ -162,6 +164,7 @@ export default function AddEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                             />
                         </View>
 

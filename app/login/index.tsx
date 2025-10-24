@@ -24,6 +24,7 @@ import Animated, {
     useAnimatedStyle,
     withTiming,
 } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Login() {
     const navigation = useNavigation()
@@ -138,128 +139,133 @@ export default function Login() {
                 }}
             /> */}
 
-            <KeyboardAwareScrollView
-                bottomOffset={20}
-                keyboardShouldPersistTaps="handled"
-                style={{
-                    flex: 1,
-                    paddingTop: 120,
-                    backgroundColor: COLORS.background,
-                }}
-            >
-                {showCloseButton && (
-                    <TouchableOpacity
-                        style={{
-                            position: 'absolute',
-                            top: -50, // to negate the paddingTop
-                            right: 30,
-                            backgroundColor: '#ffffff28',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderRadius: 16,
-                            height: 32,
-                            width: 32,
-                        }}
-                        onPress={() => router.back()}
-                    >
-                        <Ionicons name="close" size={20} color={COLORS.gray1000} />
-                    </TouchableOpacity>
-                )}
-
-                <View
+            <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === 'android' ? ['top'] : []}>
+                <KeyboardAwareScrollView
+                    bottomOffset={20}
+                    keyboardShouldPersistTaps="handled"
                     style={{
                         flex: 1,
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignSelf: 'center',
-                        gap: 64,
-                        maxWidth: 320,
-                        width: '100%',
+                        paddingTop: 120,
+                        backgroundColor: COLORS.background,
                     }}
                 >
-                    <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                        <Image
-                            source={require('../../assets/icon.png')}
+                    {showCloseButton && (
+                        <TouchableOpacity
                             style={{
-                                width: 250,
-                                height: 250,
-                                // borderColor: 'red',
-                                // borderWidth: 1,
+                                position: 'absolute',
+                                top: -50, // to negate the paddingTop
+                                right: 30,
+                                backgroundColor: '#ffffff28',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderRadius: 16,
+                                height: 32,
+                                width: 32,
                             }}
-                            resizeMode="contain"
-                        />
-                        <Text
-                            style={{
-                                fontSize: 18,
-                                fontWeight: '700',
-                                textAlign: 'center',
-                                color: COLORS.gray1000,
-                                fontFamily: 'Geist',
-                            }}
+                            onPress={() => router.back()}
                         >
-                            {isModal ? 'Add Connection' : 'Welcome to Rev'}
-                        </Text>
-                        <Text
-                            style={{
-                                fontSize: 15,
-                                fontWeight: '400',
-                                textAlign: 'center',
-                                color: COLORS.gray900,
-                                fontFamily: 'Geist',
-                            }}
-                        >
-                            {isModal
-                                ? 'Add an API token for a new connection!'
-                                : 'Add your API token to get started!'}
-                        </Text>
-                    </View>
+                            <Ionicons name="close" size={20} color={COLORS.gray1000} />
+                        </TouchableOpacity>
+                    )}
 
-                    <View style={{ flexDirection: 'column', gap: 10 }}>
-                        <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
-                            API Token
-                        </Text>
-                        <TextInput
-                            style={{
-                                height: 48,
-                                paddingHorizontal: 16,
-                                borderRadius: 8,
-                                backgroundColor: COLORS.gray200,
-                                color: COLORS.gray1000,
-                                fontSize: 16,
-                                fontFamily: 'Geist',
-                            }}
-                            placeholder="Add an API token"
-                            placeholderTextColor={COLORS.gray900}
-                            secureTextEntry={true}
-                            autoCapitalize="none"
-                            autoComplete="off"
-                            autoCorrect={false}
-                            onChangeText={(text) => {
-                                apiTokenRef.current = text
-                            }}
-                            returnKeyLabel="Connect"
-                            returnKeyType="go"
-                            onSubmitEditing={handleLogin}
-                        />
-                        <View style={{ marginTop: 20 }}>
-                            <Button
-                                title={isLoading ? 'Connecting...' : 'Connect'}
-                                onPress={handleLogin}
-                                disabled={isLoading}
-                                color={COLORS.blue600}
+                    <View
+                        style={{
+                            flex: 1,
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignSelf: 'center',
+                            gap: 64,
+                            maxWidth: 320,
+                            width: '100%',
+                        }}
+                    >
+                        <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+                            <Image
+                                source={require('../../assets/icon.png')}
+                                style={{
+                                    width: 250,
+                                    height: 250,
+                                    // borderColor: 'red',
+                                    // borderWidth: 1,
+                                }}
+                                resizeMode="contain"
                             />
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    fontWeight: '700',
+                                    textAlign: 'center',
+                                    color: COLORS.gray1000,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                {isModal ? 'Add Connection' : 'Welcome to Rev'}
+                            </Text>
+                            <Text
+                                style={{
+                                    fontSize: 15,
+                                    fontWeight: '400',
+                                    textAlign: 'center',
+                                    color: COLORS.gray900,
+                                    fontFamily: 'Geist',
+                                }}
+                            >
+                                {isModal
+                                    ? 'Add an API token for a new connection!'
+                                    : 'Add your API token to get started!'}
+                            </Text>
+                        </View>
+
+                        <View style={{ flexDirection: 'column', gap: 10 }}>
+                            <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
+                                API Token
+                            </Text>
+                            <TextInput
+                                style={{
+                                    height: 48,
+                                    paddingHorizontal: 16,
+                                    borderRadius: 8,
+                                    backgroundColor: COLORS.gray200,
+                                    color: COLORS.gray1000,
+                                    fontSize: 16,
+                                    fontFamily: 'Geist',
+                                }}
+                                placeholder="Add an API token"
+                                placeholderTextColor={COLORS.gray900}
+                                secureTextEntry={true}
+                                autoCapitalize="none"
+                                autoComplete="off"
+                                autoCorrect={false}
+                                keyboardAppearance="dark"
+                                onChangeText={(text) => {
+                                    apiTokenRef.current = text
+                                }}
+                                returnKeyLabel="Connect"
+                                returnKeyType="go"
+                                onSubmitEditing={handleLogin}
+                            />
+                            <View style={{ marginTop: 20 }}>
+                                <Button
+                                    title={isLoading ? 'Connecting...' : 'Connect'}
+                                    onPress={handleLogin}
+                                    disabled={isLoading}
+                                    color={COLORS.blue600}
+                                />
+                            </View>
                         </View>
                     </View>
-                </View>
-            </KeyboardAwareScrollView>
-            <Animated.View style={[helpBoxAnimatedStyles]}>
-                <Pressable style={styles.helpBox} onPress={openApiDocs}>
-                    <Text style={styles.helpTitle}>Need help finding your API key?</Text>
-                    <Text style={styles.helpText}>
-                        Tap to learn how to generate a Vercel API token.
-                    </Text>
-                </Pressable>
-            </Animated.View>
+                </KeyboardAwareScrollView>
+            </SafeAreaView>
+            {!isModal && (
+                <Animated.View style={[helpBoxAnimatedStyles]}>
+                    <Pressable style={styles.helpBox} onPress={openApiDocs}>
+                        <Text style={styles.helpTitle}>Need help finding your API key?</Text>
+                        <Text style={styles.helpText}>
+                            Tap to learn how to generate a Vercel API token.
+                        </Text>
+                    </Pressable>
+                </Animated.View>
+            )}
         </>
     )
 }

@@ -13,7 +13,6 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import { FlashList } from '@shopify/flash-list'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { isLiquidGlassAvailable } from 'expo-glass-effect'
-import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { Alert, Text, TouchableOpacity, View } from 'react-native'
@@ -54,7 +53,6 @@ export default function Domains() {
                               }
                     }
                     onPress={() => {
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
                         router.push(`/projects/${projectId}/domains/add`)
                     }}
                 >

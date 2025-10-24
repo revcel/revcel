@@ -35,7 +35,8 @@ export default function App() {
             feature: () => {
                 WidgetKitModule.setIsSubscribed(true)
                 Alert.alert(
-                    'Congrats, you can now go to your homescreen and search for "Rev" widgets'
+                    'Congrats!',
+                    'You can now go to your homescreen and search for "Rev" widgets'
                 )
             },
         }).catch((error) => {
@@ -50,7 +51,7 @@ export default function App() {
             placement: 'LifetimeOffer_1_Show',
             feature: () => {
                 WidgetKitModule.setIsSubscribed(true)
-                Alert.alert('Congrats, you unlocked lifetime access to Rev.')
+                Alert.alert('Congrats!', 'You unlocked lifetime access to Rev.')
             },
         }).catch((error) => {
             Sentry.captureException(error)

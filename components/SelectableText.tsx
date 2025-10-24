@@ -54,6 +54,7 @@ export function SelectableText({ text, shouldScrollToBottom }: SelectableTextPro
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect={false}
+            keyboardAppearance="dark"
             autoFocus={true}
             importantForAutofill="no"
         />

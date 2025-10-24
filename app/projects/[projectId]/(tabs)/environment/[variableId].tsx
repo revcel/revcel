@@ -121,6 +121,7 @@ export default function EditEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                                 defaultValue={editableVariable.key}
                                 onChangeText={(text) => {
                                     setEditableVariable({
@@ -157,6 +158,7 @@ export default function EditEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                                 defaultValue={
                                     editableVariable.type === 'sensitive'
                                         ? '[Hidden] Sensitive Value'
@@ -200,6 +202,7 @@ export default function EditEnvironmentVariableScreen() {
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
+                                keyboardAppearance="dark"
                                 onChangeText={(text) => {
                                     setEditableVariable({
                                         ...editableVariable,

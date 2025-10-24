@@ -1,5 +1,6 @@
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
+import { Ionicons } from '@expo/vector-icons'
 import { type OnboardingFeature, OnboardingView } from 'expo-onboarding'
 import { router } from 'expo-router'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -10,12 +11,14 @@ const FEATURES: OnboardingFeature[] = [
         description:
             'See logs, browse deployments, and check on your websites using home screen widgets.',
         systemImage: 'server.rack',
+        icon: () => <Ionicons name="server" size={42} color={COLORS.success} />,
     },
     {
         title: 'Open Source',
         description:
             'You are using Open Source Software (OSS) crafted by serverless-loving people. Give it a star!',
         systemImage: 'star.fill',
+        icon: () => <Ionicons name="star" size={42} color={COLORS.success} />,
         links: [
             {
                 sectionText: 'Give it a star!',
@@ -28,6 +31,7 @@ const FEATURES: OnboardingFeature[] = [
         description:
             'Your data never leaves the app, this includes your API token which is locally stored.',
         systemImage: 'shield.fill',
+        icon: () => <Ionicons name="shield" size={42} color={COLORS.success} />,
     },
 ]
 
