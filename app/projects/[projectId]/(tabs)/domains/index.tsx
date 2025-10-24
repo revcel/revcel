@@ -4,7 +4,7 @@ import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
-import { useBrowser } from '@/lib/hooks'
+import { useBrowser, useFlashlistProps } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { COLORS } from '@/theme/colors'
 import type { Domain } from '@/types/domains'
@@ -39,6 +39,7 @@ export default function Domains() {
 
         return emptyDomains
     }, [domainsQuery.isLoading, domainsQuery.data?.domains.length, domainsQuery.isError])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -73,13 +74,7 @@ export default function Domains() {
             refreshControl={<RefreshControl onRefresh={domainsQuery.refetch} />}
             showsVerticalScrollIndicator={false}
             data={domainsQuery.data?.domains}
-            overrideProps={
-                Placeholder && {
-                    contentContainerStyle: {
-                        flex: 1,
-                    },
-                }
-            }
+            overrideProps={overrideProps}
             keyExtractor={(item) => item.name}
             ListEmptyComponent={Placeholder}
             renderItem={({ item: domain, index: domainIndex }) => (

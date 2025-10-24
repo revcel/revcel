@@ -275,3 +275,23 @@ export function useNotificationHandler() {
         }
     }, [])
 }
+
+export function useFlashlistProps(placeholder?: React.ReactNode) {
+    const isAndroid = useMemo(() => Platform.OS === 'android', [])
+
+    if (isAndroid) {
+        return {
+            overrideProps: undefined,
+        }
+    }
+
+    return {
+        overrideProps: placeholder
+            ? {
+                  contentContainerStyle: {
+                      flex: 1,
+                  },
+              }
+            : undefined,
+    }
+}

@@ -3,6 +3,7 @@ import BottomGradient from '@/components/BottomGradient'
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
 import { formatBytes, formatDeploymentShortId } from '@/lib/format'
+import { useFlashlistProps } from '@/lib/hooks'
 import { COLORS } from '@/theme/colors'
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
@@ -54,6 +55,7 @@ export default function DeploymentFunctions() {
         deploymentBuildMetadataQuery.data,
         deploymentBuildMetadataQuery.isError,
     ])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     return (
         <>
@@ -73,13 +75,7 @@ export default function DeploymentFunctions() {
                 ItemSeparatorComponent={() => (
                     <View style={{ height: 1, backgroundColor: COLORS.gray100 }} />
                 )}
-                overrideProps={
-                    Placeholder && {
-                        contentContainerStyle: {
-                            flex: 1,
-                        },
-                    }
-                }
+                overrideProps={overrideProps}
                 ListEmptyComponent={Placeholder}
                 renderItem={({ item }) => {
                     const memorySize = item.type === 'lambda' ? item.lambda?.memorySize : 128

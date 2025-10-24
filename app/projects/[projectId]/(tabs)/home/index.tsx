@@ -6,6 +6,7 @@ import ProjectWidgetMessage from '@/components/ProjectWidgetMessage'
 import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
+import { useFlashlistProps } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -54,6 +55,7 @@ export default function ProjectHomeScreen() {
 
         return emptyProject
     }, [teamProjectsQuery.isLoading, project, teamProjectsQuery.isError])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     useEffect(() => {
         // when navigating from widgets/notifications and the project is on a different connection/team
@@ -131,13 +133,7 @@ export default function ProjectHomeScreen() {
                               paddingBottom: 40,
                           }
                 }
-                overrideProps={
-                    Placeholder && {
-                        contentContainerStyle: {
-                            flex: 1,
-                        },
-                    }
-                }
+                overrideProps={overrideProps}
                 ListHeaderComponent={() => (
                     <View
                         style={{

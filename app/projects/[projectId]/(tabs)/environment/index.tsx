@@ -2,6 +2,7 @@ import { fetchTeamProjectEnvironment } from '@/api/queries'
 import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
+import { useFlashlistProps } from '@/lib/hooks'
 import { COLORS } from '@/theme/colors'
 import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
 import { Ionicons } from '@expo/vector-icons'
@@ -79,9 +80,11 @@ export default function Environment() {
                 hideWhenScrolling: true,
                 barTintColor: COLORS.background,
                 textColor: COLORS.gray1000,
-                placeholderTextColor: COLORS.gray900,
                 onChangeText: (event: any) => setSearchString(event.nativeEvent.text),
-                // autoFocus: false,
+                autoCapitalize: 'none',
+                tintColor: COLORS.success,
+                hintTextColor: COLORS.gray900,
+                headerIconColor: COLORS.success,
             },
         })
     }, [navigation, projectId])
@@ -121,6 +124,7 @@ export default function Environment() {
         filteredVariables.length,
         environmentVariablesQuery.isError,
     ])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     return (
         <FlashList
@@ -180,13 +184,7 @@ export default function Environment() {
                     }}
                 />
             }
-            overrideProps={
-                Placeholder && {
-                    contentContainerStyle: {
-                        flex: 1,
-                    },
-                }
-            }
+            overrideProps={overrideProps}
             ListEmptyComponent={Placeholder}
             // extraData={workingKeyId}
             renderItem={({ item: env, index: envIndex }) => (

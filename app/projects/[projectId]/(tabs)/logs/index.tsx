@@ -3,6 +3,7 @@ import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
 import { COLOR_FOR_REQUEST_STATUS } from '@/lib/constants'
+import { useFlashlistProps } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
 import WidgetKitModule from '@/modules/widgetkit'
 import { useStore } from '@/store/default'
@@ -96,6 +97,7 @@ export default function Logs() {
 
         return emptyProject
     }, [reguestLogsQuery.isLoading, reguestLogsQuery.data?.rows.length, reguestLogsQuery.isError])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     return (
         <FlashList
@@ -112,13 +114,7 @@ export default function Logs() {
                     }}
                 />
             }
-            overrideProps={
-                Placeholder && {
-                    contentContainerStyle: {
-                        flex: 1,
-                    },
-                }
-            }
+            overrideProps={overrideProps}
             ListEmptyComponent={Placeholder}
             data={reguestLogsQuery.data?.rows}
             renderItem={({ item: log, index: logIndex }) => (

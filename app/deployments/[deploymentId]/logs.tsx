@@ -5,6 +5,7 @@ import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity
 import buildPlaceholder from '@/components/base/Placeholder'
 import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
+import { useFlashlistProps } from '@/lib/hooks'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
@@ -77,6 +78,7 @@ export default function DeploymentLogs() {
         deploymentBuildMetadataQuery.data?.buildLogs.length,
         deploymentBuildMetadataQuery.isError,
     ])
+    const { overrideProps } = useFlashlistProps(Placeholder)
 
     return (
         <>
@@ -148,10 +150,13 @@ export default function DeploymentLogs() {
                     headerSearchBarOptions: {
                         placeholder: 'Search logs',
                         hideWhenScrolling: true,
+                        barTintColor: COLORS.background,
                         textColor: COLORS.gray1000,
-                        autoCapitalize: 'none',
                         onChangeText: (event: any) => setSearchString(event.nativeEvent.text),
-                        // autoFocus: false,
+                        autoCapitalize: 'none',
+                        tintColor: COLORS.success,
+                        hintTextColor: COLORS.gray900,
+                        headerIconColor: COLORS.success,
                     },
                 }}
             />
@@ -167,19 +172,14 @@ export default function DeploymentLogs() {
                         <RefreshControl onRefresh={deploymentBuildMetadataQuery.refetch} />
                     }
                     overrideProps={
-                        Placeholder
-                            ? {
-                                  contentContainerStyle: {
-                                      flex: 1,
-                                  },
-                              }
-                            : Platform.select({
-                                  android: {
-                                      contentContainerStyle: {
-                                          paddingBottom: 40,
-                                      },
-                                  },
-                              })
+                        overrideProps ||
+                        Platform.select({
+                            android: {
+                                contentContainerStyle: {
+                                    paddingBottom: 40,
+                                },
+                            },
+                        })
                     }
                     ListEmptyComponent={Placeholder}
                     ItemSeparatorComponent={() => (
