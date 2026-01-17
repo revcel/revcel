@@ -63,9 +63,8 @@ module.exports = ({ config }) => {
                 'expo-build-properties',
                 {
                     android: {
-                        minSdkVersion: 26,
-                        enableMinifyInReleaseBuilds: true,
-                        enableShrinkResourcesInReleaseBuilds: true,
+                        minSdkVersion: 24,
+						targetSdkVersion: 35,
                         // useDayNightTheme: true
                     },
                 },

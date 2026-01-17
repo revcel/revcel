@@ -4,6 +4,12 @@ const { withDangerousMod, AndroidConfig } = require('@expo/config-plugins')
 const path = require('node:path')
 const fs = require('node:fs')
 
+const IGNORED_FILES = ['.DS_Store']
+
+const shouldIgnoreFile = (filename) => {
+    return IGNORED_FILES.includes(filename) || IGNORED_FILES.includes(path.basename(filename))
+}
+
 const withAndroidSourceFiles = (config, options) => {
     return withDangerousMod(config, [
         'android',
@@ -56,9 +62,17 @@ const safeCopy = (sourcePath, destinationPath) => {
                 fs.mkdirSync(destinationPath, { recursive: true })
             }
             for (const file of fs.readdirSync(sourcePath)) {
+                // Skip ignored files
+                if (shouldIgnoreFile(file)) {
+                    continue
+                }
                 safeCopy(path.join(sourcePath, file), path.join(destinationPath, file))
             }
         } else {
+            // Skip ignored files
+            if (shouldIgnoreFile(sourcePath)) {
+                return
+            }
             fs.copyFileSync(sourcePath, destinationPath)
         }
     } catch (error) {
@@ -103,12 +117,21 @@ const copySourceFiles = (widgetFolderPath, platformRoot, packageName) => {
         const sourcePath = path.join(originalSourceFolder, relativePath)
         const destinationPath = path.join(destinationFolder, relativePath)
 
+        // Skip ignored files
+        if (shouldIgnoreFile(relativePath)) {
+            continue
+        }
+
         if (fs.lstatSync(sourcePath).isDirectory()) {
             emptyDirSync(destinationPath)
-            fs.cpSync(sourcePath, destinationPath, { recursive: true })
+            safeCopy(sourcePath, destinationPath)
 
             const subFiles = fs.readdirSync(sourcePath)
             for (const subFile of subFiles) {
+                // Skip ignored files
+                if (shouldIgnoreFile(subFile)) {
+                    continue
+                }
                 if (subFile.endsWith('.kt')) {
                     sourceFiles.push(path.join(destinationPath, subFile))
                 }

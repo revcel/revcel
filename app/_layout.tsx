@@ -78,14 +78,14 @@ function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            <GestureHandlerRootView>
-                <KeyboardProvider>
-                    <SuperwallProvider
-                        apiKeys={{
-                            ios: process.env.EXPO_PUBLIC_IOS_SUPERWALL_API_KEY,
-                            android: process.env.EXPO_PUBLIC_ANDROID_SUPERWALL_API_KEY,
-                        }}
-                    >
+            <SuperwallProvider
+                apiKeys={{
+                    ios: process.env.EXPO_PUBLIC_IOS_SUPERWALL_API_KEY,
+                    android: process.env.EXPO_PUBLIC_ANDROID_SUPERWALL_API_KEY,
+                }}
+            >
+                <GestureHandlerRootView>
+                    <KeyboardProvider statusBarTranslucent={true} navigationBarTranslucent={true}>
                         <PersistQueryClientProvider
                             client={queryClient}
                             persistOptions={{
@@ -310,9 +310,9 @@ function RootLayout() {
                                 />
                             </Stack>
                         </PersistQueryClientProvider>
-                    </SuperwallProvider>
-                </KeyboardProvider>
-            </GestureHandlerRootView>
+                    </KeyboardProvider>
+                </GestureHandlerRootView>
+            </SuperwallProvider>
         </SafeAreaProvider>
     )
 }
