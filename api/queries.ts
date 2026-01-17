@@ -425,7 +425,7 @@ export async function fetchProjectAnalyticsTimeseries({
     projectId: string
     from: string
     to: string
-}): Promise<{ data: { key: string; total: number; devices: number; bounceRate: number }[] }> {
+}): Promise<{data?: { groupCount: number; groups?: { all?: { key: string; total: number; devices: number; bounceRate: number }[] } } }> {
     const currentConnection = usePersistedStore.getState().currentConnection
 
     if (!currentConnection) {
@@ -461,9 +461,7 @@ export async function fetchProjectAnalyticsTimeseries({
         throw new Error(`Error fetching analytics timeseries: ${response.status} ${text}`)
     }
 
-    return (await response.json()) as {
-        data: { key: string; total: number; devices: number; bounceRate: number }[]
-    }
+    return await response.json()
 }
 
 export async function fetchProjectAnalyticsTimeseriesLast7d({

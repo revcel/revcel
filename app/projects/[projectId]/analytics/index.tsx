@@ -5,6 +5,7 @@ import {
 } from '@/api/queries'
 import ActivityIndicator from '@/components/base/ActivityIndicator'
 import RefreshControl from '@/components/base/RefreshControl'
+import { formatNumber } from '@/lib/format'
 import { COLORS } from '@/theme/colors'
 import { useQuery } from '@tanstack/react-query'
 import { useGlobalSearchParams } from 'expo-router'
@@ -45,7 +46,7 @@ export default function ProjectAnalyticsScreen() {
     }, [overview24hQuery.data])
 
     const last7d = useMemo(() => {
-        const buckets = timeseries7dQuery.data?.data || []
+		const buckets = timeseries7dQuery.data?.data?.groups?.all || []
         const totalPageviews = buckets.reduce((sum, b) => sum + (b.total || 0), 0)
         const totalDevices = buckets.reduce((sum, b) => sum + (b.devices || 0), 0)
         const weightedBounceNumerator = buckets.reduce(
@@ -164,7 +165,7 @@ export default function ProjectAnalyticsScreen() {
                                 fontFamily: 'Geist',
                             }}
                         >
-                            {last24h.visitors ?? '—'}
+                            {last24h.visitors ? formatNumber(last24h.visitors) : '—'}
                         </Text>
 
                         <Text
@@ -196,7 +197,7 @@ export default function ProjectAnalyticsScreen() {
                                 fontFamily: 'Geist',
                             }}
                         >
-                            {last24h.pageviews ?? '—'}
+                            {last24h.pageviews ? formatNumber(last24h.pageviews) : '—'}
                         </Text>
                         <Text
                             style={{
@@ -276,7 +277,7 @@ export default function ProjectAnalyticsScreen() {
                                 fontFamily: 'Geist',
                             }}
                         >
-                            {last7d.visitors ?? '—'}
+                            {last7d.visitors ? formatNumber(last7d.visitors) : '—'}
                         </Text>
                         <Text
                             style={{
@@ -307,7 +308,7 @@ export default function ProjectAnalyticsScreen() {
                                 fontFamily: 'Geist',
                             }}
                         >
-                            {last7d.pageviews ?? '—'}
+                            {last7d.pageviews ? formatNumber(last7d.pageviews) : '—'}
                         </Text>
                         <Text
                             style={{

@@ -64,7 +64,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
         var data = emptyArray<AnalyticsTimeseries>()
         if (availability.hasData && availability.isEnabled) {
             visitorsNumber = fetchProjectTotalVisitors(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(quickStatsStartTime), convertDateToIso(quickStatsEndTime)).devices
-            data = fetchProjectAnalyticsTimeseries(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(analyticsStartTime), convertDateToIso(analyticsEndTime)).data
+            data = fetchProjectAnalyticsTimeseries(selectedProject.connection, selectedProject.connectionTeam, selectedProject.id, convertDateToIso(analyticsStartTime), convertDateToIso(analyticsEndTime)).data.groups?.all ?: emptyArray()
         }
         return AnalyticsWidgetData(
             visitorsNumber = visitorsNumber,

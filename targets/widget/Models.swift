@@ -107,7 +107,16 @@ struct AnalyticsTimeseries: Decodable {
 }
 
 struct AnalyticsTimeseriesResponse: Decodable {
-  let data: [AnalyticsTimeseries]
+  let data: AnalyticsTimeseriesData
+}
+
+struct AnalyticsTimeseriesData: Decodable {
+  let groupCount: Int?
+  let groups: AnalyticsTimeseriesGroups?
+}
+
+struct AnalyticsTimeseriesGroups: Decodable {
+  let all: [AnalyticsTimeseries]?
 }
 
 struct LineChartData {

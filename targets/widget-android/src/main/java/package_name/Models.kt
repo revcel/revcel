@@ -129,7 +129,16 @@ data class AnalyticsTimeseries(
 )
 
 data class AnalyticsTimeseriesResponse(
-    val data: Array<AnalyticsTimeseries>
+    val data: AnalyticsTimeseriesData
+)
+
+data class AnalyticsTimeseriesData(
+    val groupCount: Int?,
+    val groups: AnalyticsTimeseriesGroups?
+)
+
+data class AnalyticsTimeseriesGroups(
+    val all: Array<AnalyticsTimeseries>?
 )
 
 data class AnalyticsWidgetData(

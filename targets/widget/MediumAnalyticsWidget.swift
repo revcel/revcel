@@ -175,7 +175,7 @@ struct MediumAnalyticsEntryView: View {
       .background(
         VStack {
           if let data = entry.analyticsData {
-            let chartData = data.data.map { (item) -> LineChartData in
+            let chartData = (data.data.groups?.all ?? []).map { (item) -> LineChartData in
                 .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.devices)
             }
             
