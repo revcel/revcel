@@ -1,10 +1,13 @@
-import { MMKV } from 'react-native-mmkv'
+import { createMMKV } from 'react-native-mmkv'
 
-export const storage = new MMKV({
+const storage = createMMKV({
     id: 'revcel',
 })
 
 export const mmkvStorage = {
+	clearAll: () => {
+		storage.clearAll()
+	},
     getItem: (key: string) => {
         const value = storage.getString(key)
         return value ?? null
@@ -13,6 +16,6 @@ export const mmkvStorage = {
         storage.set(key, value)
     },
     removeItem: (key: string) => {
-        storage.delete(key)
+        storage.remove(key)
     },
 }

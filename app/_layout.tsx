@@ -1,5 +1,5 @@
 import { queryClient } from '@/lib/query'
-import { storage } from '@/lib/storage'
+import { mmkvStorage } from '@/lib/storage'
 import { COLORS } from '@/theme/colors'
 import * as Sentry from '@sentry/react-native'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
@@ -29,24 +29,15 @@ Sentry.init({
 })
 
 const mmkvPersister = createSyncStoragePersister({
-    storage: {
-        getItem: (key) => {
-            const value = storage.getString(key)
-            return value ?? null
-        },
-        setItem: (key, value) => {
-            storage.set(key, value)
-        },
-        removeItem: (key) => {
-            storage.delete(key)
-        },
-    },
+    storage: mmkvStorage,
 })
 
 // const clearStorage = () => {
-//     storage.clearAll()
+//     mmkvStorage.clearAll()
 //     queryClient.clear()
 // }
+
+// clearStorage()
 
 function RootLayout() {
     const commonHeaderStyle = {
