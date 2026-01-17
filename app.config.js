@@ -21,6 +21,7 @@ module.exports = ({ config }) => {
 
         ios: {
             ...(config.ios || {}),
+            icon: './assets/icon-ios.icon',
             appleTeamId: process.env.EXPO_PUBLIC_APPLE_TEAM_ID,
             bundleIdentifier: process.env.EXPO_PUBLIC_BUNDLE_IDENTIFIER,
             supportsTablet: true,
