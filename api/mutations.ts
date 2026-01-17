@@ -1,6 +1,6 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
-import type { CommonEnvironmentVariable } from '@/types/common'
+import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
 import * as Sentry from '@sentry/react-native'
 import { Platform } from 'react-native'
 import { fetchWebhook } from './queries'
@@ -344,11 +344,11 @@ export async function cancelDeployment(deploymentId: string) {
 
 export async function redeployDeployment({
     id,
-    target = 'production',
+    target,
     projectName,
 }: {
     id: string
-    target?: 'production' | 'preview'
+    target?: CommonEnvironment
     projectName: string
 }) {
     const currentConnection = usePersistedStore.getState().currentConnection
