@@ -136,8 +136,7 @@ export default function ProjectFirewallCard() {
                                         queryKey: ['team', currentTeamId, 'projects'],
                                     })
                                 } catch (error) {
-                                    // @ts-ignore
-                                    Alert.alert('Error', error.message)
+									Alert.alert('Error', error instanceof Error ? error.message : 'An unknown error occurred')
                                 } finally {
                                     setIsWorking(false)
                                 }

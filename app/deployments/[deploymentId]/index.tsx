@@ -111,8 +111,7 @@ export default function Deployment() {
         mutationFn: () =>
             redeployDeployment({
                 id: deployment?.id!,
-                // @ts-ignore
-                target: deployment?.target!,
+                target: deployment?.target || undefined,
                 projectName: deployment?.project.name!,
             }),
         onMutate: () => {
@@ -158,7 +157,6 @@ export default function Deployment() {
         if (!deployment) return
         const headerActions: ContextMenuAction[] = []
 
-        // @ts-ignore
         if (
             deployment.readyState === 'READY' &&
             productionDeploymentQuery.data?.deployment.id !== deployment.id &&
@@ -472,7 +470,7 @@ export default function Deployment() {
     )
 }
 
-function ButtonRow({
+function ButtonRow<T>({
     label,
     icon,
     route,
@@ -480,7 +478,7 @@ function ButtonRow({
 }: {
     label: string
     icon: keyof typeof Ionicons.glyphMap
-    route: Href
+    route: Href<T>
     backgroundColor?: string
 }) {
     return (
