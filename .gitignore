@@ -31,7 +31,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+.env*
 
 # typescript
 *.tsbuildinfo
@@ -39,9 +39,6 @@ yarn-error.*
 .work
 ios/
 android/
-
-.env
-!env.example
 
 google-services.json
 
