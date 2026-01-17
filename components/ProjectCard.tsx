@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics'
 import { router } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
 import { useMemo } from 'react'
-import { Image, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
+import { Alert, Image, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
 
 export default function ProjectCard({
     project,
@@ -85,7 +85,7 @@ export default function ProjectCard({
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                     setLogsSelectedAttributes({ level: [] }) // reset logs filters
                     onPress?.()
-                    router.push(`/projects/${project.id}/home`)
+                    router.push(`/projects/${project.id}/home/`)
                 }}
             >
                 <View style={{ flexDirection: 'row' }}>
@@ -207,7 +207,13 @@ export default function ProjectCard({
             <TouchableOpacity
                 onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                    router.push(`/deployments/${project.latestDeployments[0].id}`)
+
+                    if (!project.latestDeployments?.[0]?.id) {
+						Alert.alert('This project has no deployments yet')
+                        return
+                    }
+
+                    router.push(`/deployments/${project.latestDeployments[0].id}/`)
                     onPress?.()
                 }}
                 style={{

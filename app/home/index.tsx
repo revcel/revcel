@@ -7,7 +7,7 @@ import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity
 import RefreshControl from '@/components/base/RefreshControl'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
 import { queryClient } from '@/lib/query'
-import { storage } from '@/lib/storage'
+import { mmkvStorage } from '@/lib/storage'
 import WidgetKitModule from '@/modules/widgetkit'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -166,7 +166,7 @@ export default function HomeScreen() {
                 registerPlacement({
                     placement: 'OpenNotifications',
                     feature: () => {
-                        router.push('/notifications')
+                        router.push('/notifications/')
                         WidgetKitModule.setIsSubscribed(true)
                     },
                 }).catch((error) => {
@@ -178,7 +178,23 @@ export default function HomeScreen() {
             }
 
             if (eventId === 'v0') {
-                router.push('/v0')
+                if (Platform.OS === 'ios') {
+                    try {
+                        Linking.canOpenURL('v0://').then((canOpen) => {
+                            if (canOpen) {
+                                Linking.openURL('v0://')
+                            } else {
+                                Linking.openURL('https://apps.apple.com/app/v0/id6745097949')
+                            }
+                        })
+                    } catch (error) {
+                        Sentry.captureException(error)
+                        console.error('Error opening v0', error)
+                        Alert.alert('Error', 'Something went wrong, please try again.')
+                    }
+                } else {
+                    router.push('/v0/')
+                }
                 return
             }
         }
@@ -321,9 +337,9 @@ export default function HomeScreen() {
 
                                             // if we had 1 connection before, we will have none
                                             if (connections.length === 1) {
-                                                storage.clearAll()
+                                                mmkvStorage.clearAll()
                                                 router.dismissAll()
-                                                router.replace('/login')
+                                                router.replace('/login/')
                                                 queryClient.clear()
                                                 return
                                             }
@@ -342,7 +358,7 @@ export default function HomeScreen() {
 
                         if (e.nativeEvent.name === 'Add Connection') {
                             const featureFn = () => {
-                                router.push('/login')
+                                router.push('/login/')
                                 WidgetKitModule.setIsSubscribed(true)
                             }
 
@@ -364,7 +380,7 @@ export default function HomeScreen() {
 
                         if (e.nativeEvent.name === 'Notifications') {
                             const featureFn = () => {
-                                router.push('/notifications')
+                                router.push('/notifications/')
                                 WidgetKitModule.setIsSubscribed(true)
                             }
 
@@ -530,7 +546,7 @@ export default function HomeScreen() {
                             return
                         }
                         if (e.nativeEvent.name === 'Vercel Domains') {
-                            router.push('/domains')
+                            router.push('/domains/')
                             return
                         }
                     }}
@@ -595,7 +611,7 @@ export default function HomeScreen() {
                             deployment={latestDeployment}
                             onPress={() => {
                                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                                router.push(`/deployments/${latestDeployment.id}`)
+                                router.push(`/deployments/${latestDeployment.id}/`)
                             }}
                             disableActiveBorder={true}
                         >

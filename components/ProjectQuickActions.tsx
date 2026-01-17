@@ -51,7 +51,7 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
                 icon="glasses"
                 onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                    router.push(`/projects/${projectId}/observability`)
+                    router.push(`/projects/${projectId}/observability/`)
                 }}
             />
 
@@ -62,7 +62,7 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
                 subtitle={hasAnalytics ? undefined : 'Not enabled'}
                 onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                    router.push(`/projects/${projectId}/analytics`)
+                    router.push(`/projects/${projectId}/analytics/`)
                 }}
             />
 

@@ -99,7 +99,7 @@ export default function ProjectHomeScreen() {
                             if (router.canGoBack()) {
                                 router.back()
                             } else {
-                                router.replace('/home')
+                                router.replace('/home/')
                             }
                         }}
                     >
@@ -157,7 +157,7 @@ export default function ProjectHomeScreen() {
                         <DeploymentCard
                             deployment={item}
                             onPress={() => {
-                                router.push(`/deployments/${item.id}`)
+                                router.push(`/deployments/${item.id}/`)
                             }}
                         />
                     </View>

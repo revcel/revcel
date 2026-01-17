@@ -1,6 +1,7 @@
 import { COLORS } from '@/theme/colors'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { Icon, Label, NativeTabs, VectorIcon } from 'expo-router/unstable-native-tabs'
+import { Icon, Label, VectorIcon } from 'expo-router'
+import { NativeTabs } from 'expo-router/unstable-native-tabs'
 
 export default function TabsLayout() {
     return (
