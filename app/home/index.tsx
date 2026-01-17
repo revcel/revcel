@@ -540,7 +540,25 @@ export default function HomeScreen() {
                         )
 
                         if (e.nativeEvent.name === 'Vercel v0') {
-                            router.push('/v0')
+                            if (Platform.OS === 'ios') {
+                                try {
+                                    Linking.canOpenURL('v0://').then((canOpen) => {
+                                        if (canOpen) {
+                                            Linking.openURL('v0://')
+                                        } else {
+                                            Linking.openURL(
+                                                'https://apps.apple.com/app/v0/id6745097949'
+                                            )
+                                        }
+                                    })
+                                } catch (error) {
+                                    Sentry.captureException(error)
+                                    console.error('Error opening v0', error)
+                                    Alert.alert('Error', 'Something went wrong, please try again.')
+                                }
+                            } else {
+                                router.push('/v0/')
+                            }
                             return
                         }
                         if (e.nativeEvent.name === 'Vercel Domains') {
