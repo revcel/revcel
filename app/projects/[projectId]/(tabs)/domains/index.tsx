@@ -45,21 +45,13 @@ export default function Domains() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={
-                        isLiquidGlassAvailable()
-                            ? undefined
-                            : {
-                                  height: 32,
-                                  width: 32,
-                              }
-                    }
                     onPress={() => {
                         router.push(`/projects/${projectId}/domains/add`)
                     }}
                 >
                     <Ionicons
-                        name="add-circle-sharp"
-                        size={32}
+                        name={isLiquidGlassAvailable() ? 'add-sharp' : 'add-circle-sharp'}
+                        size={36}
                         color={isLiquidGlassAvailable() ? COLORS.gray1000 : COLORS.success}
                     />
                 </HeaderTouchableOpacity>

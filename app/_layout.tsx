@@ -101,6 +101,18 @@ function RootLayout() {
                                 }}
                             >
                                 <Stack.Screen
+                                    name="index"
+                                    options={{
+                                        title: '',
+                                        headerShown: false,
+                                        gestureEnabled: false,
+                                        contentStyle: {
+                                            backgroundColor: COLORS.background,
+                                        },
+                                    }}
+                                />
+
+                                <Stack.Screen
                                     name="onboard/index"
                                     options={{
                                         headerShown: false,
@@ -126,7 +138,7 @@ function RootLayout() {
                                     name="home/index"
                                     options={{
                                         title: 'Home',
-                                        headerShown: false,
+                                        headerShown: Platform.OS === 'android',
                                         ...commonHeaderStyle,
                                         ...commonContentStyle,
                                         autoHideHomeIndicator: true,

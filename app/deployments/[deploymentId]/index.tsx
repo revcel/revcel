@@ -22,7 +22,6 @@ import {
     formatDistanceToNow,
     intervalToDuration,
 } from 'date-fns'
-import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { type Href, router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
@@ -291,23 +290,10 @@ export default function Deployment() {
                               }
                           }}
                       >
-                          <HeaderTouchableOpacity
-                              style={
-                                  isLiquidGlassAvailable()
-                                      ? undefined
-                                      : {
-                                            backgroundColor: COLORS.gray200,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            borderRadius: 16,
-                                            height: 32,
-                                            width: 32,
-                                        }
-                              }
-                          >
+                          <HeaderTouchableOpacity>
                               <Ionicons
                                   name="ellipsis-horizontal-sharp"
-                                  size={isLiquidGlassAvailable() ? 32 : 18}
+                                  size={32}
                                   color={COLORS.gray1000}
                               />
                           </HeaderTouchableOpacity>

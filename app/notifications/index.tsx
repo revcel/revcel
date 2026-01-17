@@ -164,10 +164,11 @@ export default function NotificationsScreen() {
                                 fontFamily: 'Geist',
                             }}
                         >
-                            This means the team is not on the Vercel Pro or Enterprise plan. Do not
-                            worry, you can subscribe and then refund on the same day. Vercel will
-                            refund almost the entire payment (minus the few hours you used it) and
-                            your push notifications will remain active until you disable them.
+                            This means the team is not on the Vercel Pro or Enterprise plan. If
+                            notifications is all you need, you can subscribe and then refund on the
+                            same day. Vercel will refund almost the entire payment (minus the few
+                            hours you used it) and your webhooks will remain active until you
+                            disable them.
                         </Text>
                     </View>
                 )}

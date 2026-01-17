@@ -3,6 +3,7 @@ import { COLORS } from '@/theme/colors'
 import type { User } from '@/types/user'
 import { Ionicons } from '@expo/vector-icons'
 import { router, useNavigation } from 'expo-router'
+import { usePlacement } from 'expo-superwall'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
     Alert,
@@ -17,17 +18,14 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import Animated, {
-    interpolate,
-    useAnimatedKeyboard,
-    useAnimatedStyle,
-    withTiming,
-} from 'react-native-reanimated'
+
+import { KeyboardAwareScrollView, useAnimatedKeyboard } from 'react-native-keyboard-controller'
+import Animated, { interpolate, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Login() {
     const navigation = useNavigation()
+    const { registerPlacement } = usePlacement()
 
     const connections = usePersistedStore((state) => state.connections)
     const addConnection = usePersistedStore((state) => state.addConnection)
@@ -42,10 +40,7 @@ export default function Login() {
         return Platform.OS === 'android' && isModal
     }, [isModal])
 
-    const keyboard = useAnimatedKeyboard({
-        isStatusBarTranslucentAndroid: true,
-        isNavigationBarTranslucentAndroid: true,
-    })
+    const keyboard = useAnimatedKeyboard()
 
     const helpBoxAnimatedStyles = useAnimatedStyle(() => {
         const isKeyboardVisible = interpolate(keyboard.height.value, [0, 1], [0, 1], 'clamp')
@@ -101,14 +96,20 @@ export default function Login() {
 
             switchConnection({ connectionId: user.uid })
 
-            router.replace('/home')
+            if (connections.length === 1) {
+                registerPlacement({
+                    placement: 'SuccessfulLogin',
+                }).catch()
+            }
+
+            router.replace('/home/')
         } catch (error) {
             console.error('[handleLogin] error', error)
             Alert.alert('Error', 'Could not connect to Vercel')
         } finally {
             setIsLoading(false)
         }
-    }, [connections, addConnection, switchConnection, validateToken])
+    }, [connections, addConnection, switchConnection, validateToken, registerPlacement])
 
     const openApiDocs = useCallback(() => {
         try {
@@ -142,12 +143,18 @@ export default function Login() {
             <SafeAreaView style={{ flex: 1 }} edges={Platform.OS === 'android' ? ['top'] : []}>
                 <KeyboardAwareScrollView
                     bottomOffset={20}
+                    extraKeyboardSpace={70}
                     keyboardShouldPersistTaps="handled"
                     style={{
                         flex: 1,
-                        paddingTop: 120,
                         backgroundColor: COLORS.background,
                     }}
+                    contentContainerStyle={{
+                        flexGrow: 1,
+                        paddingTop: 120,
+                        paddingBottom: 280,
+                    }}
+                    showsVerticalScrollIndicator={false}
                 >
                     {showCloseButton && (
                         <TouchableOpacity
@@ -170,7 +177,7 @@ export default function Login() {
 
                     <View
                         style={{
-                            flex: 1,
+                            flexGrow: 1,
                             flexDirection: 'column',
                             justifyContent: 'center',
                             alignSelf: 'center',

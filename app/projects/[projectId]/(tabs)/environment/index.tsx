@@ -37,14 +37,6 @@ export default function Environment() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={
-                        isLiquidGlassAvailable()
-                            ? undefined
-                            : {
-                                  height: 32,
-                                  width: 32,
-                              }
-                    }
                     onPress={() => {
                         // stops working on android
                         // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
@@ -69,8 +61,8 @@ export default function Environment() {
                     }}
                 >
                     <Ionicons
-                        name="add-circle-sharp"
-                        size={32}
+                        name={isLiquidGlassAvailable() ? 'add-sharp' : 'add-circle-sharp'}
+                        size={36}
                         color={isLiquidGlassAvailable() ? COLORS.gray1000 : COLORS.success}
                     />
                 </HeaderTouchableOpacity>

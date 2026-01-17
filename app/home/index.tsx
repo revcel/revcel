@@ -422,9 +422,7 @@ export default function HomeScreen() {
                             isLiquidGlassAvailable()
                                 ? undefined
                                 : {
-                                      width: 20,
-                                      height: 20,
-                                      borderRadius: 10,
+                                      borderRadius: 16,
                                       overflow: 'hidden',
                                       marginRight: 10,
                                   }
@@ -551,7 +549,7 @@ export default function HomeScreen() {
                         }
                     }}
                 >
-                    <HeaderTouchableOpacity>
+                    <HeaderTouchableOpacity resetStyle={true}>
                         <Image
                             source={require('@/assets/v0.png')}
                             style={{ width: 32, height: 16 }}

@@ -31,6 +31,8 @@ interface PersistedStoreState {
 
     hasSeenOnboarding: boolean
     acknowledge: (type: keyof PersistedStoreState['acknowledgments']) => void
+
+    installationTs: number
 }
 
 export const usePersistedStore = create<PersistedStoreState>()(
@@ -93,6 +95,8 @@ export const usePersistedStore = create<PersistedStoreState>()(
                     },
                 }))
             },
+
+            installationTs: Date.now(),
         }),
         {
             name: 'rev-persisted-store',

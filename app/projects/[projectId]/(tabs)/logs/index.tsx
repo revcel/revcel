@@ -55,18 +55,6 @@ export default function Logs() {
         navigation.setOptions({
             headerRight: () => (
                 <HeaderTouchableOpacity
-                    style={
-                        isLiquidGlassAvailable()
-                            ? undefined
-                            : {
-                                  backgroundColor: COLORS.gray200,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  borderRadius: 16,
-                                  height: 32,
-                                  width: 32,
-                              }
-                    }
                     onPress={() => {
                         router.push({
                             pathname: '/logs/filters',
@@ -77,9 +65,12 @@ export default function Logs() {
                     }}
                 >
                     <Ionicons
-                        name="filter-outline"
-                        size={isLiquidGlassAvailable() ? 32 : 18}
-                        color={COLORS.gray1000}
+                        name={isLiquidGlassAvailable() ? 'filter' : 'filter-circle'}
+                        size={isLiquidGlassAvailable() ? 30 : 36}
+                        style={{
+                            paddingTop: isLiquidGlassAvailable() ? 4 : 0,
+                        }}
+                        color={isLiquidGlassAvailable() ? COLORS.gray1000 : COLORS.success}
                     />
                 </HeaderTouchableOpacity>
             ),

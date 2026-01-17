@@ -1,23 +1,20 @@
+import { HeaderButton, type HeaderButtonProps } from '@react-navigation/elements'
 import * as Haptics from 'expo-haptics'
 import { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
-import {
-    TouchableOpacity as RNGHTouchableOpacity,
-    type TouchableOpacityProps,
-} from 'react-native-gesture-handler'
 
 export function HeaderTouchableOpacity({
     resetStyle = false,
     onPress,
     ...props
-}: TouchableOpacityProps & { resetStyle?: boolean }) {
+}: HeaderButtonProps & { resetStyle?: boolean }) {
     const handlePress = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
         onPress?.()
     }, [onPress])
 
     return (
-        <RNGHTouchableOpacity
+        <HeaderButton
             onPress={handlePress}
             {...props}
             style={StyleSheet.flatten([

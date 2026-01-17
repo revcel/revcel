@@ -77,18 +77,6 @@ export default function ProjectHomeScreen() {
                 title: project.name || 'Project',
                 headerRight: () => (
                     <HeaderTouchableOpacity
-                        style={
-                            isLiquidGlassAvailable()
-                                ? undefined
-                                : {
-                                      backgroundColor: COLORS.gray200,
-                                      justifyContent: 'center',
-                                      alignItems: 'center',
-                                      borderRadius: 16,
-                                      height: 32,
-                                      width: 32,
-                                  }
-                        }
                         onPress={() => {
                             if (!acknowledged.swipeLeftProject) {
                                 acknowledge('swipeLeftProject')
@@ -104,8 +92,8 @@ export default function ProjectHomeScreen() {
                         }}
                     >
                         <Ionicons
-                            name="close"
-                            size={isLiquidGlassAvailable() ? 32 : 18}
+                            name={isLiquidGlassAvailable() ? 'close-sharp' : 'close-circle-sharp'}
+                            size={30}
                             color={COLORS.gray1000}
                         />
                     </HeaderTouchableOpacity>

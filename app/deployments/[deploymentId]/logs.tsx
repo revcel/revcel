@@ -11,7 +11,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { Platform, Text, View } from 'react-native'
@@ -125,23 +124,10 @@ export default function DeploymentLogs() {
                                 }
                             }}
                         >
-                            <HeaderTouchableOpacity
-                                style={
-                                    isLiquidGlassAvailable()
-                                        ? undefined
-                                        : {
-                                              backgroundColor: COLORS.gray200,
-                                              justifyContent: 'center',
-                                              alignItems: 'center',
-                                              borderRadius: 16,
-                                              height: 32,
-                                              width: 32,
-                                          }
-                                }
-                            >
+                            <HeaderTouchableOpacity>
                                 <Ionicons
                                     name="ellipsis-horizontal-sharp"
-                                    size={isLiquidGlassAvailable() ? 32 : 18}
+                                    size={32}
                                     color={COLORS.gray1000}
                                 />
                             </HeaderTouchableOpacity>
