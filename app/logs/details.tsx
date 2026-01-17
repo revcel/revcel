@@ -92,14 +92,14 @@ export default function LogDetailsScreen() {
                 value={log.deploymentId}
                 isLight={true}
             />
-            {log.events[0].source !== 'static' && (
+            {log.events[0]?.source !== 'static' && (
                 <InfoRow
                     label="Memory"
                     icon="hardware-chip-outline"
                     value={`${log.events[0].functionMaxMemoryUsed} MB`}
                 />
             )}
-            {log.events[0].source !== 'static' && (
+            {log.events[0]?.source !== 'static' && (
                 <InfoRow
                     label="Duration"
                     icon="stopwatch-outline"

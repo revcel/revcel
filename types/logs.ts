@@ -20,7 +20,7 @@ export interface Log {
 }
 
 export interface LogEvent {
-    source: string
+    source?: string
     route: string
     pathType: string
     timestamp: Date
