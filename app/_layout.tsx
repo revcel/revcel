@@ -7,6 +7,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { isRunningInExpoGo } from 'expo'
 import { isLiquidGlassAvailable } from 'expo-glass-effect'
 import { activateKeepAwakeAsync } from 'expo-keep-awake'
+import { useQuickActionRouting } from 'expo-quick-actions/router'
 import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router'
 import { SuperwallProvider } from 'expo-superwall'
 import { useEffect } from 'react'
@@ -63,6 +64,7 @@ function RootLayout() {
         },
     }
 
+    useQuickActionRouting()
     const ref = useNavigationContainerRef()
 
     useEffect(() => {
