@@ -108,12 +108,8 @@ struct LargeTeamProjectsProvider: AppIntentTimelineProvider {
       return results
     }
     
-    let currentDate = Date()
-    for hourOffset in 0 ..< 5 {
-      let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = LargeTeamProjectsEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, items: items)
-      entries.append(entry)
-    }
+    let entry = LargeTeamProjectsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, items: items)
+    entries.append(entry)
     
     return Timeline(entries: entries, policy: .atEnd)
   }

@@ -41,15 +41,10 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
       }
     }
     
-    // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-    let currentDate = Date()
-    for hourOffset in 0 ..< 5 {
-      let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = SmallShortcutEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath)
-      entries.append(entry)
-    }
+    let entry = SmallShortcutEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath)
+    entries.append(entry)
     
-    return Timeline(entries: entries, policy: .atEnd)
+    return Timeline(entries: entries, policy: .never)
   }
 }
 

@@ -71,13 +71,8 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
       isSubscribed = isSubscribedValue
     }
     
-    // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-    let currentDate = Date()
-    for hourOffset in 0 ..< 5 {
-      let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-      let entry = MediumAnalyticsEntry(date: entryDate, configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
-      entries.append(entry)
-    }
+    let entry = MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
+    entries.append(entry)
     
     return Timeline(entries: entries, policy: .atEnd)
   }
