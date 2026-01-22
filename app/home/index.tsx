@@ -20,7 +20,10 @@ import * as Haptics from 'expo-haptics'
 import * as QuickActions from 'expo-quick-actions'
 import { router, useNavigation } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
+import * as StoreReview from 'expo-store-review'
 import { usePlacement, useSuperwall, useUser } from 'expo-superwall'
+import * as WebBrowser from 'expo-web-browser'
+import ms from 'ms'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
 import { Alert, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
@@ -481,10 +484,84 @@ export default function HomeScreen() {
                             title: 'Vercel Domains',
                             systemIcon: 'globe',
                         },
+                        {
+                            title: 'Icons',
+                            systemIcon: 'app.gift',
+                        },
+                        {
+                            title: 'Feedback',
+                            systemIcon: 'message',
+                        },
+                        {
+                            title: 'Rate',
+                            systemIcon: 'star.fill',
+                        },
                     ]}
                     dropdownMenuMode={true}
                     onPress={async (e) => {
                         e.persist()
+
+                        if (e.nativeEvent.name === 'Icons') {
+                            if (__DEV__) {
+                                WidgetKitModule.setIsSubscribed(true)
+                                router.push('/icons/')
+                                return
+                            }
+
+                            registerPlacement({
+                                placement: 'AppIcons',
+                                feature: () => {
+                                    WidgetKitModule.setIsSubscribed(true)
+                                    router.push('/icons/')
+                                },
+                            })
+                            return
+                        }
+                        if (e.nativeEvent.name === 'Feedback') {
+                            await WebBrowser.openBrowserAsync(process.env.EXPO_PUBLIC_FEEDBACK_URL!)
+                            return
+                        }
+                        if (e.nativeEvent.name === 'Rate') {
+                            Alert.alert('Do you like Rev?', 'Let us know about your experience.', [
+                                {
+                                    text: 'No',
+                                    onPress: () => {
+                                        Alert.alert(
+                                            'Thank you!',
+                                            'Your review has been sent successfully.'
+                                        )
+                                    },
+                                },
+                                {
+                                    text: 'Yes',
+                                    onPress: () => {
+                                        if (
+                                            usePersistedStore.getState().installationTs <
+                                            Date.now() - ms('1d')
+                                        ) {
+                                            StoreReview.requestReview()
+                                            return
+                                        }
+
+                                        registerPlacement({
+                                            placement: 'LifetimeOffer_1_Show',
+                                            feature: async () => {
+                                                WidgetKitModule.setIsSubscribed(true)
+                                                await StoreReview.requestReview()
+                                            },
+                                        }).catch((error) => {
+                                            Sentry.captureException(error)
+                                            console.error(
+                                                'Error registering LifetimeOffer_1_Show for Rate',
+                                                error
+                                            )
+                                        })
+                                    },
+                                },
+                            ])
+                            return
+                        }
+
                         const useWebkit = false
 
                         console.log(

@@ -63,7 +63,7 @@ module.exports = ({ config }) => {
                 {
                     android: {
                         minSdkVersion: 24,
-						targetSdkVersion: 35,
+                        targetSdkVersion: 35,
                         // useDayNightTheme: true
                     },
                 },
@@ -134,6 +134,54 @@ module.exports = ({ config }) => {
                         },
                     ],
                 },
+            ],
+            'expo-web-browser',
+            [
+                'expo-alternate-app-icons',
+                [
+                    {
+                        name: 'PrismDark',
+                        ios: './assets/icon-prism-dark.png',
+                        android: {
+                            foregroundImage: './assets/icon-prism-dark.png',
+                        },
+                    },
+                    {
+                        name: 'PrismLight',
+                        ios: './assets/icon-prism-light.png',
+                        android: {
+                            foregroundImage: './assets/icon-prism-light.png',
+                        },
+                    },
+                    {
+                        name: 'Dithered',
+                        ios: './assets/icon-dithered.png',
+                        android: {
+                            foregroundImage: './assets/icon-dithered.png',
+                        },
+                    },
+                    {
+                        name: 'Pixelated',
+                        ios: './assets/icon-pixelated.png',
+                        android: {
+                            foregroundImage: './assets/icon-pixelated.png',
+                        },
+                    },
+                    {
+                        name: 'GradientDark',
+                        ios: './assets/icon-gradient-dark.png',
+                        android: {
+                            foregroundImage: './assets/icon-gradient-dark.png',
+                        },
+                    },
+                    {
+                        name: 'GradientLight',
+                        ios: './assets/icon-gradient-light.png',
+                        android: {
+                            foregroundImage: './assets/icon-gradient-light.png',
+                        },
+                    },
+                ],
             ],
         ],
 

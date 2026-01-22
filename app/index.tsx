@@ -55,7 +55,7 @@ export default function App() {
             },
         }).catch((error) => {
             Sentry.captureException(error)
-            console.error('Error registering LifetimeOffer_1', error)
+            console.error('Error registering LifetimeOffer_1_Show for showLfo1', error)
         })
     }
 
