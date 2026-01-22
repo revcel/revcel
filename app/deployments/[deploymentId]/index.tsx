@@ -23,6 +23,7 @@ import {
     intervalToDuration,
 } from 'date-fns'
 import { type Href, router, useLocalSearchParams, useNavigation } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
 import { useLayoutEffect, useMemo, useState } from 'react'
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu, { type ContextMenuAction } from 'react-native-context-menu-view'
@@ -365,19 +366,30 @@ export default function Deployment() {
                     )} */}
 
                     {deployment.readyState === 'READY' && (
-                        <Image
-                            source={{
-                                uri: `https://vercel.com/api/screenshot?dark=1&deploymentId=${deployment.id}&teamId=${currentTeamId}&withStatus=1`,
-                                headers: {
-                                    Authorization: `Bearer ${currentConnection?.apiToken}`,
-                                },
+                        <TouchableOpacity
+                            onPress={() => {
+                                const customDomain = deployment.alias?.find(
+                                    (alias) => !alias.includes('vercel.app')
+                                )
+                                const url = customDomain || deployment.url
+                                WebBrowser.openBrowserAsync(`https://${url}`)
                             }}
-                            style={{
-                                width: '100%',
-                                height: 275,
-                                resizeMode: 'contain',
-                            }}
-                        />
+                            activeOpacity={0.8}
+                        >
+                            <Image
+                                source={{
+                                    uri: `https://vercel.com/api/screenshot?dark=1&deploymentId=${deployment.id}&teamId=${currentTeamId}&withStatus=1`,
+                                    headers: {
+                                        Authorization: `Bearer ${currentConnection?.apiToken}`,
+                                    },
+                                }}
+                                style={{
+                                    width: '100%',
+                                    height: 275,
+                                    resizeMode: 'contain',
+                                }}
+                            />
+                        </TouchableOpacity>
                     )}
                     <InfoRow
                         label="Status"
