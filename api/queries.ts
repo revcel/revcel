@@ -1,5 +1,6 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
+import type { TeamBillingCharge } from '@/types/billing'
 import type {
     CommonApiStatus,
     CommonDeploymentStatus,
@@ -99,6 +100,56 @@ export async function fetchAllTeams({
     } catch (error) {
         console.log('[fetchAllTeams] Error fetching teams', error)
         throw error
+    }
+}
+
+export async function fetchTeamBillingCharges({ from, to }: { from: string; to: string }) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        from,
+        to,
+        teamId: currentTeamId,
+    })
+
+    const response = await fetch(`https://api.vercel.com/v1/billing/charges?${params.toString()}`, {
+        headers: {
+            Authorization: `Bearer ${currentConnection.apiToken}`,
+            Accept: 'application/jsonl',
+        },
+    })
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        throw new Error(`Error fetching billing charges: ${response.status} ${text}`)
+    }
+
+    const text = await response.text()
+
+    if (!text.trim()) {
+        return [] as TeamBillingCharge[]
+    }
+
+    const lines = text
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+
+    try {
+        return lines.map((line) => JSON.parse(line) as TeamBillingCharge)
+    } catch (error) {
+        const parseError = error instanceof Error ? error.message : 'Unknown JSONL parsing error'
+        throw new Error(`Error parsing billing charges response: ${parseError}`)
     }
 }
 
@@ -426,7 +477,12 @@ export async function fetchProjectAnalyticsTimeseries({
     projectId: string
     from: string
     to: string
-}): Promise<{data?: { groupCount: number; groups?: { all?: { key: string; total: number; devices: number; bounceRate: number }[] } } }> {
+}): Promise<{
+    data?: {
+        groupCount: number
+        groups?: { all?: { key: string; total: number; devices: number; bounceRate: number }[] }
+    }
+}> {
     const currentConnection = usePersistedStore.getState().currentConnection
 
     if (!currentConnection) {
