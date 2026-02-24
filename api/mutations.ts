@@ -1,7 +1,9 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
+import type { CreateFlagBody, Flag, UpdateFlagBody } from '@/types/flags'
 import * as Sentry from '@sentry/react-native'
+import ms from 'ms'
 import { Platform } from 'react-native'
 import { fetchWebhook } from './queries'
 
@@ -183,6 +185,7 @@ export async function toggleFirewall({
             {
                 projectId,
                 attackModeEnabled,
+                attackModeActiveUntil: attackModeEnabled ? Date.now() + ms('1y') : undefined,
             },
             {
                 headers: {
@@ -382,6 +385,123 @@ export async function redeployDeployment({
         return response
     } catch (error) {
         console.log('[redeployDeployment] Error redeploying deployment', error)
+        Sentry.captureException(error)
+        throw error
+    }
+}
+
+/* FLAGS */
+export async function createProjectFlag({
+    projectId,
+    data,
+}: {
+    projectId: string
+    data: CreateFlagBody
+}) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+    })
+
+    console.log('[createProjectFlag] params', params.toString())
+
+    try {
+        const response = await vercel.put<Flag>(
+            `/v1/projects/${projectId}/feature-flags/flags?${params.toString()}`,
+            data
+        )
+        return response
+    } catch (error) {
+        console.log('[createProjectFlag] Error creating flag', error)
+        Sentry.captureException(error)
+        throw error
+    }
+}
+
+export async function updateProjectFlag({
+    projectId,
+    flagIdOrSlug,
+    data,
+}: {
+    projectId: string
+    flagIdOrSlug: string
+    data: UpdateFlagBody
+}) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+    })
+
+    console.log('[updateProjectFlag] params', params.toString())
+
+    try {
+        const encodedFlagIdOrSlug = encodeURIComponent(flagIdOrSlug)
+        const response = await vercel.patch<Flag>(
+            `/v1/projects/${projectId}/feature-flags/flags/${encodedFlagIdOrSlug}?${params.toString()}`,
+            data
+        )
+        return response
+    } catch (error) {
+        console.log('[updateProjectFlag] Error updating flag', error)
+        Sentry.captureException(error)
+        throw error
+    }
+}
+
+export async function deleteProjectFlag({
+    projectId,
+    flagIdOrSlug,
+}: {
+    projectId: string
+    flagIdOrSlug: string
+}) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+    })
+
+    console.log('[deleteProjectFlag] params', params.toString())
+
+    try {
+        const encodedFlagIdOrSlug = encodeURIComponent(flagIdOrSlug)
+        await vercel.delete(
+            `/v1/projects/${projectId}/feature-flags/flags/${encodedFlagIdOrSlug}?${params.toString()}`
+        )
+    } catch (error) {
+        console.log('[deleteProjectFlag] Error deleting flag', error)
         Sentry.captureException(error)
         throw error
     }

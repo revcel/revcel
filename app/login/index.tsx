@@ -102,7 +102,7 @@ export default function Login() {
                 }).catch()
             }
 
-            router.replace('/home/')
+            router.replace('/home')
         } catch (error) {
             console.error('[handleLogin] error', error)
             Alert.alert('Error', 'Could not connect to Vercel')
@@ -113,7 +113,9 @@ export default function Login() {
 
     const openApiDocs = useCallback(() => {
         try {
-            Linking.openURL('https://vercel.com/docs/rest-api#creating-an-access-token')
+            Linking.openURL(
+                'https://vercel.com/kb/guide/how-do-i-use-a-vercel-api-access-token#creating-an-access-token'
+            )
         } catch {}
     }, [])
 

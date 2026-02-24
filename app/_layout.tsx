@@ -1,6 +1,8 @@
 import { queryClient } from '@/lib/query'
 import { mmkvStorage } from '@/lib/storage'
 import { COLORS } from '@/theme/colors'
+import { HotUpdater } from '@hot-updater/react-native'
+import { DarkTheme, ThemeProvider } from '@react-navigation/native'
 import * as Sentry from '@sentry/react-native'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
@@ -25,7 +27,11 @@ Sentry.init({
     tracesSampleRate: 1.0,
     profilesSampleRate: 1.0,
     environment: __DEV__ ? 'development' : 'production',
-    integrations: [navigationIntegration],
+    replaysSessionSampleRate: 0.0,
+    replaysOnErrorSampleRate: 1.0,
+    attachViewHierarchy: true,
+    attachScreenshot: true,
+    integrations: [navigationIntegration, Sentry.mobileReplayIntegration()],
     enableNativeFramesTracking: !isRunningInExpoGo(),
 })
 
@@ -85,6 +91,12 @@ function RootLayout() {
                     ios: process.env.EXPO_PUBLIC_IOS_SUPERWALL_API_KEY,
                     android: process.env.EXPO_PUBLIC_ANDROID_SUPERWALL_API_KEY,
                 }}
+                options={{
+                    paywalls: {
+                        shouldPreload: true,
+                        isHapticFeedbackEnabled: true,
+                    },
+                }}
             >
                 <GestureHandlerRootView>
                     <KeyboardProvider statusBarTranslucent={true} navigationBarTranslucent={true}>
@@ -100,227 +112,272 @@ function RootLayout() {
                                 },
                             }}
                         >
-                            <Stack
-                                screenOptions={{
-                                    navigationBarHidden: true,
-                                }}
-                            >
-                                <Stack.Screen
-                                    name="index"
-                                    options={{
-                                        title: '',
-                                        headerShown: false,
-                                        gestureEnabled: false,
-                                        contentStyle: {
-                                            backgroundColor: COLORS.background,
-                                        },
+                            <ThemeProvider value={DarkTheme}>
+                                <Stack
+                                    screenOptions={{
+                                        navigationBarHidden: true,
                                     }}
-                                />
+                                >
+                                    <Stack.Screen
+                                        name="index"
+                                        options={{
+                                            title: '',
+                                            headerShown: false,
+                                            gestureEnabled: false,
+                                            contentStyle: {
+                                                backgroundColor: COLORS.background,
+                                            },
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="onboard/index"
-                                    options={{
-                                        headerShown: false,
-                                        gestureEnabled: false,
-                                        animation: 'none',
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="onboard/index"
+                                        options={{
+                                            headerShown: false,
+                                            gestureEnabled: false,
+                                            animation: 'none',
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="login/index"
-                                    options={{
-                                        title: 'Login',
-                                        headerShown: false,
-                                        // gestureEnabled: false,
-                                        // animation: 'none',
-                                        presentation: 'modal',
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="login/index"
+                                        options={{
+                                            title: 'Login',
+                                            headerShown: false,
+                                            // gestureEnabled: false,
+                                            // animation: 'none',
+                                            presentation: 'modal',
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="home/index"
-                                    options={{
-                                        title: 'Home',
-                                        headerShown: Platform.OS === 'android',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                        headerShadowVisible: false,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="home/index"
+                                        options={{
+                                            title: 'Home',
+                                            headerShown: Platform.OS === 'android',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                            headerShadowVisible: false,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="browser/index"
-                                    options={{
-                                        title: 'Browser',
-                                        headerShown: false,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="browser/index"
+                                        options={{
+                                            title: 'Browser',
+                                            headerShown: false,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="notifications/index"
-                                    options={{
-                                        title: 'Notifications',
-                                        headerShown: true,
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="notifications/index"
+                                        options={{
+                                            title: 'Notifications',
+                                            headerShown: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="domains/index"
-                                    options={{
-                                        title: 'Domains',
-                                        headerShown: false,
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="domains/index"
+                                        options={{
+                                            title: 'Domains',
+                                            headerShown: false,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="v0/index"
-                                    options={{
-                                        title: 'v0',
-                                        headerShown: false,
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="v0/index"
+                                        options={{
+                                            title: 'v0',
+                                            headerShown: false,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="projects/all"
-                                    options={{
-                                        title: 'My Projects',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        presentation: 'modal',
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/all"
+                                        options={{
+                                            title: 'My Projects',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            presentation: 'modal',
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="projects/[projectId]/(tabs)"
-                                    options={{
-                                        title: 'Project',
-                                        headerShown: false,
-                                        animation: 'fade',
-                                        animationDuration: 120,
-                                        animationMatchesGesture: true,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/(tabs)"
+                                        options={{
+                                            title: 'Project',
+                                            headerShown: false,
+                                            animation: 'fade',
+                                            animationDuration: 120,
+                                            animationMatchesGesture: true,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="projects/[projectId]/observability"
-                                    options={{
-                                        title: 'Observability',
-                                        headerShown: true,
-                                        headerLargeTitle: true,
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        headerShadowVisible: false,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/observability"
+                                        options={{
+                                            title: 'Observability',
+                                            headerShown: true,
+                                            headerLargeTitle: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            headerShadowVisible: false,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="projects/[projectId]/analytics"
-                                    options={{
-                                        title: 'Analytics',
-                                        headerShown: true,
-                                        headerLargeTitle: true,
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        headerShadowVisible: false,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/analytics"
+                                        options={{
+                                            title: 'Analytics',
+                                            headerShown: true,
+                                            headerLargeTitle: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            headerShadowVisible: false,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/index"
-                                    options={{
-                                        title: 'Deployment',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/flags/index"
+                                        options={{
+                                            title: 'Flags',
+                                            headerShown: true,
+                                            headerLargeTitle: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            headerShadowVisible: false,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/source"
-                                    options={{
-                                        title: 'Source',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/flags/add"
+                                        options={{
+                                            title: 'New Flag',
+                                            headerShown: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            presentation: 'modal',
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/output"
-                                    options={{
-                                        title: 'Output',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="projects/[projectId]/flags/[flagId]"
+                                        options={{
+                                            title: 'Flag',
+                                            headerShown: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/functions"
-                                    options={{
-                                        title: 'Functions',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/index"
+                                        options={{
+                                            title: 'Deployment',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/logs"
-                                    options={{
-                                        title: 'Logs',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/source"
+                                        options={{
+                                            title: 'Source',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="deployments/[deploymentId]/domains"
-                                    options={{
-                                        title: 'Domains',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/output"
+                                        options={{
+                                            title: 'Output',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="logs/details"
-                                    options={{
-                                        title: 'Log Details',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        presentation: 'modal',
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/functions"
+                                        options={{
+                                            title: 'Functions',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="logs/filters"
-                                    options={{
-                                        title: 'Log Filters',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        presentation: 'modal',
-                                    }}
-                                />
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/logs"
+                                        options={{
+                                            title: 'Logs',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
 
-                                <Stack.Screen
-                                    name="icons/index"
-                                    options={{
-                                        title: 'App Icon',
-                                        ...commonHeaderStyle,
-                                        ...commonContentStyle,
-                                        autoHideHomeIndicator: true,
-                                    }}
-                                />
-                            </Stack>
+                                    <Stack.Screen
+                                        name="deployments/[deploymentId]/domains"
+                                        options={{
+                                            title: 'Domains',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                        }}
+                                    />
+
+                                    <Stack.Screen
+                                        name="logs/details"
+                                        options={{
+                                            title: 'Log Details',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            presentation: 'modal',
+                                        }}
+                                    />
+
+                                    <Stack.Screen
+                                        name="logs/filters"
+                                        options={{
+                                            title: 'Log Filters',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            presentation: 'modal',
+                                        }}
+                                    />
+
+                                    <Stack.Screen
+                                        name="billing/index"
+                                        options={{
+                                            title: 'Billing',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
+
+                                    <Stack.Screen
+                                        name="icons/index"
+                                        options={{
+                                            title: 'App Icon',
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            autoHideHomeIndicator: true,
+                                        }}
+                                    />
+                                </Stack>
+                            </ThemeProvider>
                         </PersistQueryClientProvider>
                     </KeyboardProvider>
                 </GestureHandlerRootView>
@@ -329,4 +386,8 @@ function RootLayout() {
     )
 }
 
-export default RootLayout
+export default HotUpdater.wrap({
+    baseURL: `${process.env.EXPO_PUBLIC_HOT_UPDATER_CLOUDFLARE_URL}/api/check-update`,
+    updateStrategy: 'fingerprint',
+    updateMode: 'auto',
+})(RootLayout)

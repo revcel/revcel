@@ -49,3 +49,6 @@ google-services.json
 !modules/widgetkit/ios
 !modules/widgetkit/android
 modules/widgetkit/android/build
+.hot-updater/output
+keys/
+fingerprint.json

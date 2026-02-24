@@ -20,7 +20,6 @@ module.exports = ({ config }) => {
         newArchEnabled: true,
 
         ios: {
-            ...(config.ios || {}),
             icon: './assets/icon-ios.icon',
             appleTeamId: process.env.EXPO_PUBLIC_APPLE_TEAM_ID,
             bundleIdentifier: process.env.EXPO_PUBLIC_BUNDLE_IDENTIFIER,
@@ -41,7 +40,6 @@ module.exports = ({ config }) => {
             enforceContrast: false,
         },
         android: {
-            ...(config.android || {}),
             package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
             adaptiveIcon: {
                 foregroundImage: './assets/icon.png',
@@ -49,6 +47,10 @@ module.exports = ({ config }) => {
             googleServicesFile: './google-services.json',
             playStoreUrl: process.env.EXPO_PUBLIC_ANDROID_STORE_URL,
             predictiveBackGestureEnabled: false,
+            blockedPermissions: [
+                'android.permission.READ_MEDIA_IMAGES',
+                'android.permission.READ_MEDIA_VIDEO',
+            ],
         },
 
         plugins: [
@@ -85,9 +87,25 @@ module.exports = ({ config }) => {
                     url: 'https://sentry.io/',
                     project: process.env.EXPO_PUBLIC_SENTRY_PROJECT,
                     organization: process.env.EXPO_PUBLIC_SENTRY_ORG,
+                    experimental_android: {
+                        enableAndroidGradlePlugin: true,
+                        autoUploadProguardMapping: true,
+                        includeProguardMapping: true,
+                        dexguardEnabled: true,
+                        uploadNativeSymbols: true,
+                        autoUploadNativeSymbols: true,
+                        includeNativeSources: true,
+                        includeSourceContext: true,
+                    },
                 },
             ],
-            'expo-quick-actions',
+            './plugins/withHotUpdaterAndroidFix',
+            [
+                '@hot-updater/react-native',
+                {
+                    channel: 'production',
+                },
+            ],
             '@bacons/apple-targets',
             [
                 './plugins/withAndroidWidget',
@@ -135,7 +153,6 @@ module.exports = ({ config }) => {
                     ],
                 },
             ],
-            'expo-web-browser',
             [
                 'expo-alternate-app-icons',
                 [
@@ -182,6 +199,21 @@ module.exports = ({ config }) => {
                         },
                     },
                 ],
+            ],
+            'expo-quick-actions',
+            'expo-web-browser',
+            'expo-asset',
+            'expo-image',
+            'expo-video',
+            'expo-sharing',
+            [
+                'expo-audio',
+                {
+                    microphonePermission: false,
+                    recordAudioAndroid: false,
+                    enableBackgroundPlayback: false,
+                    enableBackgroundRecording: false,
+                },
             ],
         ],
 

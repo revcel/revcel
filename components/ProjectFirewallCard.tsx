@@ -136,7 +136,12 @@ export default function ProjectFirewallCard() {
                                         queryKey: ['team', currentTeamId, 'projects'],
                                     })
                                 } catch (error) {
-									Alert.alert('Error', error instanceof Error ? error.message : 'An unknown error occurred')
+                                    Alert.alert(
+                                        'Error',
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'An unknown error occurred'
+                                    )
                                 } finally {
                                     setIsWorking(false)
                                 }

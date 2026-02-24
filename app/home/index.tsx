@@ -169,7 +169,7 @@ export default function HomeScreen() {
                 registerPlacement({
                     placement: 'OpenNotifications',
                     feature: () => {
-                        router.push('/notifications/')
+                        router.push('/notifications')
                         WidgetKitModule.setIsSubscribed(true)
                     },
                 }).catch((error) => {
@@ -196,7 +196,7 @@ export default function HomeScreen() {
                         Alert.alert('Error', 'Something went wrong, please try again.')
                     }
                 } else {
-                    router.push('/v0/')
+                    router.push('/v0')
                 }
                 return
             }
@@ -255,7 +255,7 @@ export default function HomeScreen() {
                         id: '0',
                         title:
                             Platform.OS === 'android'
-                                ? "Don't delete me ): Tap here!"
+                                ? 'Tap here for 50% off!'
                                 : "Don't delete me ):",
                         subtitle: "Here's 50% off for life!",
                         icon: 'love',
@@ -296,8 +296,8 @@ export default function HomeScreen() {
                                             destructive: false,
                                             systemIcon: isLiquidGlassAvailable()
                                                 ? team.id === currentTeamId
-                                                    ? 'smallcircle.filled.circle.fill'
-                                                    : 'smallcircle.filled.circle'
+                                                    ? 'circle.fill'
+                                                    : 'circle'
                                                 : undefined,
                                             disabled: team.id === currentTeamId,
                                         }))
@@ -342,7 +342,7 @@ export default function HomeScreen() {
                                             if (connections.length === 1) {
                                                 mmkvStorage.clearAll()
                                                 router.dismissAll()
-                                                router.replace('/login/')
+                                                router.replace('/login')
                                                 queryClient.clear()
                                                 return
                                             }
@@ -361,7 +361,7 @@ export default function HomeScreen() {
 
                         if (e.nativeEvent.name === 'Add Connection') {
                             const featureFn = () => {
-                                router.push('/login/')
+                                router.push('/login')
                                 WidgetKitModule.setIsSubscribed(true)
                             }
 
@@ -383,7 +383,7 @@ export default function HomeScreen() {
 
                         if (e.nativeEvent.name === 'Notifications') {
                             const featureFn = () => {
-                                router.push('/notifications/')
+                                router.push('/notifications')
                                 WidgetKitModule.setIsSubscribed(true)
                             }
 
@@ -477,12 +477,8 @@ export default function HomeScreen() {
                 <ContextMenu
                     actions={[
                         {
-                            title: 'Vercel v0',
-                            systemIcon: 'arrow.up.circle',
-                        },
-                        {
-                            title: 'Vercel Domains',
-                            systemIcon: 'globe',
+                            title: 'Billing',
+                            systemIcon: 'creditcard',
                         },
                         {
                             title: 'Icons',
@@ -496,15 +492,31 @@ export default function HomeScreen() {
                             title: 'Rate',
                             systemIcon: 'star.fill',
                         },
+                        {
+                            title: '',
+                            inlineChildren: true,
+                            actions: [
+                                {
+                                    title: 'Vercel v0',
+                                },
+                                {
+                                    title: 'Vercel Domains',
+                                },
+                            ],
+                        },
                     ]}
                     dropdownMenuMode={true}
                     onPress={async (e) => {
                         e.persist()
 
+                        if (e.nativeEvent.name === 'Billing') {
+                            router.push('/billing')
+                            return
+                        }
                         if (e.nativeEvent.name === 'Icons') {
                             if (__DEV__) {
                                 WidgetKitModule.setIsSubscribed(true)
-                                router.push('/icons/')
+                                router.push('/icons')
                                 return
                             }
 
@@ -512,7 +524,7 @@ export default function HomeScreen() {
                                 placement: 'AppIcons',
                                 feature: () => {
                                     WidgetKitModule.setIsSubscribed(true)
-                                    router.push('/icons/')
+                                    router.push('/icons')
                                 },
                             })
                             return
@@ -634,12 +646,12 @@ export default function HomeScreen() {
                                     Alert.alert('Error', 'Something went wrong, please try again.')
                                 }
                             } else {
-                                router.push('/v0/')
+                                router.push('/v0')
                             }
                             return
                         }
                         if (e.nativeEvent.name === 'Vercel Domains') {
-                            router.push('/domains/')
+                            router.push('/domains')
                             return
                         }
                     }}

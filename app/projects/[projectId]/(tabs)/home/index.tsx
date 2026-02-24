@@ -87,7 +87,7 @@ export default function ProjectHomeScreen() {
                             if (router.canGoBack()) {
                                 router.back()
                             } else {
-                                router.replace('/home/')
+                                router.replace('/home')
                             }
                         }}
                     >

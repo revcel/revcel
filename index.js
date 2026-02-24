@@ -1,4 +1,5 @@
 import 'expo-router/entry'
+import './lib/prebundle'
 import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
 import { setBackgroundColorAsync } from 'expo-system-ui'
@@ -18,4 +19,8 @@ if (Platform.OS === 'android') {
     })
 }
 
-setBackgroundColorAsync('#0A0A0A') // setting it in app.json does not seem to have an effect
+try {
+    setBackgroundColorAsync('#0A0A0A') // setting it in app.json does not seem to have an effect
+} catch (error) {
+    console.error(error)
+}

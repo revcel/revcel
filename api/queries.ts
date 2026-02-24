@@ -13,6 +13,7 @@ import type {
     DeploymentBuildMetadata,
 } from '@/types/deployments'
 import type { Domain, DomainConfig } from '@/types/domains'
+import type { Flag, FlagState, ListFlagsResponse } from '@/types/flags'
 import type { Log } from '@/types/logs'
 import type { DeploymentBuildLog } from '@/types/old'
 import type { Project } from '@/types/projects'
@@ -1390,6 +1391,87 @@ export async function fetchTeamProjectDomainConfig(domain: string) {
         return response
     } catch (error) {
         console.log('[Error] Error fetching domain config', error)
+        throw error
+    }
+}
+
+/* FLAGS */
+export async function fetchTeamProjectFlags({
+    projectId,
+    state = 'active',
+    withMetadata = true,
+}: {
+    projectId: string
+    state?: FlagState
+    withMetadata?: boolean
+}) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+        state,
+        withMetadata: withMetadata.toString(),
+    })
+
+    console.log('[fetchTeamProjectFlags] params', params.toString())
+
+    try {
+        const response = await vercel.get<ListFlagsResponse>(
+            `/v1/projects/${projectId}/feature-flags/flags?${params.toString()}`
+        )
+        return response
+    } catch (error) {
+        console.log('[fetchTeamProjectFlags] Error fetching flags', error)
+        throw error
+    }
+}
+
+export async function fetchTeamProjectFlag({
+    projectId,
+    flagIdOrSlug,
+    withMetadata = true,
+}: {
+    projectId: string
+    flagIdOrSlug: string
+    withMetadata?: boolean
+}) {
+    const currentConnection = usePersistedStore.getState().currentConnection
+
+    if (!currentConnection) {
+        throw new Error('Current connection not found')
+    }
+
+    const currentTeamId = currentConnection.currentTeamId
+
+    if (!currentTeamId) {
+        throw new Error('Current team not found')
+    }
+
+    const params = new URLSearchParams({
+        teamId: currentTeamId,
+        withMetadata: withMetadata.toString(),
+    })
+
+    console.log('[fetchTeamProjectFlag] params', params.toString())
+
+    try {
+        const encodedFlagIdOrSlug = encodeURIComponent(flagIdOrSlug)
+        const response = await vercel.get<Flag>(
+            `/v1/projects/${projectId}/feature-flags/flags/${encodedFlagIdOrSlug}?${params.toString()}`
+        )
+        return response
+    } catch (error) {
+        console.log('[fetchTeamProjectFlag] Error fetching flag', error)
         throw error
     }
 }

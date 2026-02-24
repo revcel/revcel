@@ -43,6 +43,8 @@ env.example
 
 *.apk
 *.aab
+!keys/private-key.pem
+!keys/public-key.pem
 
 # widgets
 !modules/widgetkit/ios
