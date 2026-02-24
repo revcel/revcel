@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { useMutation } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { router, useGlobalSearchParams } from 'expo-router'
-import * as StoreReview from 'expo-store-review'
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: boolean }) {
@@ -36,7 +35,7 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
             }}
             showsHorizontalScrollIndicator={false}
         >
-            <QuickAction
+            {/* <QuickAction
                 label="More"
                 icon="ellipsis-horizontal-sharp"
                 subtitle="Coming Soon"
@@ -44,7 +43,7 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                     StoreReview.requestReview()
                 }}
-            />
+            /> */}
 
             <QuickAction
                 label="Observability"
@@ -63,6 +62,15 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
                 onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                     router.push(`/projects/${projectId}/analytics/`)
+                }}
+            />
+
+            <QuickAction
+                label="Flags"
+                icon="flag"
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    router.push(`/projects/${projectId}/flags`)
                 }}
             />
 
