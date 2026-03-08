@@ -53,6 +53,7 @@ export default function Login() {
 
     const validateToken = useCallback(async (token: string) => {
         console.log('[validateToken]  token', token)
+
         try {
             const response = await fetch('https://api.vercel.com/www/user', {
                 headers: {
@@ -72,6 +73,16 @@ export default function Login() {
         if (!token) {
             Alert.alert('Error', 'Please enter an API token')
             return
+        }
+
+        const tokenPrefix = token.slice(0, 3).toLowerCase()
+
+        if (['vci', 'vca', 'vcr', 'vck'].includes(tokenPrefix)) {
+            Alert.alert(
+                'Unsupported token',
+                'Since February 2026, Vercel API tokens changed and only Personal Access Tokens that start with "vcp" have sufficient permissions to be used.\n\nTap the message at the bottom of the screen to learn how to generate a new token.'
+            )
+            return false
         }
 
         setIsLoading(true)
