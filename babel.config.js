@@ -6,7 +6,7 @@ module.exports = (api) => {
             [
                 'react-native-boost/plugin',
                 {
-                    optimizers: {
+                    optimizations: {
                         view: false,
                     },
                 },
