@@ -24,9 +24,6 @@ export default defineConfig({
         accountId: process.env.HOT_UPDATER_CLOUDFLARE_ACCOUNT_ID!,
         cloudflareApiToken: process.env.HOT_UPDATER_CLOUDFLARE_API_TOKEN!,
     }),
-    updateStrategy: 'fingerprint',
-    fingerprint: {
-        ignorePaths: ['ios/', 'android/', 'targets/'],
-    },
+    updateStrategy: 'appVersion',
     signing: { enabled: true, privateKeyPath: './keys/private-key.pem' },
 })

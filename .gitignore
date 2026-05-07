@@ -51,4 +51,3 @@ google-services.json
 modules/widgetkit/android/build
 .hot-updater/output
 keys/
-fingerprint.json
