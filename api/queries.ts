@@ -434,15 +434,15 @@ export async function fetchProjectAnalyticsOverview({
 
     const params = new URLSearchParams({
         environment: 'production',
-        // empty filter {}
-        'filter{}': '',
+        filter: '{}',
+        withBounceRate: 'true',
         from,
         projectId,
         teamId: currentTeamId,
         to,
     })
 
-    const url = `https://vercel.com/api/web-analytics/overview?${params.toString()}`
+    const url = `https://vercel.com/api/web-analytics/v2/overview?${params.toString()}`
 
     const response = await fetch(url, {
         headers: {
@@ -504,7 +504,7 @@ export async function fetchProjectAnalyticsTimeseries({
         to,
     })
 
-    const url = `https://vercel.com/api/web-analytics/timeseries?${params.toString()}`
+    const url = `https://vercel.com/api/web-analytics/v2/timeseries?${params.toString()}`
 
     const response = await fetch(url, {
         headers: {

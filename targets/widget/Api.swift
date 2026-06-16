@@ -55,7 +55,7 @@ func fetchProjectAnalyticsAvailability(connection: Connection, connectionTeam: C
 func fetchProjectTotalVisitors(connection: Connection, connectionTeam: ConnectionTeam, projectId: String, from: String, to: String) async throws -> AnalyticsQuickStatsResponse {
   let params = FetchParams<NoBody>(
     method: HTTPMethod.GET,
-    url: "/web-analytics/overview?environment=production&filter%7B%7D&from=\(from)&projectId=\(projectId)&teamId=\(connectionTeam.id)&to=\(to)",
+    url: "/web-analytics/v2/overview?environment=production&filter=%7B%7D&withBounceRate=true&from=\(from)&projectId=\(projectId)&teamId=\(connectionTeam.id)&to=\(to)",
     connection: connection,
     baseUrl: "https://vercel.com/api"
   )
@@ -66,7 +66,7 @@ func fetchProjectTotalVisitors(connection: Connection, connectionTeam: Connectio
 func fetchProjectAnalyticsTimeseries(connection: Connection, connectionTeam: ConnectionTeam, projectId: String, from: String, to: String) async throws -> AnalyticsTimeseriesResponse {
   let params = FetchParams<NoBody>(
     method: HTTPMethod.GET,
-    url: "/web-analytics/timeseries?environment=production&filter=%7B%7D&from=\(from)&projectId=\(projectId)&teamId=\(connectionTeam.id)&to=\(to)",
+    url: "/web-analytics/v2/timeseries?environment=production&filter=%7B%7D&from=\(from)&projectId=\(projectId)&teamId=\(connectionTeam.id)&to=\(to)",
     connection: connection,
     baseUrl: "https://vercel.com/api"
   )
