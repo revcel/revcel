@@ -64,6 +64,10 @@ class MediumFirewallWidgetReceiver: GlanceAppWidgetReceiver() {
                     glanceAppWidget.update(context, glanceId)
                 }
             }
+        } else {
+            // Let the framework dispatch non-update lifecycle events
+            // (onDeleted / onEnabled / onDisabled / onAppWidgetOptionsChanged).
+            super.onReceive(context, intent)
         }
     }
 
