@@ -1,5 +1,4 @@
 import 'expo-router/entry'
-import './lib/prebundle'
 import * as Notifications from 'expo-notifications'
 import * as SplashScreen from 'expo-splash-screen'
 import { setBackgroundColorAsync } from 'expo-system-ui'
