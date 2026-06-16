@@ -1,10 +1,9 @@
 package com.revcel.mobile
 
 import ProjectListItem
-import TeamProjectItem
-import WidgetIntentState
 import appGroupName
 import connectionsKey
+import WidgetIntentState
 import com.google.gson.Gson
 import android.appwidget.AppWidgetManager
 import android.content.Context
@@ -24,9 +23,6 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import expo.modules.widgetkit.Connection
 import isSubscribedKey
 import savedWidgetStateKey
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -123,60 +119,23 @@ class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
                 projects,
                 onProjectToggle,
                 onDone = {
-                    // Fetch deployment data for all selected projects in background
+                    // Persist the selection, start background refresh, and load data now
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            val items = coroutineScope {
-                                selectedProjects.mapIndexed { index, project ->
-                                    async {
-                                        try {
-                                            val response = fetchProductionDeployment(
-                                                project.connection,
-                                                project.connectionTeam,
-                                                project.id
-                                            )
-                                            val deployment = response.deployment
-                                            
-                                            // Fetch favicon
-                                            val faviconPath = try {
-                                                val latestDeployment = fetchLatestDeployment(project.connection, project.id)
-                                                if (latestDeployment.deployments.isNotEmpty()) {
-                                                    val imageUrl = "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${project.connectionTeam.id}"
-                                                    val file = downloadImageToFile(applicationContext, imageUrl, "${project.id}-${index}")
-                                                    file.path
-                                                } else {
-                                                    null
-                                                }
-                                            } catch (e: Exception) {
-                                                null
-                                            }
-                                            
-                                            TeamProjectItem(
-                                                id = "${project.id}-${index}",
-                                                projectId = project.id,
-                                                name = project.projectName,
-                                                commitMessage = deployment.meta?.githubCommitMessage,
-                                                createdAt = deployment.createdAt,
-                                                status = deployment.readyState,
-                                                faviconPath = faviconPath
-                                            )
-                                        } catch (e: Exception) {
-                                            // Fallback to project with no deployment data
-                                            TeamProjectItem(
-                                                id = "${project.id}-${index}",
-                                                projectId = project.id,
-                                                name = project.projectName,
-                                                commitMessage = null,
-                                                createdAt = null,
-                                                status = null,
-                                                faviconPath = null
-                                            )
-                                        }
-                                    }
-                                }.awaitAll().toTypedArray()
-                            }
-
+                            val configPrefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
+                            val isSubscribed = configPrefs.getBoolean(isSubscribedKey, false)
                             val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
+
+                            // Persist selection + schedule periodic background refresh
+                            LargeTeamProjectsWidgetReceiver().onProjectsSelected(
+                                applicationContext,
+                                glanceId,
+                                selectedProjects,
+                                isSubscribed
+                            )
+
+                            // Immediate fetch so data appears right away
+                            val items = fetchTeamProjectItems(applicationContext, selectedProjects)
                             LargeTeamProjectsWidgetReceiver().onDataFetched(
                                 applicationContext,
                                 glanceId,

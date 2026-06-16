@@ -1,10 +1,14 @@
 package com.revcel.mobile
 
 import ProjectListItem
+import TeamProjectItem
 import android.content.Context
 import android.content.SharedPreferences
 import appGroupName
 import isSubscribedKey
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import java.util.Date
 import java.util.concurrent.TimeUnit
 import java.text.SimpleDateFormat
@@ -54,4 +58,58 @@ fun formatNumber(value: Int?): String {
     if (number < 1000) return number.toString()
     if (number < 1_000_000) return String.format(Locale.US, "%.1fK", number / 1000.0)
     return String.format(Locale.US, "%.1fM", number / 1_000_000.0)
-}
+}}
+
+/**
+ * Fetches production-deployment status (and favicon) for each selected project in parallel.
+ * Shared by the configuration activity (initial load) and the background worker (refresh).
+ */
+suspend fun fetchTeamProjectItems(
+    context: Context,
+    projects: List<ProjectListItem>
+): Array<TeamProjectItem> = coroutineScope {
+    projects.mapIndexed { index, project ->
+        async {
+            try {
+                val deployment = fetchProductionDeployment(
+                    project.connection,
+                    project.connectionTeam,
+                    project.id
+                ).deployment
+
+                val faviconPath = try {
+                    val latestDeployment = fetchLatestDeployment(project.connection, project.id)
+                    if (latestDeployment.deployments.isNotEmpty()) {
+                        val imageUrl =
+                            "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${project.connectionTeam.id}"
+                        downloadImageToFile(context, imageUrl, "${project.id}-${index}").path
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+
+                TeamProjectItem(
+                    id = "${project.id}-${index}",
+                    projectId = project.id,
+                    name = project.projectName,
+                    commitMessage = deployment.meta?.githubCommitMessage,
+                    createdAt = deployment.createdAt,
+                    status = deployment.readyState,
+                    faviconPath = faviconPath
+                )
+            } catch (e: Exception) {
+                // Fallback to project with no deployment data
+                TeamProjectItem(
+                    id = "${project.id}-${index}",
+                    projectId = project.id,
+                    name = project.projectName,
+                    commitMessage = null,
+                    createdAt = null,
+                    status = null,
+                    faviconPath = null
+                )
+            }
+        }
+    }.awaitAll().toTypedArray()
