@@ -79,17 +79,24 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
         var denied: Int? = nil
         var challenged: Int? = nil
         
-        if let allowedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "allow" }) {
-          allowed = allowedValue.value
+        // groupBy ["wafRuleId", "wafAction"] returns one row per (rule, action),
+        // so each action can span multiple rows — sum them, don't take the first.
+        let allowedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "allow" }
+        if !allowedEntries.isEmpty {
+          allowed = allowedEntries.reduce(0) { $0 + $1.value }
+        } else {
+          let emptyActionEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "" }
+          if !emptyActionEntries.isEmpty {
+            allowed = emptyActionEntries.reduce(0) { $0 + $1.value }
+          }
         }
-        if let allowedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "" }), allowed == nil {
-          allowed = allowedValue.value
+        let deniedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "deny" }
+        if !deniedEntries.isEmpty {
+          denied = deniedEntries.reduce(0) { $0 + $1.value }
         }
-        if let deniedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "deny" }) {
-          denied = deniedValue.value
-        }
-        if let challengedValue = firewallMetricsResponse.summary.first(where: { $0.wafAction == "challenge" }) {
-          challenged = challengedValue.value
+        let challengedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "challenge" }
+        if !challengedEntries.isEmpty {
+          challenged = challengedEntries.reduce(0) { $0 + $1.value }
         }
         
         firewallData = .init(allowed: allowed, denied: denied, chalanged: challenged)

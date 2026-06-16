@@ -107,12 +107,18 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
             return firewallData
         }
 
-        var allowed = firewallResponseData.summary.firstOrNull { it.wafAction == "allow" }?.value
+        // groupBy ["wafRuleId", "wafAction"] returns one row per (rule, action),
+        // so each action can span multiple rows — sum them, don't take the first.
+        var allowed = firewallResponseData.summary.filter { it.wafAction == "allow" }
+            .takeIf { it.isNotEmpty() }?.sumOf { it.value }
         if (allowed == null) {
-            allowed = firewallResponseData.summary.firstOrNull { it.wafAction == "" }?.value
+            allowed = firewallResponseData.summary.filter { it.wafAction == "" }
+                .takeIf { it.isNotEmpty() }?.sumOf { it.value }
         }
-        val denied = firewallResponseData.summary.firstOrNull { it.wafAction == "deny" }?.value
-        val challenged = firewallResponseData.summary.firstOrNull { it.wafAction == "challenge" }?.value
+        val denied = firewallResponseData.summary.filter { it.wafAction == "deny" }
+            .takeIf { it.isNotEmpty() }?.sumOf { it.value }
+        val challenged = firewallResponseData.summary.filter { it.wafAction == "challenge" }
+            .takeIf { it.isNotEmpty() }?.sumOf { it.value }
 
         return FirewallWidgetData(
             allowed = allowed,
