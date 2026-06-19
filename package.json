@@ -1,6 +1,6 @@
 {
     "name": "revcel",
-    "version": "2.6.0",
+    "version": "2.7.3",
     "description": "The mobile app for Vercel",
     "author": {
         "name": "Revcel",
@@ -40,7 +40,8 @@
         "ios": "expo run:ios",
         "lint": "expo lint",
         "deps": "expo install --check",
-        "build:android": "eas build --platform android --profile development --local",
+        "console": "hot-updater console",
+        "build:android": "eas build --platform android --profile production --local",
         "prebuild:ios": "expo prebuild --platform ios",
         "prebuild:android": "expo prebuild --platform android",
         "postinstall": "patch-package",
