@@ -1614,7 +1614,17 @@ export async function fetchProjectLogs({
     projectId,
     deploymentId,
     startDate,
-    endDate,
+    // NOTE: unlike /logs/request-logs (which happily accepts startDate alone), the
+    // /logs/request-logs/filter-values endpoint REQUIRES endDate. Omitting it returns
+    // `400 bad_request: Validation error: Expected number, received nan at "endDate"`
+    // (the server coerces a missing endDate to NaN). Verified live against api.vercel.com.
+    //
+    // We default it here instead of leaving it optional because the per-attribute fetch
+    // below swallows errors (returns `{ rows: [] }` on failure), so a missing endDate would
+    // NOT surface as an error — every filter would silently come back empty and the UI would
+    // just show "no filters available". Defaulting to now keeps the contract honest so a
+    // future caller can't accidentally re-introduce that silent failure.
+    endDate = Date.now().toString(),
     page,
     attributes,
 }: {
