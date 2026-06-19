@@ -185,7 +185,10 @@ export async function toggleFirewall({
             {
                 projectId,
                 attackModeEnabled,
-                attackModeActiveUntil: attackModeEnabled ? Date.now() + ms('1y') : undefined,
+                // Vercel caps this at 24h from server time; 10m margin covers client clock skew
+                attackModeActiveUntil: attackModeEnabled
+                    ? Date.now() + ms('24h') - ms('10m')
+                    : undefined,
             },
             {
                 headers: {

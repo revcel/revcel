@@ -110,9 +110,9 @@ export default function ProjectFirewallCard() {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                 Alert.alert(
                     'Are you sure?',
-                    `This will ${
-                        project?.security?.attackModeEnabled ? 'disable' : 'enable'
-                    } the firewall for ${project?.name}.`,
+                    project?.security?.attackModeEnabled
+                        ? `This will disable the firewall for ${project?.name}.`
+                        : `This will enable the firewall for ${project?.name} for the next 24 hours.`,
                     [
                         { text: 'Cancel', style: 'cancel' },
                         {
