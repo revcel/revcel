@@ -492,18 +492,22 @@ export default function HomeScreen() {
                             title: 'Rate',
                             systemIcon: 'star.fill',
                         },
-                        {
-                            title: '',
-                            inlineChildren: true,
-                            actions: [
-                                {
-                                    title: 'Vercel v0',
-                                },
-                                {
-                                    title: 'Vercel Domains',
-                                },
-                            ],
-                        },
+                        ...(Platform.OS === 'ios'
+                            ? [
+                                  {
+                                      title: '',
+                                      inlineChildren: true,
+                                      actions: [
+                                          {
+                                              title: 'Vercel v0',
+                                          },
+                                          {
+                                              title: 'Vercel Domains',
+                                          },
+                                      ],
+                                  },
+                              ]
+                            : []),
                     ]}
                     dropdownMenuMode={true}
                     onPress={async (e) => {
