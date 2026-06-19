@@ -39,7 +39,13 @@ func getAppUrl(project: ProjectListItem?) -> String {
     let isSubscribed = sharedDefaults.bool(forKey: isSubscribedKey)
     
     if isSubscribed {
-      return "revcel://projects/\(project.id)/(tabs)/home"
+      // Pass connectionId + teamId so the app re-syncs the active connection/team to THIS project's
+      // owner before the tabs load. A widget can point at a project in a team that isn't currently
+      // selected; without these params the app stays on the wrong team and the project's API calls
+      // 403 (e.g. logs -> "Failed to fetch logs", home -> "Missing project"). The home tab consumes
+      // these in its switchConnection effect. Mirrors the push-notification deep link (lib/hooks.ts).
+      // connection.id == the persisted connection id (the user uid) that switchConnection expects.
+      return "revcel://projects/\(project.id)/(tabs)/home?connectionId=\(project.connection.id)&teamId=\(project.connectionTeam.id)"
     }
   }
 
