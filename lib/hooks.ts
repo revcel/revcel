@@ -10,6 +10,7 @@ import CookieManager from '@react-native-cookies/cookies'
 import { type UseQueryResult, useQueries } from '@tanstack/react-query'
 import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
+import * as WebBrowser from 'expo-web-browser'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 
@@ -25,7 +26,7 @@ export function useDeploymentShortId(
     return shortId
 }
 
-export function useBrowser() {
+export function useBrowser(openInApp = false) {
     const currentConnection = usePersistedStore((state) => state.currentConnection)
 
     const openBrowser = useCallback(
@@ -86,14 +87,13 @@ export function useBrowser() {
 
             await CookieManager.flush()
 
-            router.push({
-                pathname: '/browser',
-                params: {
-                    url: url,
-                },
-            })
+            if (openInApp) {
+                WebBrowser.openBrowserAsync(url)
+            } else {
+                router.push(`/browser?url=${url}/`)
+            }
         },
-        [currentConnection?.apiToken]
+        [currentConnection?.apiToken, openInApp]
     )
 
     return openBrowser
