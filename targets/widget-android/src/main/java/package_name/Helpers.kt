@@ -84,6 +84,51 @@ fun currentConnections(context: Context): List<Connection> {
     }
 }
 
+/**
+ * Projects of every connection for the configuration screens. Connections and teams are fetched
+ * in parallel, and one failing connection does not hide the projects of the others.
+ */
+suspend fun loadProjectOptions(connections: List<Connection>): Pair<List<ProjectListItem>, WidgetIntentState> {
+    if (connections.isEmpty()) return emptyList<ProjectListItem>() to WidgetIntentState.NO_PROJECTS
+
+    val perConnection = coroutineScope {
+        connections.map { connection ->
+            async {
+                try {
+                    val teams = fetchConnectionTeams(connection).teams.toList()
+                    coroutineScope {
+                        teams.map { team ->
+                            async {
+                                try {
+                                    fetchTeamProjects(connection, team).map { project ->
+                                        ProjectListItem(project.id, project.name, connection, team)
+                                    }
+                                } catch (e: Exception) {
+                                    emptyList()
+                                }
+                            }
+                        }.awaitAll().flatten()
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }.awaitAll()
+    }
+
+    val options = perConnection.filterNotNull().flatten()
+        .distinctBy { it.id }
+        .sortedBy { it.projectName.lowercase() }
+    val allFailed = perConnection.all { it == null }
+
+    val state = when {
+        options.isNotEmpty() -> WidgetIntentState.HAS_PROJECTS
+        allFailed -> WidgetIntentState.API_FAILED
+        else -> WidgetIntentState.NO_PROJECTS
+    }
+    return options to state
+}
+
 /** GlanceId of a still-bound widget, null once it was removed. Never use `getGlanceIdBy`, it throws. */
 suspend fun findGlanceId(context: Context, widgetClass: Class<out GlanceAppWidget>, appWidgetId: Int): GlanceId? {
     val manager = GlanceAppWidgetManager(context)

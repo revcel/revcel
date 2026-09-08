@@ -48,33 +48,10 @@ class SmallShortcutWidgetConfigurationActivity: AppCompatActivity() {
             var selectedProject by remember { mutableStateOf<ProjectListItem?>(null) }
 
             LaunchedEffect(Unit) {
-                for (connection in connections) {
-                    try {
-                        val connectionTeams = fetchConnectionTeams(connection)
-
-                        for (connectionTeam in connectionTeams.teams) {
-                            val teamProjects = fetchTeamProjects(connection, connectionTeam)
-
-                            options.addAll(teamProjects.map { project ->
-                                ProjectListItem(
-                                    id = project.id,
-                                    projectName = project.name,
-                                    connection = connection,
-                                    connectionTeam = connectionTeam
-                                )
-                            })
-                        }
-
-                        val nextState = if (connections.isEmpty()) WidgetIntentState.NO_PROJECTS else WidgetIntentState.HAS_PROJECTS
-
-                        setWidgetState(nextState)
-                        widgetState.value = nextState
-
-                    } catch (e: Exception) {
-                        setWidgetState(WidgetIntentState.API_FAILED)
-                        widgetState.value = WidgetIntentState.API_FAILED
-                    }
-                }
+                val (loaded, state) = loadProjectOptions(connections.toList())
+                options.clear()
+                options.addAll(loaded)
+                widgetState.value = state
             }
 
             setupUI(
