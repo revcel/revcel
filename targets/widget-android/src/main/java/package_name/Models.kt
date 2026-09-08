@@ -55,7 +55,10 @@ data class TeamProjectItem(
     val commitMessage: String?,
     val createdAt: Long?,
     val status: String?,
-    val faviconPath: String? = null
+    val faviconPath: String? = null,
+    // needed to build the row's deep link
+    val connectionId: String? = null,
+    val teamId: String? = null
 )
 
 data class FirewallMetricsResponse(

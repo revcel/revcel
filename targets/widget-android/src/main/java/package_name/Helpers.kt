@@ -47,31 +47,31 @@ fun convertDateToIso(date: Date): String {
     return sdf.format(date)
 }
 
-fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String {
-    if (project == null) {
+fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String =
+    getAppUrl(project?.id, project?.connection?.id, project?.connectionTeam?.id, isSubscribed)
+
+fun getAppUrl(projectId: String?, connectionId: String?, teamId: String?, isSubscribed: Boolean): String {
+    if (!isSubscribed) {
+        return "revcel://?showPaywall=1"
+    }
+
+    if (projectId == null) {
         return "revcel://"
     }
 
-    if (isSubscribed) {
-        // Pass connectionId + teamId so the app re-syncs the active connection/team to THIS project's
-        // owner before the tabs load. A widget can point at a project in a team that isn't currently
-        // selected; without these params the app stays on the wrong team and the project's API calls
-        // 403 (e.g. logs -> "Failed to fetch logs", home -> "Missing project"). The home tab consumes
-        // these in its switchConnection effect. Mirrors the push-notification deep link (lib/hooks.ts).
-        // connection.id == the persisted connection id (the user uid) that switchConnection expects.
-        val connectionId = project.connection.id
-        val teamId = project.connectionTeam.id
-
-        return if (connectionId != null) {
-            "revcel://projects/${project.id}/(tabs)/home?connectionId=$connectionId&teamId=$teamId"
-        } else {
-            // connection.id is nullable in the widgetkit Record; fall back to the bare URL rather than
-            // emitting a literal "null" param (the switch effect needs BOTH ids to fire anyway).
-            "revcel://projects/${project.id}/(tabs)/home"
-        }
+    // Pass connectionId + teamId so the app re-syncs the active connection/team to THIS project's
+    // owner before the tabs load. A widget can point at a project in a team that isn't currently
+    // selected; without these params the app stays on the wrong team and the project's API calls
+    // 403 (e.g. logs -> "Failed to fetch logs", home -> "Missing project"). The home tab consumes
+    // these in its switchConnection effect. Mirrors the push-notification deep link (lib/hooks.ts).
+    // connection.id == the persisted connection id (the user uid) that switchConnection expects.
+    return if (connectionId != null && teamId != null) {
+        "revcel://projects/$projectId/(tabs)/home?connectionId=$connectionId&teamId=$teamId"
+    } else {
+        // connection.id is nullable in the widgetkit Record; fall back to the bare URL rather than
+        // emitting a literal "null" param (the switch effect needs BOTH ids to fire anyway).
+        "revcel://projects/$projectId/(tabs)/home"
     }
-
-    return "revcel://?showPaywall=1"
 }
 
 /** Connections the app currently has; widgets configured with a removed one must stop calling Vercel. */
@@ -181,7 +181,9 @@ suspend fun fetchTeamProjectItems(
                     commitMessage = deployment.meta?.githubCommitMessage,
                     createdAt = deployment.createdAt,
                     status = deployment.readyState,
-                    faviconPath = faviconPath
+                    faviconPath = faviconPath,
+                    connectionId = project.connection.id,
+                    teamId = project.connectionTeam.id
                 )
             } catch (e: Exception) {
                 // Fallback to project with no deployment data
@@ -192,7 +194,9 @@ suspend fun fetchTeamProjectItems(
                     commitMessage = null,
                     createdAt = null,
                     status = null,
-                    faviconPath = null
+                    faviconPath = null,
+                    connectionId = project.connection.id,
+                    teamId = project.connectionTeam.id
                 )
             }
         }

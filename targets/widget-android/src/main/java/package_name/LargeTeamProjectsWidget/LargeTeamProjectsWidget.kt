@@ -64,12 +64,17 @@ fun formatDate(createdAt: Long?): String {
 }
 
 @Composable
-fun TeamProjectRow(item: TeamProjectItem) {
+fun TeamProjectRow(item: TeamProjectItem, isSubscribed: Boolean) {
+    // each row opens its own project, like the iOS widget
+    val url = getAppUrl(item.projectId, item.connectionId, item.teamId, isSubscribed)
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(vertical = 10.dp)
+            .clickable(actionStartActivity(intent))
     ) {
         ProjectFavicon(item.faviconPath, imageSize = 48.dp)
         
@@ -115,13 +120,13 @@ fun LargeTeamProjectsWidgetContent() {
     val isSubscribed = state[LargeTeamProjectsWidgetReceiver.isSubscribedValueKey] ?: false
     val rawItems = state[LargeTeamProjectsWidgetReceiver.itemsKey] ?: "[]"
     val items = Gson().fromJson(rawItems, Array<TeamProjectItem>::class.java) ?: emptyArray()
+    val dataState = state[LargeTeamProjectsWidgetReceiver.widgetStateKey]
     
     LargeTeamProjectsWidgetUI(
         items = items.toList(),
         isSubscribed = isSubscribed,
         dataState = dataState
     )
-    val dataState = state[LargeTeamProjectsWidgetReceiver.widgetStateKey]
 }
 
 @Composable
@@ -147,11 +152,6 @@ fun LargeTeamProjectsWidgetUI(
         return
     }
 
-    LazyColumn(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .background(GlanceTheme.colors.background)
     if (items.isEmpty()) {
         // used to render a blank widget while loading or after a failure
         Column(
@@ -166,10 +166,15 @@ fun LargeTeamProjectsWidgetUI(
         return
     }
 
+    LazyColumn(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .background(GlanceTheme.colors.background)
     ) {
         items(items.take(6).size) { index ->
             val item = items[index]
-            TeamProjectRow(item)
+            TeamProjectRow(item, isSubscribed)
         }
     }
 }
