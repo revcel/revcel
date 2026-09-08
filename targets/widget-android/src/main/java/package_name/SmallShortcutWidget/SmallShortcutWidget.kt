@@ -2,6 +2,7 @@ package com.revcel.mobile
 
 import ConnectionTeam
 import ProjectListItem
+import WidgetDataState
 import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -50,11 +51,13 @@ fun SmallShortcutWidgetContent() {
     val isSubscribed = state[SmallShortcutWidgetReceiver.isSubscribedValueKey] ?: false
     val faviconPath = state[SmallShortcutWidgetReceiver.faviconPathKey]
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
+    val dataState = state[SmallShortcutWidgetReceiver.widgetStateKey]
     
     SmallShortcutWidgetUI(
         project = project,
         faviconPath = faviconPath,
-        isSubscribed = isSubscribed
+        isSubscribed = isSubscribed,
+        dataState = dataState
     )
 }
 
@@ -62,7 +65,8 @@ fun SmallShortcutWidgetContent() {
 fun SmallShortcutWidgetUI(
     project: ProjectListItem?,
     faviconPath: String?,
-    isSubscribed: Boolean
+    isSubscribed: Boolean,
+    dataState: String? = null
 ) {
     val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
@@ -77,6 +81,12 @@ fun SmallShortcutWidgetUI(
     ) {
         if (!isSubscribed) {
             SubscriptionRequiredView()
+
+            return@Column
+        }
+
+        if (project == null && dataState == WidgetDataState.DISCONNECTED.name) {
+            StatusView(dataState)
 
             return@Column
         }

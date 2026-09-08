@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import expo.modules.widgetkit.Connection
 import isSubscribedKey
-import savedWidgetStateKey
 
 class MediumAnalyticsWidgetConfigurationActivity: AppCompatActivity() {
     override fun onCreate(savedConnectionState: Bundle?) {
@@ -42,8 +41,6 @@ class MediumAnalyticsWidgetConfigurationActivity: AppCompatActivity() {
         val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
         val rawConnections = prefs.getString(connectionsKey, "[]")
         val connections = Gson().fromJson(rawConnections, Array<Connection>::class.java) ?: emptyArray()
-
-        setWidgetState(WidgetIntentState.LOADING)
 
         setContent {
             var widgetState = remember { mutableStateOf(WidgetIntentState.LOADING) }
@@ -129,12 +126,4 @@ class MediumAnalyticsWidgetConfigurationActivity: AppCompatActivity() {
         }
     }
 
-    private fun setWidgetState(state: WidgetIntentState) {
-        val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
-
-        prefs.edit {
-            putInt(savedWidgetStateKey, state.value)
-            apply()
-        }
-    }
 }

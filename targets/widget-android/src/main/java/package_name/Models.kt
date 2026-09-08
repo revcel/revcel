@@ -2,7 +2,6 @@ import expo.modules.widgetkit.Connection
 
 val appGroupName: String = "group.com.revcel.mobile"
 val connectionsKey: String = "revcel::connections"
-val savedWidgetStateKey: String = "pourtainer::widgetState"
 val isSubscribedKey: String = "revcel::subscribed"
 
 data class ConnectionTeamsResponse(
@@ -26,7 +25,7 @@ data class ProjectListItem(
     val connectionTeam: ConnectionTeam
 )
 
-// For LargeTeamProjectsWidget (& MediumTeamProjectsWidget)
+// For LargeTeamProjectsWidget
 data class DeploymentMeta(
     val githubCommitMessage: String?
 )

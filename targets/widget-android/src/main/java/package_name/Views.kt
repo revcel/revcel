@@ -1,5 +1,6 @@
 package com.revcel.mobile
 
+import WidgetDataState
 import WidgetIntentState
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -158,15 +159,22 @@ fun ProjectMultiSelectConfigurationView(
     }
 }
 
+/** Loading, failed or disconnected, from the state the receiver stores per widget instance. */
 @Composable
-fun LoadingView() {
+fun StatusView(state: String?) {
+    val message = when (state) {
+        WidgetDataState.FAILED.name -> "Couldn't load data, tap to open the app"
+        WidgetDataState.DISCONNECTED.name -> "Account removed, reconfigure this widget"
+        else -> "Loading data..."
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = GlanceModifier
             .fillMaxSize()
     ) {
         Text(
-            text = "Loading data...",
+            text = message,
             style = TextStyle(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,

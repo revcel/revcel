@@ -118,14 +118,17 @@ fun LargeTeamProjectsWidgetContent() {
     
     LargeTeamProjectsWidgetUI(
         items = items.toList(),
-        isSubscribed = isSubscribed
+        isSubscribed = isSubscribed,
+        dataState = dataState
     )
+    val dataState = state[LargeTeamProjectsWidgetReceiver.widgetStateKey]
 }
 
 @Composable
 fun LargeTeamProjectsWidgetUI(
     items: List<TeamProjectItem>,
-    isSubscribed: Boolean
+    isSubscribed: Boolean,
+    dataState: String? = null
 ) {
     val intent = Intent(Intent.ACTION_VIEW, getAppUrl(null, isSubscribed).toUri())
 
@@ -149,6 +152,20 @@ fun LargeTeamProjectsWidgetUI(
             .fillMaxSize()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .background(GlanceTheme.colors.background)
+    if (items.isEmpty()) {
+        // used to render a blank widget while loading or after a failure
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .background(GlanceTheme.colors.background)
+                .clickable(actionStartActivity(intent))
+        ) {
+            StatusView(dataState)
+        }
+        return
+    }
+
     ) {
         items(items.take(6).size) { index ->
             val item = items[index]

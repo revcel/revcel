@@ -46,8 +46,6 @@ class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
         val rawConnections = prefs.getString(connectionsKey, "[]")
         val connections = Gson().fromJson(rawConnections, Array<Connection>::class.java) ?: emptyArray()
 
-        setWidgetState(WidgetIntentState.LOADING)
-
         setContent {
             var widgetState = remember { mutableStateOf(WidgetIntentState.LOADING) }
             val options = remember { mutableStateListOf<ProjectListItem>() }
@@ -140,12 +138,4 @@ class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
         }
     }
 
-    private fun setWidgetState(state: WidgetIntentState) {
-        val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
-
-        prefs.edit {
-            putInt(savedWidgetStateKey, state.value)
-            apply()
-        }
-    }
 }

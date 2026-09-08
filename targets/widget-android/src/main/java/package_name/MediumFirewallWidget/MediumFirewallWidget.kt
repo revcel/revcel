@@ -57,12 +57,14 @@ fun MediumFirewallWidgetContent() {
     val rawFirewallData = state[MediumFirewallWidgetReceiver.firewallWidgetDataKey]
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
     val firewallData = Gson().fromJson(rawFirewallData, FirewallWidgetData::class.java) ?: null
+    val dataState = state[MediumFirewallWidgetReceiver.widgetStateKey]
     
     MediumFirewallWidgetUI(
         project = project,
         firewallData = firewallData,
         faviconPath = faviconPath,
-        isSubscribed = isSubscribed
+        isSubscribed = isSubscribed,
+        dataState = dataState
     )
 }
 
@@ -71,7 +73,8 @@ fun MediumFirewallWidgetUI(
     project: ProjectListItem?,
     firewallData: FirewallWidgetData?,
     faviconPath: String?,
-    isSubscribed: Boolean
+    isSubscribed: Boolean,
+    dataState: String? = null
 ) {
     val customUri = getAppUrl(project, isSubscribed)
     val intent = Intent(Intent.ACTION_VIEW, customUri.toUri())
@@ -121,7 +124,7 @@ fun MediumFirewallWidgetUI(
                 StatColumn(firewallData.denied, "Denied", GlanceTheme.colors.error)
                 StatColumn(firewallData.challenged, "Challenged", GlanceTheme.colors.outline)
             } else {
-                LoadingView()
+                StatusView(dataState)
             }
         }
     }

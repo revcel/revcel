@@ -64,13 +64,15 @@ fun MediumAnalyticsWidgetContent() {
     val faviconPath = state[MediumAnalyticsWidgetReceiver.faviconPathKey]
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
     val rawAnalyticsData = state[MediumAnalyticsWidgetReceiver.analyticsDataKey]
+    val dataState = state[MediumAnalyticsWidgetReceiver.widgetStateKey]
     val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java) ?: null
     
     MediumAnalyticsWidgetUI(
         project = project,
         analyticsData = analyticsData,
         faviconPath = faviconPath,
-        isSubscribed = isSubscribed
+        isSubscribed = isSubscribed,
+        dataState = dataState
     )
 }
 
@@ -79,7 +81,8 @@ fun MediumAnalyticsWidgetUI(
     project: ProjectListItem?,
     analyticsData: AnalyticsWidgetData?,
     faviconPath: String?,
-    isSubscribed: Boolean
+    isSubscribed: Boolean,
+    dataState: String? = null
 ) {
     val context = LocalContext.current
     val customUri = getAppUrl(project, isSubscribed)
@@ -99,7 +102,7 @@ fun MediumAnalyticsWidgetUI(
 
                 return@Column
             }
-            LoadingView()
+            StatusView(dataState)
 
             return@Column
         }
