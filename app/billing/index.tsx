@@ -8,6 +8,7 @@ import type { TeamBillingCharge } from '@/types/billing'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { upperFirst } from 'lodash'
 import { useMemo, useState } from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 
@@ -375,6 +376,7 @@ export default function BillingScreen() {
                             gap: 8,
                         }}
                     >
+                        <SummaryCard label="Plan" value={upperFirst(currentTeamPlan ?? '—')} />
                         <SummaryCard label="Billed" value={formatCurrency(grouped.totalBilled)} />
                         <SummaryCard
                             label="Effective"
