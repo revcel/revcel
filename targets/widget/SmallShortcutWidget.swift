@@ -23,7 +23,6 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
     var entries: [SmallShortcutEntry] = []
     var faviconPath: String? = nil
     var isSubscribed: Bool = false
-    var latestDeployment: Deployment? = nil
     
     if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
       let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
@@ -32,13 +31,7 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
     }
     
     if let project = configuration.project {
-      latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
-    }
-    
-    if let latestDeployment = latestDeployment, let project = configuration.project{
-      if let url = URL(string: "https://vercel.com/api/v0/deployments/\(latestDeployment.uid)/favicon?teamId=\(project.connectionTeam.id)") {
-        faviconPath = try? await downloadAndSaveImage(from: url, name: project.id)
-      }
+      faviconPath = await fetchProjectFavicon(project: project)
     }
     
     let entry = SmallShortcutEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath)

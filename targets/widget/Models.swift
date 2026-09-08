@@ -31,14 +31,6 @@ struct ConnectionProject: Decodable {
   let name: String
 }
 
-struct DeploymentResponse: Decodable {
-  let deployments: [Deployment]
-}
-
-struct Deployment: Decodable {
-  let uid: String
-}
-
 struct FirewallMetricsResponse: Decodable {
   let summary: [FirewallMetricsSummary]
 }
@@ -137,7 +129,13 @@ struct WidgetDeploymentFull: Decodable {
   let meta: WidgetDeploymentMeta?
 }
 
+/// The domain currently serving production (custom domain or `<project>.vercel.app`).
+struct ProductionDomain: Decodable {
+  let name: String?
+}
+
 struct ProductionDeploymentResponse: Decodable {
   let deployment: WidgetDeploymentFull
   let deploymentIsStale: Bool?
+  let domain: ProductionDomain?
 }

@@ -24,14 +24,12 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     var entries: [MediumAnalyticsEntry] = []
     var faviconPath: String? = nil
     var isSubscribed: Bool = false
-    var latestDeployment: Deployment? = nil
     var visitorsNumber: Int? = nil
     var analyticsAvailability: AnalyticsEnabledResponse? = nil
     var analyticsData: AnalyticsTimeseriesResponse? = nil
     
     if let project = configuration.project {
       analyticsAvailability = try? await fetchProjectAnalyticsAvailability(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
-      latestDeployment = try? await fetchLatestDeplyment(connection: project.connection, projectId: project.id).deployments.first
     }
     
     if let analyticsAvailability, let project = configuration.project {
@@ -59,10 +57,8 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
       }
     }
     
-    if let latestDeployment = latestDeployment, let project = configuration.project{
-      if let url = URL(string: "https://vercel.com/api/v0/deployments/\(latestDeployment.uid)/favicon?teamId=\(project.connectionTeam.id)") {
-        faviconPath = try? await downloadAndSaveImage(from: url, name: project.id)
-      }
+    if let project = configuration.project {
+      faviconPath = await fetchProjectFavicon(project: project)
     }
     
     if let sharedDefaults = UserDefaults(suiteName: appGroupName) {

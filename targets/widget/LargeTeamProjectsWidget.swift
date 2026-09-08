@@ -75,16 +75,7 @@ struct LargeTeamProjectsProvider: AppIntentTimelineProvider {
             let response = try await fetchProductionDeployment(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
             let deployment = response.deployment
             
-            var faviconPath: String? = nil
-            do {
-              let latestDeployment = try await fetchLatestDeplyment(connection: project.connection, projectId: project.id)
-              if let uid = latestDeployment.deployments.first?.uid,
-                 let url = URL(string: "https://vercel.com/api/v0/deployments/\(uid)/favicon?teamId=\(project.connectionTeam.id)") {
-                faviconPath = try await downloadAndSaveImage(from: url, name: project.id)
-              }
-            } catch {
-              // Favicon fetch failed, continue without it
-            }
+            let faviconPath = await fetchProjectFavicon(project: project, productionDomain: response.domain?.name)
             
             return LargeTeamProjectsItem(
               id: "\(project.id)-\(index)",
