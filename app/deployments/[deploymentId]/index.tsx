@@ -11,7 +11,15 @@ import HeaderItem from '@/components/base/HeaderItem'
 import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import InfoRow from '@/components/base/InfoRow'
 import RefreshControl from '@/components/base/RefreshControl'
-import { formatDeploymentShortId, formatFrameworkName } from '@/lib/format'
+import {
+    formatBuildMachine,
+    formatDeploymentCreator,
+    formatDeploymentShortId,
+    formatDeploymentSource,
+    formatEnvironmentLabel,
+    formatFrameworkName,
+    formatFunctionConfig,
+} from '@/lib/format'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
@@ -336,6 +344,82 @@ export default function Deployment() {
         return formatDateFnsDuration(duration, { format: ['minutes', 'seconds'] })
     }
 
+    // rows without a value are dropped, so the zebra striping is computed after filtering
+    const candidateRows: DeploymentInfoRow[] = [
+        { label: 'Status', icon: 'checkmark-circle-outline', value: deployment.readyState },
+        {
+            label: 'Environment',
+            icon: 'cube-outline',
+            value: formatEnvironmentLabel(deployment.target, deployment.readySubstate),
+        },
+        {
+            label: 'Created',
+            icon: 'calendar-outline',
+            value: formatDistanceToNow(deployment.createdAt, { addSuffix: true }),
+        },
+        {
+            label: 'Deployed by',
+            icon: 'person-outline',
+            value: formatDeploymentCreator(deployment.creator),
+        },
+        { label: 'Source', icon: 'cloud-upload-outline', value: formatDeploymentSource(deployment.source) },
+        {
+            label: 'Framework',
+            icon: 'color-wand-outline',
+            value: formatFrameworkName(deployment.project.framework),
+        },
+        { label: 'Region', icon: 'globe-outline', value: deployment.regions.join(', ') },
+        {
+            label: 'Commit',
+            icon: 'git-commit-outline',
+            value: deployment.meta.githubCommitMessage || 'No commit',
+        },
+        {
+            label: 'Branch',
+            icon: 'git-branch-outline',
+            // should use `githubCommitRef` every time
+            value: deployment.gitSource?.ref || deployment.meta.githubCommitRef || 'No branch',
+        },
+        {
+            label: 'Duration',
+            icon: 'timer-outline',
+            value: formatDuration(deployment.buildingAt, deployment.ready),
+        },
+        { label: 'Functions', icon: 'flash-outline', value: formatFunctionConfig(deployment.config) },
+        {
+            label: 'Build machine',
+            icon: 'hardware-chip-outline',
+            value: formatBuildMachine(deployment.resourceConfig),
+        },
+        {
+            label: 'Services',
+            icon: 'layers-outline',
+            value: deployment.services?.map((service) => service.name).join(', '),
+        },
+        {
+            label: 'Instant static',
+            icon: 'sparkles-outline',
+            value: deployment.isInstantStatic ? 'Yes' : undefined,
+        },
+        {
+            label: 'Error',
+            icon: 'alert-circle-outline',
+            value:
+                deployment.readyState === 'ERROR'
+                    ? [deployment.errorCode, deployment.errorMessage].filter(Boolean).join(': ')
+                    : undefined,
+        },
+        {
+            label: 'Alias issue',
+            icon: 'warning-outline',
+            value: deployment.aliasError?.message ?? deployment.aliasWarning?.message,
+        },
+    ]
+
+    const infoRows = candidateRows.filter(
+        (row): row is DeploymentInfoRow & { value: string } => !!row.value
+    )
+
     return (
         <>
             <ScrollView
@@ -391,51 +475,16 @@ export default function Deployment() {
                             />
                         </TouchableOpacity>
                     )}
-                    <InfoRow
-                        label="Status"
-                        icon="checkmark-circle-outline"
-                        value={deployment.readyState}
-                        isLight={true}
-                        borderTop={false}
-                    />
-                    <InfoRow
-                        label="Created"
-                        icon="calendar-outline"
-                        value={formatDistanceToNow(deployment.createdAt, { addSuffix: true })}
-                    />
-                    <InfoRow
-                        label="Framework"
-                        icon="color-wand-outline"
-                        value={formatFrameworkName(deployment.project.framework)}
-                        isLight={true}
-                    />
-                    <InfoRow
-                        label="Region"
-                        icon="globe-outline"
-                        value={deployment.regions.join(', ')}
-                    />
-                    <InfoRow
-                        label="Commit"
-                        icon="git-commit-outline"
-                        value={deployment.meta.githubCommitMessage || 'No commit'}
-                        isLight={true}
-                    />
-                    <InfoRow
-                        label="Branch"
-                        icon="git-branch-outline"
-                        value={
-                            // should use `githubCommitRef` every time
-                            deployment.gitSource?.ref ||
-                            deployment.meta.githubCommitRef ||
-                            'No branch'
-                        }
-                    />
-                    <InfoRow
-                        label="Duration"
-                        icon="timer-outline"
-                        value={formatDuration(deployment.buildingAt, deployment.ready)}
-                        isLight={true}
-                    />
+                    {infoRows.map((row, index) => (
+                        <InfoRow
+                            key={row.label}
+                            label={row.label}
+                            icon={row.icon}
+                            value={row.value}
+                            isLight={index % 2 === 0}
+                            borderTop={index !== 0}
+                        />
+                    ))}
 
                     {deployment.readyState === 'READY' && (
                         <ButtonRow
@@ -480,6 +529,12 @@ export default function Deployment() {
             </ScrollView>
         </>
     )
+}
+
+interface DeploymentInfoRow {
+    label: string
+    icon: keyof typeof Ionicons.glyphMap
+    value: string | null | undefined
 }
 
 function ButtonRow<T>({

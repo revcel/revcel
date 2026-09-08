@@ -7,6 +7,7 @@ import RefreshControl from '@/components/base/RefreshControl'
 import { formatDeploymentShortId } from '@/lib/format'
 import { useFlashlistProps } from '@/lib/hooks'
 import { COLORS } from '@/theme/colors'
+import type { DeploymentAliasAssignedEvent, DeploymentEvent } from '@/types/deployments'
 import { Ionicons } from '@expo/vector-icons'
 import { FlashList } from '@shopify/flash-list'
 import { useQuery } from '@tanstack/react-query'
@@ -15,6 +16,35 @@ import { Stack, useLocalSearchParams } from 'expo-router'
 import { useMemo, useState } from 'react'
 import { Platform, Text, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
+
+function isAliasAssignedEvent(event: DeploymentEvent): event is DeploymentAliasAssignedEvent {
+    return event.type === 'alias-assigned'
+}
+
+// the alias event has no `text`, and multi-service deployments tag lines with the service name
+function getEventText(event: DeploymentEvent) {
+    if (isAliasAssignedEvent(event)) {
+        if (event.aliasError) return `Alias failed: ${event.aliasError.message}`
+        return `Alias assigned: ${event.alias.join(', ')}`
+    }
+
+    return event.info?.serviceName ? `[${event.info.serviceName}] ${event.text}` : event.text
+}
+
+function getEventTimestamp(event: DeploymentEvent) {
+    return isAliasAssignedEvent(event) ? event.date : event.created
+}
+
+function getEventColor(event: DeploymentEvent) {
+    if (isAliasAssignedEvent(event)) {
+        return event.aliasError ? COLORS.errorLight : COLORS.green900
+    }
+
+    if (event.type === 'stderr' || event.level === 'error') return COLORS.errorLight
+    if (event.type === 'stdwarn' || event.level === 'warning') return COLORS.warning
+
+    return COLORS.gray1000
+}
 
 export default function DeploymentLogs() {
     const { deploymentId } = useLocalSearchParams<{ deploymentId: string }>()
@@ -39,12 +69,12 @@ export default function DeploymentLogs() {
         if (!searchString) return deploymentBuildMetadataQuery.data.buildLogs
 
         return deploymentBuildMetadataQuery.data.buildLogs.filter((log) =>
-            log.text.toLowerCase().includes(searchString.toLowerCase())
+            getEventText(log).toLowerCase().includes(searchString.toLowerCase())
         )
     }, [deploymentBuildMetadataQuery.data, searchString])
 
     const combinedLogText = useMemo(() => {
-        return filteredLogs.map((log) => log.text).join('\n')
+        return filteredLogs.map((log) => getEventText(log)).join('\n')
     }, [filteredLogs])
 
     const Placeholder = useMemo(() => {
@@ -181,17 +211,17 @@ export default function DeploymentLogs() {
                                     fontFamily: 'Geist',
                                 }}
                             >
-                                {format(log.created, 'HH:mm:ss')}
+                                {format(getEventTimestamp(log), 'HH:mm:ss')}
                             </Text>
                             <Text
                                 style={{
-                                    color: COLORS.gray1000,
+                                    color: getEventColor(log),
                                     flex: 1,
                                     fontFamily: 'Geist',
                                 }}
                                 numberOfLines={viewMode === 'expanded' ? undefined : 1}
                             >
-                                {log.text}
+                                {getEventText(log)}
                             </Text>
                         </View>
                     )}
