@@ -499,7 +499,22 @@ export default function FlagDetailScreen() {
                     <MetaRow label="Created" value={formatTimestamp(flagQuery.data.createdAt)} />
                     <MetaRow label="Updated" value={formatTimestamp(flagQuery.data.updatedAt)} />
                     <MetaRow label="Created by" value={flagQuery.data.createdBy} />
+                    {flagQuery.data.updatedBy ? (
+                        <MetaRow label="Updated by" value={flagQuery.data.updatedBy} />
+                    ) : null}
                     <MetaRow label="Owner" value={flagQuery.data.ownerId} />
+                    {flagQuery.data.permanent !== undefined ? (
+                        <MetaRow label="Permanent" value={flagQuery.data.permanent ? 'Yes' : 'No'} />
+                    ) : null}
+                    {flagQuery.data.tags?.length ? (
+                        <MetaRow label="Tags" value={flagQuery.data.tags.join(', ')} />
+                    ) : null}
+                    {flagQuery.data.maintainerIds?.length ? (
+                        <MetaRow
+                            label="Maintainers"
+                            value={String(flagQuery.data.maintainerIds.length)}
+                        />
+                    ) : null}
                     {flagQuery.data.metadata?.creator?.name ? (
                         <MetaRow label="Creator" value={flagQuery.data.metadata.creator.name} />
                     ) : null}
