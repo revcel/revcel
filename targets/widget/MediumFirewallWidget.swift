@@ -60,7 +60,8 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
       ],
       limit: 500,
       tailRollup: "truncate",
-      summaryOnly: false,
+      // only the summary is read; the full 24h timeseries was ~80 KB per reload
+      summaryOnly: true,
       startTime: startTime.ISO8601Format(),
       endTime: endTime.ISO8601Format(),
       scope: FirewallMetricsScope(

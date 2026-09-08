@@ -78,7 +78,8 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
             groupBy = arrayOf("wafRuleId", "wafAction"),
             limit = 500,
             tailRollup = "truncate",
-            summaryOnly = false,
+            // only the summary is read; the full 24h timeseries was ~80 KB per refresh
+            summaryOnly = true,
             startTime = convertDateToIso(startTime),
             endTime = convertDateToIso(endTime),
             scope = FirewallMetricsScope(
