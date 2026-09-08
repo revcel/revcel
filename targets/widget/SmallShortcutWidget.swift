@@ -20,24 +20,17 @@ struct SmallShortcutProvider: AppIntentTimelineProvider {
   }
   
   func timeline(for configuration: SmallShortcutAppIntentConfiguration, in context: Context) async -> Timeline<SmallShortcutEntry> {
-    var entries: [SmallShortcutEntry] = []
+    let isSubscribed = readIsSubscribed()
     var faviconPath: String? = nil
-    var isSubscribed: Bool = false
-    
-    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
-      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
-      
-      isSubscribed = isSubscribedValue
-    }
     
     if let project = configuration.project {
       faviconPath = await fetchProjectFavicon(project: project)
     }
     
     let entry = SmallShortcutEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath)
-    entries.append(entry)
     
-    return Timeline(entries: entries, policy: .never)
+    // `.never` left a favicon that failed once (offline at placement) broken until the app reloaded widgets
+    return Timeline(entries: [entry], policy: refreshPolicy(minutes: 6 * 60))
   }
 }
 

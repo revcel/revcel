@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WidgetKit
 
 enum Granularity {
   case fiveMinutes
@@ -32,6 +33,12 @@ func roundToGranularity(date: Date, granularity: Granularity, mode: RoundMode = 
 
 func readIsSubscribed() -> Bool {
   UserDefaults(suiteName: appGroupName)?.bool(forKey: isSubscribedKey) ?? false
+}
+
+/// A one-entry timeline dated "now" with `.atEnd` tells WidgetKit the widget is already stale, so
+/// reloads happen at the system's discretion and burn the daily budget. Ask for a fixed interval.
+func refreshPolicy(minutes: Int) -> TimelineReloadPolicy {
+  .after(Date().addingTimeInterval(TimeInterval(minutes * 60)))
 }
 
 private let isoFormatter = ISO8601DateFormatter()

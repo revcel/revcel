@@ -35,7 +35,7 @@ struct MediumFirewallProvider: AppIntentTimelineProvider {
     
     let entry = MediumFirewallEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, firewallData: firewallData)
     
-    return Timeline(entries: [entry], policy: .atEnd)
+    return Timeline(entries: [entry], policy: refreshPolicy(minutes: 15))
   }
   
   private func fetchFirewallData(project: ProjectListItem) async -> FirewallWidgetData {

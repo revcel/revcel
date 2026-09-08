@@ -45,7 +45,7 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     
     let entry = MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, analytics: analytics)
     
-    return Timeline(entries: [entry], policy: .atEnd)
+    return Timeline(entries: [entry], policy: refreshPolicy(minutes: 30))
   }
   
   private func loadAnalytics(project: ProjectListItem) async -> AnalyticsState {

@@ -43,7 +43,7 @@ struct MediumTeamProjectsProvider: AppIntentTimelineProvider {
     
     let entry = MediumTeamProjectsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, items: items)
     
-    return Timeline(entries: [entry], policy: .atEnd)
+    return Timeline(entries: [entry], policy: refreshPolicy(minutes: 15))
   }
 }
 
