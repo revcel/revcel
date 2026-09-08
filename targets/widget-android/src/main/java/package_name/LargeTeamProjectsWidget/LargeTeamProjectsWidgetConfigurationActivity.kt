@@ -20,10 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import expo.modules.widgetkit.Connection
 import isSubscribedKey
-import savedWidgetStateKey
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
     override fun onCreate(savedConnectionState: Bundle?) {
@@ -107,6 +103,9 @@ class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
                     val resultValue = Intent().apply {
                         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                     }
+
+                    setResult(RESULT_OK, resultValue)
+                    finish()
                 },
                 openApp = {
                     packageManager.getLaunchIntentForPackage(packageName)?.let { startActivity(it) }
