@@ -45,76 +45,19 @@ struct LargeTeamProjectsProvider: AppIntentTimelineProvider {
   }
   
   func timeline(for configuration: LargeTeamProjectsAppIntentConfiguration, in context: Context) async -> Timeline<LargeTeamProjectsEntry> {
-    var entries: [LargeTeamProjectsEntry] = []
-    var isSubscribed: Bool = false
-    
-    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
-      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
-      isSubscribed = isSubscribedValue
-    }
-    
+    let isSubscribed = readIsSubscribed()
     let selectedProjects = [configuration.project1, configuration.project2, configuration.project3, configuration.project4, configuration.project5, configuration.project6].compactMap { $0 }
-    let enumeratedProjects = Array(selectedProjects.enumerated())
     
-    let items: [LargeTeamProjectsItem] = await withTaskGroup(of: LargeTeamProjectsItem?.self) { group in
-      var results: [LargeTeamProjectsItem] = []
-      
-      for (index, project) in enumeratedProjects {
-        group.addTask {
-          let fallbackItem = LargeTeamProjectsItem(
-            id: "\(project.id)-\(index)",
-            name: project.projectName,
-            commitMessage: nil,
-            createdAt: nil,
-            status: nil,
-            project: project,
-            faviconPath: nil
-          )
-          
-          do {
-            let response = try await fetchProductionDeployment(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
-            let deployment = response.deployment
-            
-            let faviconPath = await fetchProjectFavicon(project: project, productionDomain: response.domain?.name)
-            
-            return LargeTeamProjectsItem(
-              id: "\(project.id)-\(index)",
-              name: project.projectName,
-              commitMessage: deployment.meta?.githubCommitMessage,
-              createdAt: deployment.createdAt,
-              status: deployment.readyState,
-              project: project,
-              faviconPath: faviconPath
-            )
-          } catch {
-            return fallbackItem
-          }
-        }
-      }
-      
-      for await item in group {
-        if let item = item { results.append(item) }
-      }
-      
-      return results
-    }
+    let items = await fetchTeamProjectItems(selectedProjects)
     
     let entry = LargeTeamProjectsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, items: items)
-    entries.append(entry)
     
-    return Timeline(entries: entries, policy: .atEnd)
+    return Timeline(entries: [entry], policy: .atEnd)
   }
 }
 
-struct LargeTeamProjectsItem: Identifiable {
-  let id: String
-  let name: String
-  let commitMessage: String?
-  let createdAt: Int?
-  let status: String?
-  let project: ProjectListItem
-  let faviconPath: String?
-}
+// shared with the other team widget, see Helpers.swift
+typealias LargeTeamProjectsItem = TeamProjectItem
 
 struct LargeTeamProjectsEntry: TimelineEntry {
   let date: Date

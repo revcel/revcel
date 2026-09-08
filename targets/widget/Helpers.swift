@@ -30,6 +30,10 @@ func roundToGranularity(date: Date, granularity: Granularity, mode: RoundMode = 
   return Date(timeIntervalSince1970: resultTime)
 }
 
+func readIsSubscribed() -> Bool {
+  UserDefaults(suiteName: appGroupName)?.bool(forKey: isSubscribedKey) ?? false
+}
+
 func getAppUrl(project: ProjectListItem?) -> String {
   guard let project = project else {
     return "revcel://"
@@ -88,4 +92,76 @@ struct ProjectFavicon: View {
         .clipShape(Circle())
     }
   }
+}
+
+// MARK: - Team projects (shared by the medium and large team widgets)
+
+struct TeamProjectItem: Identifiable, Codable {
+  let id: String
+  let name: String
+  let commitMessage: String?
+  let createdAt: Int?
+  let status: String?
+  let project: ProjectListItem
+  let faviconPath: String?
+}
+
+private func fetchTeamProjectItem(_ project: ProjectListItem, index: Int) async -> TeamProjectItem? {
+  guard let response = try? await fetchProductionDeployment(
+    connection: project.connection,
+    connectionTeam: project.connectionTeam,
+    projectId: project.id
+  ) else {
+    return nil
+  }
+  
+  let deployment = response.deployment
+  let faviconPath = await fetchProjectFavicon(project: project, productionDomain: response.domain?.name)
+  
+  return TeamProjectItem(
+    id: "\(project.id)-\(index)",
+    name: project.projectName,
+    commitMessage: deployment.meta?.githubCommitMessage,
+    createdAt: deployment.createdAt,
+    status: deployment.readyState,
+    project: project,
+    faviconPath: faviconPath
+  )
+}
+
+/// Production deployment (and favicon) of every project, fetched in parallel, returned in the
+/// configured order.
+func fetchTeamProjectItems(_ projects: [ProjectListItem]) async -> [TeamProjectItem] {
+  let fetched: [TeamProjectItem?] = await withTaskGroup(of: (Int, TeamProjectItem?).self) { group in
+    for (index, project) in projects.enumerated() {
+      group.addTask { (index, await fetchTeamProjectItem(project, index: index)) }
+    }
+    
+    // task groups complete in network order, write by index to keep the configured order
+    var ordered = [TeamProjectItem?](repeating: nil, count: projects.count)
+    for await (index, item) in group {
+      ordered[index] = item
+    }
+    return ordered
+  }
+  
+  var items: [TeamProjectItem] = []
+  
+  for (index, project) in projects.enumerated() {
+    if let item = fetched[index] {
+      items.append(item)
+    } else {
+      items.append(TeamProjectItem(
+        id: "\(project.id)-\(index)",
+        name: project.projectName,
+        commitMessage: nil,
+        createdAt: nil,
+        status: nil,
+        project: project,
+        faviconPath: nil
+      ))
+    }
+  }
+  
+  return items
 }
