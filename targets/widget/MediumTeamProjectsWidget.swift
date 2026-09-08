@@ -225,7 +225,7 @@ struct MediumTeamProjectsWidget: Widget {
         }
     }
     .configurationDisplayName("Team Projects")
-    .description("See the latest info for up to 6 projects.")
+    .description("See the latest info for up to 3 projects.")
     .supportedFamilies([.systemMedium])
   }
 }
