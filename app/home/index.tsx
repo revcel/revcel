@@ -3,6 +3,7 @@ import ApiStatus from '@/components/ApiStatus'
 import BottomGradient from '@/components/BottomGradient'
 import DeploymentCard from '@/components/DeploymentCard'
 import ProjectCard from '@/components/ProjectCard'
+import ProjectGrid from '@/components/ProjectGrid'
 import { HeaderTouchableOpacity } from '@/components/base/HeaderTouchableOpacity'
 import RefreshControl from '@/components/base/RefreshControl'
 import { useNotificationHandler, useWebhookCheck } from '@/lib/hooks'
@@ -26,7 +27,7 @@ import * as WebBrowser from 'expo-web-browser'
 import ms from 'ms'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { Image, Linking, Platform } from 'react-native'
-import { Alert, ScrollView, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
 
@@ -35,7 +36,6 @@ export default function HomeScreen() {
     const { registerPlacement } = usePlacement()
     const { subscriptionStatus } = useUser()
     const { getPresentationResult } = useSuperwall()
-    const { width: windowWidth } = useWindowDimensions()
 
     const connections = usePersistedStore((state) => state.connections)
     const currentConnection = usePersistedStore((state) => state.currentConnection)
@@ -121,40 +121,6 @@ export default function HomeScreen() {
             }
         }
     }, [currentTeamId, currentUserTeams, currentUser, switchConnection, currentTeam])
-
-    const latestProjects = useMemo(() => {
-        if (!teamProjectsQuery.data) return []
-
-        if (windowWidth < 744) {
-            return teamProjectsQuery.data?.slice(0, 5)
-        }
-
-        if (windowWidth < 1024) {
-            return teamProjectsQuery.data?.slice(0, 8)
-        }
-
-        if (windowWidth < 1280) {
-            return teamProjectsQuery.data?.slice(0, 11)
-        }
-
-        return teamProjectsQuery.data?.slice(0, 14)
-    }, [teamProjectsQuery.data, windowWidth])
-
-    const cardWidth = useMemo(() => {
-        if (windowWidth < 744) {
-            return '47.5%'
-        }
-
-        if (windowWidth < 1024) {
-            return '31.6%'
-        }
-
-        if (windowWidth < 1280) {
-            return '23.6%'
-        }
-
-        return '18.9%'
-    }, [windowWidth])
 
     useEffect(() => {
         const getUrlAsync = async () => {
@@ -740,51 +706,57 @@ export default function HomeScreen() {
                     )}
 
                     {/* Recent Projects + View All Projects */}
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            flexWrap: 'wrap',
-                            gap: 18,
-                            // backgroundColor: 'blue',
-                        }}
-                    >
-                        {latestProjects.map((project) => (
-                            <ProjectCard project={project} key={project.id} />
-                        ))}
+                    <ProjectGrid gap={18}>
+                        {({ columns, cardWidth }) => (
+                            <>
+                                {/* three rows, the last slot is the "View All" tile */}
+                                {teamProjectsQuery.data
+                                    ?.slice(0, columns * 3 - 1)
+                                    .map((project) => (
+                                        <ProjectCard
+                                            project={project}
+                                            width={cardWidth}
+                                            key={project.id}
+                                        />
+                                    ))}
 
-                        <SquircleView
-                            borderRadius={12}
-                            style={{
-                                width: cardWidth,
-                                height: 180,
-                                backgroundColor: COLORS.gray200,
-                                elevation: 3,
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    gap: 12,
-                                }}
-                                onPress={() => {
-                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                                    router.push('/projects/all')
-                                }}
-                            >
-                                <Ionicons
-                                    name="arrow-forward-circle-outline"
-                                    size={32}
-                                    color={COLORS.gray1000}
-                                />
-                                <Text style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}>
-                                    View All Projects
-                                </Text>
-                            </TouchableOpacity>
-                        </SquircleView>
-                    </View>
+                                <SquircleView
+                                    borderRadius={12}
+                                    style={{
+                                        width: cardWidth,
+                                        height: 180,
+                                        backgroundColor: COLORS.gray200,
+                                        elevation: 3,
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <TouchableOpacity
+                                        style={{
+                                            flex: 1,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            gap: 12,
+                                        }}
+                                        onPress={() => {
+                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                                            router.push('/projects/all')
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name="arrow-forward-circle-outline"
+                                            size={32}
+                                            color={COLORS.gray1000}
+                                        />
+                                        <Text
+                                            style={{ color: COLORS.gray1000, fontFamily: 'Geist' }}
+                                        >
+                                            View All Projects
+                                        </Text>
+                                    </TouchableOpacity>
+                                </SquircleView>
+                            </>
+                        )}
+                    </ProjectGrid>
 
                     <View style={{ paddingTop: 16 }}>
                         <ApiStatus />

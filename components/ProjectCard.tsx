@@ -11,12 +11,18 @@ import * as Haptics from 'expo-haptics'
 import { router } from 'expo-router'
 import { SquircleView } from 'expo-squircle-view'
 import { useMemo } from 'react'
-import { Alert, Image, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native'
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native'
 
 export default function ProjectCard({
     project,
+    width,
     onPress,
-}: { project: Project; onPress?: () => void }) {
+}: {
+    project: Project
+    /** pixel width computed by `ProjectGrid` so a full row always fits */
+    width: number
+    onPress?: () => void
+}) {
     const setLogsSelectedAttributes = useStore((state) => state.setLogsSelectedAttributes)
     const openBrowser = useBrowser()
 
@@ -25,28 +31,10 @@ export default function ProjectCard({
         queryFn: () => fetchTeamProjectFavicon({ projectId: project.id }),
     })
 
-    const { width: windowWidth } = useWindowDimensions()
-
     const primaryDomain = useMemo(() => {
         const primaryAlias = project.alias.find((alias) => Boolean(alias.deployment))
         return primaryAlias?.domain
     }, [project])
-
-    const width = useMemo(() => {
-        if (windowWidth < 744) {
-            return '47.5%'
-        }
-
-        if (windowWidth < 1024) {
-            return '31.6%'
-        }
-
-        if (windowWidth < 1280) {
-            return '23.6%'
-        }
-
-        return '18.9%'
-    }, [windowWidth])
 
     const latestDeploymentTime = useMemo(() => {
         if (!project.latestDeployments?.[0]?.createdAt) {

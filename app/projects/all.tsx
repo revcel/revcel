@@ -1,5 +1,6 @@
 import { fetchTeamProjects } from '@/api/queries'
 import ProjectCard from '@/components/ProjectCard'
+import ProjectGrid from '@/components/ProjectGrid'
 import { usePersistedStore } from '@/store/persisted'
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
@@ -22,22 +23,24 @@ export default function ProjectsAllScreen() {
             nestedScrollEnabled={true}
             style={{ flex: 1 }}
             contentContainerStyle={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: 14,
                 padding: 16,
                 paddingBottom: 32,
             }}
         >
-            {teamProjectsQuery.data?.map((project) => (
-                <ProjectCard
-                    project={project}
-                    key={project.id}
-                    onPress={() => {
-                        router.back()
-                    }}
-                />
-            ))}
+            <ProjectGrid gap={14}>
+                {({ cardWidth }) =>
+                    teamProjectsQuery.data?.map((project) => (
+                        <ProjectCard
+                            project={project}
+                            width={cardWidth}
+                            key={project.id}
+                            onPress={() => {
+                                router.back()
+                            }}
+                        />
+                    ))
+                }
+            </ProjectGrid>
         </ScrollView>
     )
 }
