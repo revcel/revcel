@@ -1,6 +1,7 @@
 package com.revcel.mobile
 
 import WidgetIntentState
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import com.revcel.mobile.R
@@ -47,11 +48,36 @@ fun SubscriptionRequiredView() {
     }
 }
 
+// favicons are shown at most ~75dp, decoding a 1024px touch icon at full size wastes RemoteViews budget
+private const val FAVICON_TARGET_PX = 256
+
+/** Decodes a downloaded favicon, downsampled; null when the file is missing, truncated or not raster. */
+fun decodeFavicon(path: String): Bitmap? {
+    return try {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        var sampleSize = 1
+        while (bounds.outWidth / (sampleSize * 2) >= FAVICON_TARGET_PX &&
+            bounds.outHeight / (sampleSize * 2) >= FAVICON_TARGET_PX
+        ) {
+            sampleSize *= 2
+        }
+
+        BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sampleSize })
+    } catch (e: Exception) {
+        null
+    }
+}
+
 @Composable
 fun ProjectFavicon(faviconPath: String?, imageSize: Dp = 42.dp) {
-    if (!faviconPath.isNullOrEmpty()) {
+    val bitmap = if (faviconPath.isNullOrEmpty()) null else decodeFavicon(faviconPath)
+
+    if (bitmap != null) {
         Image(
-            provider = ImageProvider(BitmapFactory.decodeFile(faviconPath)),
+            provider = ImageProvider(bitmap),
             contentDescription = null,
             modifier = GlanceModifier.size(imageSize, imageSize)
                 .cornerRadius(imageSize / 2)

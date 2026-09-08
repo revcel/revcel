@@ -22,7 +22,7 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
         }
 
         return try {
-            val response = fetchProjectFavicon(applicationContext)
+            val response = resolveFaviconPath(applicationContext)
             val analyticsData = fetchAnalyticsData()
 
             updateWidget(applicationContext, glanceId, response, analyticsData)
@@ -74,25 +74,11 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
         )
     }
 
-    private suspend fun fetchProjectFavicon(context: Context): String {
-        val rawContainer = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawContainer, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
+    private suspend fun resolveFaviconPath(context: Context): String {
+        val rawProject = inputData.getString(projectKey) ?: "null"
+        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
 
-        val latestDeployment = fetchLatestDeployment(selectedProject.connection, selectedProject.id)
-
-        if (latestDeployment.deployments.isEmpty()) {
-            return ""
-        }
-
-        val imageUrl = "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${selectedProject.connectionTeam.id}"
-
-        try {
-            val file = downloadImageToFile(context, imageUrl, selectedProject.id)
-
-            return file.path
-        } catch(error: Exception) {
-            return ""
-        }
+        return fetchProjectFavicon(context, selectedProject) ?: ""
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String, analyticsWidgetData: AnalyticsWidgetData) {

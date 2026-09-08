@@ -86,24 +86,13 @@ suspend fun fetchTeamProjectItems(
     projects.mapIndexed { index, project ->
         async {
             try {
-                val deployment = fetchProductionDeployment(
+                val response = fetchProductionDeployment(
                     project.connection,
                     project.connectionTeam,
                     project.id
-                ).deployment
-
-                val faviconPath = try {
-                    val latestDeployment = fetchLatestDeployment(project.connection, project.id)
-                    if (latestDeployment.deployments.isNotEmpty()) {
-                        val imageUrl =
-                            "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${project.connectionTeam.id}"
-                        downloadImageToFile(context, imageUrl, "${project.id}-${index}").path
-                    } else {
-                        null
-                    }
-                } catch (e: Exception) {
-                    null
-                }
+                )
+                val deployment = response.deployment
+                val faviconPath = fetchProjectFavicon(context, project, response.domain?.name)
 
                 TeamProjectItem(
                     id = "${project.id}-${index}",

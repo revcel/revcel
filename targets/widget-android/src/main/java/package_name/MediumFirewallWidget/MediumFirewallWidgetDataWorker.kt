@@ -26,7 +26,7 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
         }
 
         return try {
-            val response = fetchProjectFavicon(applicationContext)
+            val response = resolveFaviconPath(applicationContext)
             val firewallData = fetchFirewallData()
 
             updateWidget(applicationContext, glanceId, response, firewallData)
@@ -37,25 +37,11 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
         }
     }
 
-    private suspend fun fetchProjectFavicon(context: Context): String {
+    private suspend fun resolveFaviconPath(context: Context): String {
         val rawProject = inputData.getString(projectKey) ?: "null"
         val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
 
-        val latestDeployment = fetchLatestDeployment(selectedProject.connection, selectedProject.id)
-
-        if (latestDeployment.deployments.isEmpty()) {
-            return ""
-        }
-
-        val imageUrl = "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${selectedProject.connectionTeam.id}"
-
-        try {
-            val file = downloadImageToFile(context, imageUrl, selectedProject.id)
-
-            return file.path
-        } catch(error: Exception) {
-            return ""
-        }
+        return fetchProjectFavicon(context, selectedProject) ?: ""
     }
 
     private suspend fun fetchFirewallData(): FirewallWidgetData {

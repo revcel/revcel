@@ -19,7 +19,7 @@ class SmallShortcutWidgetDataWorker(context: Context, workerParams: WorkerParame
         }
 
         return try {
-            val response = fetchProjectFavicon(applicationContext)
+            val response = resolveFaviconPath(applicationContext)
 
             updateWidget(applicationContext, glanceId, response)
             Result.success()
@@ -29,25 +29,11 @@ class SmallShortcutWidgetDataWorker(context: Context, workerParams: WorkerParame
         }
     }
 
-    private suspend fun fetchProjectFavicon(context: Context): String {
-        val rawContainer = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawContainer, ProjectListItem::class.java) ?: throw Exception("Missing selected container")
+    private suspend fun resolveFaviconPath(context: Context): String {
+        val rawProject = inputData.getString(projectKey) ?: "null"
+        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected container")
 
-        val latestDeployment = fetchLatestDeployment(selectedProject.connection, selectedProject.id)
-
-        if (latestDeployment.deployments.isEmpty()) {
-            return ""
-        }
-
-        val imageUrl = "https://vercel.com/api/v0/deployments/${latestDeployment.deployments.first().uid}/favicon?teamId=${selectedProject.connectionTeam.id}"
-
-        try {
-            val file = downloadImageToFile(context, imageUrl, selectedProject.id)
-
-            return file.path
-        } catch(error: Exception) {
-            return ""
-        }
+        return fetchProjectFavicon(context, selectedProject) ?: ""
     }
 
     private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String) {

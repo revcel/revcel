@@ -26,14 +26,6 @@ data class ProjectListItem(
     val connectionTeam: ConnectionTeam
 )
 
-data class DeploymentResponse(
-    val deployments: Array<Deployment>
-)
-
-data class Deployment(
-    val uid: String
-)
-
 // For LargeTeamProjectsWidget (& MediumTeamProjectsWidget)
 data class DeploymentMeta(
     val githubCommitMessage: String?
@@ -46,9 +38,15 @@ data class DeploymentFull(
     val meta: DeploymentMeta?
 )
 
+/** The domain currently serving production (custom domain or `<project>.vercel.app`). */
+data class ProductionDomain(
+    val name: String? = null
+)
+
 data class ProductionDeploymentResponse(
     val deployment: DeploymentFull,
-    val deploymentIsStale: Boolean? = null
+    val deploymentIsStale: Boolean? = null,
+    val domain: ProductionDomain? = null
 )
  
 data class TeamProjectItem(
