@@ -72,9 +72,7 @@ struct LargeTeamProjectsRow: View {
   var formattedDate: String {
     guard let createdAt = item.createdAt else { return "No deployment" }
     let date = Date(timeIntervalSince1970: TimeInterval(createdAt) / 1000.0)
-    let formatter = DateFormatter()
-    formatter.dateFormat = "dd/MM/yyyy"
-    return formatter.string(from: date)
+    return widgetDateFormatter.string(from: date)
   }
   
   private func statusColorName(for status: String) -> String {

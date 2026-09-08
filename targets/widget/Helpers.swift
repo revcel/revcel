@@ -41,6 +41,14 @@ func refreshPolicy(minutes: Int) -> TimelineReloadPolicy {
   .after(Date().addingTimeInterval(TimeInterval(minutes * 60)))
 }
 
+/// Pinned locale so device settings cannot swap in non-Latin digits or another calendar.
+let widgetDateFormatter: DateFormatter = {
+  let formatter = DateFormatter()
+  formatter.locale = Locale(identifier: "en_US_POSIX")
+  formatter.dateFormat = "dd/MM/yyyy"
+  return formatter
+}()
+
 private let isoFormatter = ISO8601DateFormatter()
 private let isoFractionalFormatter: ISO8601DateFormatter = {
   let formatter = ISO8601DateFormatter()
