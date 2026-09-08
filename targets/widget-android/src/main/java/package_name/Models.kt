@@ -115,19 +115,17 @@ data class AnalyticsEnabledResponse(
 
 data class AnalyticsQuickStatsResponse(
     val total: Int,
-    val devices: Int,
-    val bounceRate: Int? = null
+    val devices: Int
 )
 
 data class AnalyticsTimeseries(
     val key: String,
     val total: Int,
-    val devices: Int,
-    val bounceRate: Int? = null
+    val devices: Int
 )
 
 data class AnalyticsTimeseriesResponse(
-    val data: AnalyticsTimeseriesData
+    val data: AnalyticsTimeseriesData? = null
 )
 
 data class AnalyticsTimeseriesData(

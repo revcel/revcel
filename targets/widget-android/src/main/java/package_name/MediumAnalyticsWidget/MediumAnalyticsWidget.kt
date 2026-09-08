@@ -213,13 +213,13 @@ fun MediumAnalyticsWidgetContentPreview1() {
         )
         
         val mockTimeseriesData = arrayOf(
-            AnalyticsTimeseries(key = "2024-01-01", total = 10, devices = 5, bounceRate = 20),
-            AnalyticsTimeseries(key = "2024-01-02", total = 20, devices = 10, bounceRate = 25),
-            AnalyticsTimeseries(key = "2024-01-03", total = 15, devices = 8, bounceRate = 15),
-            AnalyticsTimeseries(key = "2024-01-04", total = 30, devices = 15, bounceRate = 30),
-            AnalyticsTimeseries(key = "2024-01-05", total = 25, devices = 12, bounceRate = 20),
-            AnalyticsTimeseries(key = "2024-01-06", total = 35, devices = 18, bounceRate = 22),
-            AnalyticsTimeseries(key = "2024-01-07", total = 40, devices = 20, bounceRate = 18)
+            AnalyticsTimeseries(key = "2024-01-01", total = 10, devices = 5),
+            AnalyticsTimeseries(key = "2024-01-02", total = 20, devices = 10),
+            AnalyticsTimeseries(key = "2024-01-03", total = 15, devices = 8),
+            AnalyticsTimeseries(key = "2024-01-04", total = 30, devices = 15),
+            AnalyticsTimeseries(key = "2024-01-05", total = 25, devices = 12),
+            AnalyticsTimeseries(key = "2024-01-06", total = 35, devices = 18),
+            AnalyticsTimeseries(key = "2024-01-07", total = 40, devices = 20)
         )
         
         val mockAnalyticsData = AnalyticsWidgetData(
