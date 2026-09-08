@@ -69,6 +69,7 @@ export default function DeploymentCard({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: 8,
                 }}
             >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
@@ -83,16 +84,19 @@ export default function DeploymentCard({
                             fontSize: 15,
                             fontFamily: 'Geist',
                         }}
+                        numberOfLines={1}
                     >
                         {formatEnvironmentLabel(deployment.target, deployment.readySubstate)}
                     </Text>
                 </View>
 
+                {/* shrinks and truncates in the middle so the date survives a long author name */}
                 <View
                     style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                         gap: 5,
+                        flexShrink: 1,
                     }}
                 >
                     {/* `creator` is null for some integration-created deployments */}
@@ -120,7 +124,10 @@ export default function DeploymentCard({
                             fontSize: 12,
                             fontWeight: '500',
                             fontFamily: 'Geist',
+                            flexShrink: 1,
                         }}
+                        numberOfLines={1}
+                        ellipsizeMode="middle"
                     >
                         {authorName} ({format(new Date(deployment.createdAt), 'dd/MM/yyyy')})
                     </Text>

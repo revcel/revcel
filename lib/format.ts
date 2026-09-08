@@ -135,7 +135,8 @@ export function formatEnvironmentLabel(
 ) {
     const label = upperFirst(target ?? 'preview')
 
-    if (!readySubstate) return label
+    // `PROMOTED` is the normal state of every live production deployment, only call out the exceptions
+    if (!readySubstate || readySubstate === 'PROMOTED') return label
 
     return `${label} · ${LABEL_FOR_READY_SUBSTATE[readySubstate] ?? upperFirst(readySubstate.toLowerCase())}`
 }
