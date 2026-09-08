@@ -21,7 +21,7 @@ struct ConnectionTeamsResponse: Decodable {
   let teams: [ConnectionTeam]
 }
 
-struct ConnectionTeam: Decodable {
+struct ConnectionTeam: Codable {
   let id: String
   let name: String
 }

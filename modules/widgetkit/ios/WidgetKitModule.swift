@@ -5,6 +5,7 @@ public class WidgetKitModule: Module {
     let _groupName: String = "group.com.revcel.mobile"
     let _connectionsKey: String = "revcel::connections"
     let _isSubscribedKey: String = "revcel::subscribed"
+    let _projectEntitiesKey: String = "revcel::projectEntities"
     
     private func getConnections() -> [Connection] {
         guard let sharedDefaults = UserDefaults(suiteName: _groupName),
