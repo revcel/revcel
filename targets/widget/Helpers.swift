@@ -34,6 +34,17 @@ func readIsSubscribed() -> Bool {
   UserDefaults(suiteName: appGroupName)?.bool(forKey: isSubscribedKey) ?? false
 }
 
+private let isoFormatter = ISO8601DateFormatter()
+private let isoFractionalFormatter: ISO8601DateFormatter = {
+  let formatter = ISO8601DateFormatter()
+  formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+  return formatter
+}()
+
+func parseISODate(_ value: String) -> Date? {
+  isoFormatter.date(from: value) ?? isoFractionalFormatter.date(from: value)
+}
+
 func getAppUrl(project: ProjectListItem?) -> String {
   guard let project = project else {
     return "revcel://"

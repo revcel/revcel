@@ -11,66 +11,81 @@ struct MediumAnalyticsAppIntentConfiguration: WidgetConfigurationIntent {
   var project: ProjectListItem?
 }
 
+/// What the widget knows after a reload. Failure is kept apart from "not enabled", so a revoked
+/// token or an offline reload no longer renders a made-up chart.
+enum AnalyticsState {
+  case placeholder
+  case unavailable
+  case failed
+  case ready(visitors: Int?, points: [LineChartData])
+}
+
 struct MediumAnalyticsProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: MediumAnalyticsAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, analytics: .placeholder)
   }
   
   func snapshot(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> MediumAnalyticsEntry {
-    MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, visitors: nil, analyticsAvailability: nil, analyticsData: nil)
+    MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, analytics: .placeholder)
   }
   
   func timeline(for configuration: MediumAnalyticsAppIntentConfiguration, in context: Context) async -> Timeline<MediumAnalyticsEntry> {
-    var entries: [MediumAnalyticsEntry] = []
+    let isSubscribed = readIsSubscribed()
     var faviconPath: String? = nil
-    var isSubscribed: Bool = false
-    var visitorsNumber: Int? = nil
-    var analyticsAvailability: AnalyticsEnabledResponse? = nil
-    var analyticsData: AnalyticsTimeseriesResponse? = nil
+    var analytics: AnalyticsState = .placeholder
     
     if let project = configuration.project {
-      analyticsAvailability = try? await fetchProjectAnalyticsAvailability(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id)
-    }
-    
-    if let analyticsAvailability, let project = configuration.project {
-      let quikStatsEndTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
-      let quikStatsStartTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
-      
-      let analyticsEndTime = roundToGranularity(date: .now, granularity: .oneHour, mode: .up)
-      let analyticsStartTime = roundToGranularity(date: .now.addingTimeInterval(-7 * 24 * 60 * 60), granularity: .oneHour, mode: .down)
-      
-      if analyticsAvailability.isEnabled && analyticsAvailability.hasData {
-        visitorsNumber = try? await fetchProjectTotalVisitors(
-          connection: project.connection,
-          connectionTeam: project.connectionTeam,
-          projectId: project.id,
-          from: quikStatsStartTime.ISO8601Format(),
-          to: quikStatsEndTime.ISO8601Format()
-        ).devices
-        analyticsData = try? await fetchProjectAnalyticsTimeseries(
-          connection: project.connection,
-          connectionTeam: project.connectionTeam,
-          projectId: project.id,
-          from: analyticsStartTime.ISO8601Format(),
-          to: analyticsEndTime.ISO8601Format()
-        )
-      }
-    }
-    
-    if let project = configuration.project {
+      analytics = await loadAnalytics(project: project)
       faviconPath = await fetchProjectFavicon(project: project)
     }
     
-    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
-      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
-      
-      isSubscribed = isSubscribedValue
+    let entry = MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, analytics: analytics)
+    
+    return Timeline(entries: [entry], policy: .atEnd)
+  }
+  
+  private func loadAnalytics(project: ProjectListItem) async -> AnalyticsState {
+    guard let availability = try? await fetchProjectAnalyticsAvailability(connection: project.connection, connectionTeam: project.connectionTeam, projectId: project.id) else {
+      return .failed
     }
     
-    let entry = MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, visitors: visitorsNumber, analyticsAvailability: analyticsAvailability, analyticsData: analyticsData)
-    entries.append(entry)
+    guard availability.isEnabled && availability.hasData else {
+      return .unavailable
+    }
     
-    return Timeline(entries: entries, policy: .atEnd)
+    let quickStatsEnd = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
+    let quickStatsStart = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
+    let seriesEnd = roundToGranularity(date: .now, granularity: .oneHour, mode: .up)
+    let seriesStart = roundToGranularity(date: .now.addingTimeInterval(-7 * 24 * 60 * 60), granularity: .oneHour, mode: .down)
+    
+    let overview = try? await fetchProjectTotalVisitors(
+      connection: project.connection,
+      connectionTeam: project.connectionTeam,
+      projectId: project.id,
+      from: quickStatsStart.ISO8601Format(),
+      to: quickStatsEnd.ISO8601Format()
+    )
+    let series = try? await fetchProjectAnalyticsTimeseries(
+      connection: project.connection,
+      connectionTeam: project.connectionTeam,
+      projectId: project.id,
+      from: seriesStart.ISO8601Format(),
+      to: seriesEnd.ISO8601Format()
+    )
+    
+    let visitors = overview?.devices
+    
+    guard let timeseries = series else {
+      return .failed
+    }
+    
+    // unparseable keys are dropped instead of collapsing onto "now" as a vertical line
+    let points = (timeseries.data?.groups?.all ?? []).compactMap { point -> LineChartData? in
+      guard let date = parseISODate(point.key) else { return nil }
+      return LineChartData(date: date, value: point.devices)
+    }
+    
+    return .ready(visitors: visitors, points: points)
   }
 }
 
@@ -79,22 +94,23 @@ struct MediumAnalyticsEntry: TimelineEntry {
   let configuration: MediumAnalyticsAppIntentConfiguration
   let isSubscribed: Bool
   let faviconPath: String?
-  let visitors: Int?
-  let analyticsAvailability: AnalyticsEnabledResponse?
-  let analyticsData: AnalyticsTimeseriesResponse?
+  let analytics: AnalyticsState
 }
 
+/// Fixed shape for the redacted placeholder; random values re-rolled on every render.
 struct ChartsPlaceHolder: View {
+  private let values = [30, 55, 40, 70, 60, 85, 65, 90]
+  
   var body: some View {
     let calendar = Calendar.current
     let today = Date()
     
     VStack(alignment: .leading) {
       Chart {
-        ForEach(0...7, id: \.self) { item in
+        ForEach(Array(values.enumerated()), id: \.offset) { offset, value in
           AreaMark(
-            x: .value("Weekday", calendar.date(byAdding: .day, value: -item, to: today) ?? Date()),
-            y: .value("Value", Int.random(in: 0...100))
+            x: .value("Weekday", calendar.date(byAdding: .day, value: offset - values.count, to: today) ?? today),
+            y: .value("Value", value)
           )
           .foregroundStyle(Color("backgroundSecondary"))
         }
@@ -106,17 +122,36 @@ struct ChartsPlaceHolder: View {
   }
 }
 
+struct AnalyticsChart: View {
+  let points: [LineChartData]
+  
+  var body: some View {
+    VStack(alignment: .leading) {
+      Chart {
+        ForEach(points, id: \.id) { item in
+          AreaMark(
+            x: .value("Weekday", item.date),
+            y: .value("Value", item.value)
+          )
+          .foregroundStyle(Color("blue100"))
+          LineMark(
+            x: .value("Weekday", item.date),
+            y: .value("Value", item.value)
+          )
+          .foregroundStyle(Color("blue700"))
+        }
+      }
+      .chartYAxis(.hidden)
+      .chartXAxis(.hidden)
+    }
+    .padding(.top, 35.0)
+  }
+}
+
 struct MediumAnalyticsEntryView: View {
   @Environment(\.widgetContentMargins) var widgetMargins
   
   var entry: MediumAnalyticsProvider.Entry
-  var haveAnalytics: Bool {
-    if let analyticsAvailability = entry.analyticsAvailability {
-      return analyticsAvailability.hasData && analyticsAvailability.isEnabled
-    }
-    
-    return true
-  }
   
   var body: some View {
     if (!entry.isSubscribed) {
@@ -124,82 +159,79 @@ struct MediumAnalyticsEntryView: View {
         .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
     } else {
       VStack {
-        if haveAnalytics {
-          HStack(alignment: .center, spacing: 10.0) {
-            ProjectFavicon(faviconPath: entry.faviconPath, imageSize: 30.0)
-            if let project = entry.configuration.project {
-              Text("\(project.projectName)")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color("gray1000"))
-                .multilineTextAlignment(.center)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            } else {
-              VStack {
-                RoundedRectangle(cornerRadius: 8.0)
-                  .fill(Color("backgroundSecondary"))
-                  .frame(height: 10.0)
-              }
-            }
-            if let visitors = entry.visitors {
-              Text("\(visitors) Visitors")
-                .padding(.leading, 15.0)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color("gray1000"))
-            }
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
-        } else {
-          HStack {
-            Text("No analytics data available")
-              .font(.system(size: 18.0, weight: .bold))
-              .foregroundStyle(Color("gray1000"))
-              .multilineTextAlignment(.center)
-              .lineLimit(1)
-              .truncationMode(.tail)
-          }
-          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        switch entry.analytics {
+        case .unavailable:
+          message("No analytics data available")
+        case .failed:
+          message("Couldn't load analytics")
+        case .placeholder:
+          header(visitors: nil)
+        case .ready(let visitors, _):
+          header(visitors: visitors)
         }
       }
       .padding(widgetMargins)
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .background(
         VStack {
-          if let data = entry.analyticsData {
-            let chartData = (data.data.groups?.all ?? []).map { (item) -> LineChartData in
-                .init(date: ISO8601DateFormatter().date(from: item.key) ?? Date(), value: item.devices)
-            }
-            
-            VStack(alignment: .leading) {
-              Chart {
-                ForEach(chartData, id: \.id) { item in
-                  AreaMark(
-                    x: .value("Weekday", item.date),
-                    y: .value("Value", item.value)
-                  )
-                  .foregroundStyle(Color("blue100"))
-                  LineMark(
-                    x: .value("Weekday", item.date),
-                    y: .value("Value", item.value)
-                  )
-                  .foregroundStyle(Color("blue700"))
-                }
-              }
-              .chartYAxis(.hidden)
-              .chartXAxis(.hidden)
-            }
-            .padding(.top, 35.0)
-          } else if haveAnalytics {
+          switch entry.analytics {
+          case .ready(_, let points) where !points.isEmpty:
+            AnalyticsChart(points: points)
+          case .placeholder:
             ChartsPlaceHolder()
+          default:
+            EmptyView()
           }
         }
       )
       .widgetURL(URL(string: getAppUrl(project: entry.configuration.project)))
     }
   }
+  
+  @ViewBuilder
+  private func header(visitors: Int?) -> some View {
+    HStack(alignment: .center, spacing: 10.0) {
+      ProjectFavicon(faviconPath: entry.faviconPath, imageSize: 30.0)
+      if let project = entry.configuration.project {
+        Text("\(project.projectName)")
+          .font(.system(size: 16, weight: .bold))
+          .foregroundStyle(Color("gray1000"))
+          .multilineTextAlignment(.center)
+          .lineLimit(1)
+          .truncationMode(.tail)
+      } else {
+        VStack {
+          RoundedRectangle(cornerRadius: 8.0)
+            .fill(Color("backgroundSecondary"))
+            .frame(height: 10.0)
+        }
+      }
+      if let visitors {
+        Text("\(visitors) Visitors")
+          .padding(.leading, 15.0)
+          .font(.system(size: 16, weight: .bold))
+          .foregroundStyle(Color("gray1000"))
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+  
+  @ViewBuilder
+  private func message(_ text: String) -> some View {
+    HStack {
+      Text(text)
+        .font(.system(size: 18.0, weight: .bold))
+        .foregroundStyle(Color("gray1000"))
+        .multilineTextAlignment(.center)
+        .lineLimit(1)
+        .truncationMode(.tail)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+  }
 }
 
 struct MediumAnalyticsWidget: Widget {
+  // typo kept on purpose: changing `kind` orphans every installed instance of the widget
   let kind: String = "MeediumAnalyticsWidget"
   
   var body: some WidgetConfiguration {
@@ -226,5 +258,5 @@ extension MediumAnalyticsAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   MediumAnalyticsWidget()
 } timeline: {
-  MediumAnalyticsEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, visitors: 0, analyticsAvailability: nil, analyticsData: nil)
+  MediumAnalyticsEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, analytics: .placeholder)
 }
