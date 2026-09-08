@@ -44,7 +44,7 @@ struct FirewallMetricsSummary: Decodable {
 struct FirewallWidgetData {
   let allowed: Int?
   let denied: Int?
-  let chalanged: Int?
+  let challenged: Int?
 }
 
 struct FirewallMetricsGranularity: Encodable {

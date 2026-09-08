@@ -35,8 +35,12 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     var analytics: AnalyticsState = .placeholder
     
     if let project = configuration.project {
-      analytics = await loadAnalytics(project: project)
-      faviconPath = await fetchProjectFavicon(project: project)
+      // independent requests, run together
+      async let favicon = fetchProjectFavicon(project: project)
+      async let state = loadAnalytics(project: project)
+      
+      faviconPath = await favicon
+      analytics = await state
     }
     
     let entry = MediumAnalyticsEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, analytics: analytics)
@@ -58,14 +62,14 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
     let seriesEnd = roundToGranularity(date: .now, granularity: .oneHour, mode: .up)
     let seriesStart = roundToGranularity(date: .now.addingTimeInterval(-7 * 24 * 60 * 60), granularity: .oneHour, mode: .down)
     
-    let overview = try? await fetchProjectTotalVisitors(
+    async let overview = try? fetchProjectTotalVisitors(
       connection: project.connection,
       connectionTeam: project.connectionTeam,
       projectId: project.id,
       from: quickStatsStart.ISO8601Format(),
       to: quickStatsEnd.ISO8601Format()
     )
-    let series = try? await fetchProjectAnalyticsTimeseries(
+    async let series = try? fetchProjectAnalyticsTimeseries(
       connection: project.connection,
       connectionTeam: project.connectionTeam,
       projectId: project.id,
@@ -73,9 +77,9 @@ struct MediumAnalyticsProvider: AppIntentTimelineProvider {
       to: seriesEnd.ISO8601Format()
     )
     
-    let visitors = overview?.devices
+    let visitors = (await overview)?.devices
     
-    guard let timeseries = series else {
+    guard let timeseries = await series else {
       return .failed
     }
     

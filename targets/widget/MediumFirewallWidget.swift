@@ -12,94 +12,75 @@ struct MediumFirewallAppIntentConfiguration: WidgetConfigurationIntent {
 
 struct MediumFirewallProvider: AppIntentTimelineProvider {
   func placeholder(in context: Context) -> MediumFirewallEntry {
-    MediumFirewallEntry(date: Date(), configuration: MediumFirewallAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+    MediumFirewallEntry(date: Date(), configuration: MediumFirewallAppIntentConfiguration(), isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, challenged: nil))
   }
   
   func snapshot(for configuration: MediumFirewallAppIntentConfiguration, in context: Context) async -> MediumFirewallEntry {
-    MediumFirewallEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+    MediumFirewallEntry(date: Date(), configuration: configuration, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, challenged: nil))
   }
   
   func timeline(for configuration: MediumFirewallAppIntentConfiguration, in context: Context) async -> Timeline<MediumFirewallEntry> {
-    var entries: [MediumFirewallEntry] = []
+    let isSubscribed = readIsSubscribed()
     var faviconPath: String? = nil
-    var isSubscribed: Bool = false
-    var firewallData: FirewallWidgetData = .init(allowed: nil, denied: nil, chalanged: nil)
+    var firewallData = FirewallWidgetData(allowed: nil, denied: nil, challenged: nil)
     
     if let project = configuration.project {
-      faviconPath = await fetchProjectFavicon(project: project)
-    }
-    
-    if let sharedDefaults = UserDefaults(suiteName: appGroupName) {
-      let isSubscribedValue = sharedDefaults.bool(forKey: isSubscribedKey)
+      // independent requests, run together
+      async let favicon = fetchProjectFavicon(project: project)
+      async let metrics = fetchFirewallData(project: project)
       
-      isSubscribed = isSubscribedValue
-    }
-    
-    if let project = configuration.project {
-      let endTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
-      let startTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
-      
-      let firewallMetricsRequestData = FirewallMetricsRequest(
-        event: "firewallAction",
-        reason: "firewall_tab",
-        rollups: FirewallMetricsRollups(
-          value: FirewallMetricsValue(
-            measure: "count",
-            aggregation: "sum"
-          )
-        ),
-        granularity: FirewallMetricsGranularity(
-          minutes: 5
-        ),
-        groupBy: [
-          "wafRuleId",
-          "wafAction"
-        ],
-        limit: 500,
-        tailRollup: "truncate",
-        summaryOnly: false,
-        startTime: startTime.ISO8601Format(),
-        endTime: endTime.ISO8601Format(),
-        scope: FirewallMetricsScope(
-          type: "project",
-          ownerId: project.connectionTeam.id,
-          projectIds: [project.id]
-        )
-      )
-      
-      if let firewallMetricsResponse = try? await fetchProjectFirewallMetrics(connection: project.connection, connectionTeam: project.connectionTeam, firewallMetricsRequestData: firewallMetricsRequestData) {
-        var allowed: Int? = nil
-        var denied: Int? = nil
-        var challenged: Int? = nil
-        
-        // groupBy ["wafRuleId", "wafAction"] returns one row per (rule, action),
-        // so each action can span multiple rows — sum them, don't take the first.
-        let allowedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "allow" }
-        if !allowedEntries.isEmpty {
-          allowed = allowedEntries.reduce(0) { $0 + $1.value }
-        } else {
-          let emptyActionEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "" }
-          if !emptyActionEntries.isEmpty {
-            allowed = emptyActionEntries.reduce(0) { $0 + $1.value }
-          }
-        }
-        let deniedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "deny" }
-        if !deniedEntries.isEmpty {
-          denied = deniedEntries.reduce(0) { $0 + $1.value }
-        }
-        let challengedEntries = firewallMetricsResponse.summary.filter { $0.wafAction == "challenge" }
-        if !challengedEntries.isEmpty {
-          challenged = challengedEntries.reduce(0) { $0 + $1.value }
-        }
-        
-        firewallData = .init(allowed: allowed, denied: denied, chalanged: challenged)
-      }
+      faviconPath = await favicon
+      firewallData = await metrics
     }
     
     let entry = MediumFirewallEntry(date: Date(), configuration: configuration, isSubscribed: isSubscribed, faviconPath: faviconPath, firewallData: firewallData)
-    entries.append(entry)
     
-    return Timeline(entries: entries, policy: .atEnd)
+    return Timeline(entries: [entry], policy: .atEnd)
+  }
+  
+  private func fetchFirewallData(project: ProjectListItem) async -> FirewallWidgetData {
+    let endTime = roundToGranularity(date: .now, granularity: .fiveMinutes, mode: .down)
+    let startTime = roundToGranularity(date: .now.addingTimeInterval(-24 * 60 * 60), granularity: .fiveMinutes, mode: .up)
+    
+    let request = FirewallMetricsRequest(
+      event: "firewallAction",
+      reason: "firewall_tab",
+      rollups: FirewallMetricsRollups(
+        value: FirewallMetricsValue(
+          measure: "count",
+          aggregation: "sum"
+        )
+      ),
+      granularity: FirewallMetricsGranularity(
+        minutes: 5
+      ),
+      groupBy: [
+        "wafRuleId",
+        "wafAction"
+      ],
+      limit: 500,
+      tailRollup: "truncate",
+      summaryOnly: false,
+      startTime: startTime.ISO8601Format(),
+      endTime: endTime.ISO8601Format(),
+      scope: FirewallMetricsScope(
+        type: "project",
+        ownerId: project.connectionTeam.id,
+        projectIds: [project.id]
+      )
+    )
+    
+    guard let response = try? await fetchProjectFirewallMetrics(connection: project.connection, connectionTeam: project.connectionTeam, firewallMetricsRequestData: request) else {
+      return FirewallWidgetData(allowed: nil, denied: nil, challenged: nil)
+    }
+    
+    // groupBy ["wafRuleId", "wafAction"] returns one row per (rule, action), so sum per action
+    func total(for action: String) -> Int? {
+      let rows = response.summary.filter { $0.wafAction == action }
+      return rows.isEmpty ? nil : rows.reduce(0) { $0 + $1.value }
+    }
+    
+    return FirewallWidgetData(allowed: total(for: "allow"), denied: total(for: "deny"), challenged: total(for: "challenge"))
   }
 }
 
@@ -158,7 +139,7 @@ struct MediumFirewallEntryView: View {
         HStack(alignment: .center, spacing: 30.0) {
           MediumFirewallInfoItemView(color: "success", label: "Allowed", value: entry.firewallData.allowed)
           MediumFirewallInfoItemView(color: "error", label: "Denied", value: entry.firewallData.denied)
-          MediumFirewallInfoItemView(color: "warning", label: "Challenged", value: entry.firewallData.chalanged)
+          MediumFirewallInfoItemView(color: "warning", label: "Challenged", value: entry.firewallData.challenged)
         }
         .frame(maxWidth: .infinity, alignment: .center)
       }
@@ -194,5 +175,5 @@ extension MediumFirewallAppIntentConfiguration {
 #Preview(as: .systemSmall) {
   MediumFirewallWidget()
 } timeline: {
-  MediumFirewallEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, chalanged: nil))
+  MediumFirewallEntry(date: .now, configuration: .project, isSubscribed: true, faviconPath: nil, firewallData: .init(allowed: nil, denied: nil, challenged: nil))
 }
