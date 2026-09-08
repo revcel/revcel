@@ -73,9 +73,10 @@ public class WidgetKitModule: Module {
                 return
             }
             
-            sharedDefaults.removePersistentDomain(forName: _groupName)
-			sharedDefaults.synchronize()
-			
+            // only the connections: wiping the whole suite also dropped the subscription flag
+            sharedDefaults.removeObject(forKey: _connectionsKey)
+            sharedDefaults.removeObject(forKey: _projectEntitiesKey)
+            
             self.reloadWidgets()
         }
     }

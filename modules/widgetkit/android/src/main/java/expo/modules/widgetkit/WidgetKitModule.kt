@@ -84,9 +84,10 @@ class WidgetKitModule : Module() {
         Function("clearAllConnections") {
             appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
                 prefs.edit() {
-                    clear()
+                    remove(instancesKey)
                     apply()
                 }
+                // only the connections: clearing everything also dropped the subscription flag
 
                 notifyAllWidgets()
             }
