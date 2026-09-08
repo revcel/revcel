@@ -1,24 +1,21 @@
-import { toggleFirewall } from '@/api/mutations'
 import { fetchProjectFirewallMetrics, fetchTeamProjects } from '@/api/queries'
 import ActivityIndicator from '@/components/base/ActivityIndicator'
 import { formatNumber } from '@/lib/format'
-import { queryClient } from '@/lib/query'
+import { useToggleAttackMode } from '@/lib/hooks'
 import { usePersistedStore } from '@/store/persisted'
 import { COLORS } from '@/theme/colors'
 import { Ionicons } from '@expo/vector-icons'
 import { useQuery } from '@tanstack/react-query'
 import * as Haptics from 'expo-haptics'
 import { useGlobalSearchParams } from 'expo-router'
-import { useMemo, useState } from 'react'
-import { Alert, Text, View } from 'react-native'
+import { useMemo } from 'react'
+import { Text, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 
 export default function ProjectFirewallCard() {
     const { projectId } = useGlobalSearchParams<{ projectId: string }>()
     const currentConnection = usePersistedStore((state) => state.currentConnection)
     const currentTeamId = useMemo(() => currentConnection?.currentTeamId, [currentConnection])
-
-    const [isWorking, setIsWorking] = useState(false)
 
     const teamProjectsQuery = useQuery({
         queryKey: ['team', currentTeamId, 'projects'],
@@ -34,6 +31,12 @@ export default function ProjectFirewallCard() {
         queryKey: ['project', projectId, 'firewall', 'metrics'],
         queryFn: () => fetchProjectFirewallMetrics({ projectId }),
         enabled: !!projectId,
+    })
+
+    const { toggle: toggleAttackMode, isWorking } = useToggleAttackMode({
+        projectId,
+        projectName: project?.name,
+        attackModeEnabled: !!project?.security?.attackModeEnabled,
     })
 
     // const attackModeMutation = useMutation({
@@ -108,47 +111,7 @@ export default function ProjectFirewallCard() {
             ]}
             onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
-                Alert.alert(
-                    'Are you sure?',
-                    project?.security?.attackModeEnabled
-                        ? `This will disable the firewall for ${project?.name}.`
-                        : `This will enable the firewall for ${project?.name} for the next 24 hours.`,
-                    [
-                        { text: 'Cancel', style: 'cancel' },
-                        {
-                            text: project?.security?.attackModeEnabled ? 'Disable' : 'Enable',
-                            style: 'destructive',
-                            onPress: async () => {
-                                // await attackModeMutation.mutateAsync({
-                                //     projectId,
-                                //     attackModeEnabled: !project?.security?.attackModeEnabled,
-                                // })
-
-                                setIsWorking(true)
-
-                                try {
-                                    await toggleFirewall({
-                                        projectId,
-                                        attackModeEnabled: !project?.security?.attackModeEnabled,
-                                    })
-
-                                    queryClient.invalidateQueries({
-                                        queryKey: ['team', currentTeamId, 'projects'],
-                                    })
-                                } catch (error) {
-                                    Alert.alert(
-                                        'Error',
-                                        error instanceof Error
-                                            ? error.message
-                                            : 'An unknown error occurred'
-                                    )
-                                } finally {
-                                    setIsWorking(false)
-                                }
-                            },
-                        },
-                    ]
-                )
+                toggleAttackMode()
             }}
         >
             <View

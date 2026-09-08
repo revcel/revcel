@@ -226,6 +226,18 @@ function RootLayout() {
                                     />
 
                                     <Stack.Screen
+                                        name="projects/[projectId]/firewall"
+                                        options={{
+                                            title: 'Firewall',
+                                            headerShown: true,
+                                            headerLargeTitle: true,
+                                            ...commonHeaderStyle,
+                                            ...commonContentStyle,
+                                            headerShadowVisible: false,
+                                        }}
+                                    />
+
+                                    <Stack.Screen
                                         name="projects/[projectId]/observability"
                                         options={{
                                             title: 'Observability',

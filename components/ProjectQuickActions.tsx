@@ -66,6 +66,15 @@ export default function ProjectQuickActions({ hasAnalytics }: { hasAnalytics: bo
             />
 
             <QuickAction
+                label="Firewall"
+                icon="shield-half-outline"
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
+                    router.push(`/projects/${projectId}/firewall`)
+                }}
+            />
+
+            <QuickAction
                 label="Flags"
                 icon="flag"
                 onPress={() => {

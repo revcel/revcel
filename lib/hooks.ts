@@ -1,4 +1,4 @@
-import { deleteWebhook } from '@/api/mutations'
+import { deleteWebhook, toggleFirewall } from '@/api/mutations'
 import { fetchWebhook } from '@/api/queries'
 import { queryClient } from '@/lib/query'
 import { usePersistedStore } from '@/store/persisted'
@@ -12,7 +12,7 @@ import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Platform } from 'react-native'
+import { Alert, Platform } from 'react-native'
 
 export function useDeploymentShortId(
     deployment: Deployment | Project['latestDeployments'][number] | undefined
@@ -24,6 +24,66 @@ export function useDeploymentShortId(
     }, [deployment])
 
     return shortId
+}
+
+/**
+ * Confirm-and-toggle flow for a project's attack mode.
+ * Shared by the dashboard firewall card and the firewall screen.
+ */
+export function useToggleAttackMode({
+    projectId,
+    projectName,
+    attackModeEnabled,
+}: {
+    projectId: string | undefined
+    projectName: string | undefined
+    attackModeEnabled: boolean
+}) {
+    const currentConnection = usePersistedStore((state) => state.currentConnection)
+    const currentTeamId = currentConnection?.currentTeamId
+
+    const [isWorking, setIsWorking] = useState(false)
+
+    const toggle = useCallback(() => {
+        if (!projectId) return
+
+        Alert.alert(
+            'Are you sure?',
+            attackModeEnabled
+                ? `This will disable the firewall for ${projectName}.`
+                : `This will enable the firewall for ${projectName} for the next 24 hours.`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: attackModeEnabled ? 'Disable' : 'Enable',
+                    style: 'destructive',
+                    onPress: async () => {
+                        setIsWorking(true)
+
+                        try {
+                            await toggleFirewall({
+                                projectId,
+                                attackModeEnabled: !attackModeEnabled,
+                            })
+
+                            queryClient.invalidateQueries({
+                                queryKey: ['team', currentTeamId, 'projects'],
+                            })
+                        } catch (error) {
+                            Alert.alert(
+                                'Error',
+                                error instanceof Error ? error.message : 'An unknown error occurred'
+                            )
+                        } finally {
+                            setIsWorking(false)
+                        }
+                    },
+                },
+            ]
+        )
+    }, [projectId, projectName, attackModeEnabled, currentTeamId])
+
+    return { toggle, isWorking }
 }
 
 export function useBrowser(openInApp = false) {
