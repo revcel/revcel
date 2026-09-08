@@ -1,5 +1,6 @@
 package expo.modules.widgetkit
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import com.google.gson.Gson
@@ -25,11 +26,15 @@ class WidgetKitModule : Module() {
     }
 
     private fun notifyAllWidgets() {
-        val intent = Intent().apply {
-            action = "android.appwidget.action.APPWIDGET_UPDATE"
+        val context = appContext.reactContext ?: return
+
+        // implicit broadcasts are dropped since API 26; scoping to our package delivers it to the
+        // manifest receivers of every widget
+        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE).apply {
+            setPackage(context.packageName)
         }
 
-        appContext.reactContext?.sendBroadcast(intent)
+        context.sendBroadcast(intent)
     }
 
     override fun definition() = ModuleDefinition {
@@ -80,14 +85,13 @@ class WidgetKitModule : Module() {
             }
         }
 
-		// also clears isSubscribed
         Function("clearAllConnections") {
             appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
+                // only the connections: clearing everything also dropped the subscription flag
                 prefs.edit() {
                     remove(instancesKey)
                     apply()
                 }
-                // only the connections: clearing everything also dropped the subscription flag
 
                 notifyAllWidgets()
             }
