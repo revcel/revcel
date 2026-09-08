@@ -9,8 +9,6 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import java.io.File
-import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
 
@@ -51,15 +49,5 @@ object ChartGenerator {
             val canvas = Canvas(this)
             chart.draw(canvas)
         }
-    }
-
-    fun saveBitmap(context: Context, bitmap: Bitmap): String {
-        val fileName = "chart.png"
-        val file = File(context.cacheDir, fileName)
-        FileOutputStream(file).use { out ->
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-        }
-
-        return file.path
     }
 }

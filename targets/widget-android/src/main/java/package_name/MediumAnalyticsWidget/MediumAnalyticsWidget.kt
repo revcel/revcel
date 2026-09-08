@@ -6,7 +6,6 @@ import ConnectionTeam
 import ProjectListItem
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
@@ -64,8 +63,8 @@ fun MediumAnalyticsWidgetContent() {
     val faviconPath = state[MediumAnalyticsWidgetReceiver.faviconPathKey]
     val project = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: null
     val rawAnalyticsData = state[MediumAnalyticsWidgetReceiver.analyticsDataKey]
-    val dataState = state[MediumAnalyticsWidgetReceiver.widgetStateKey]
     val analyticsData = Gson().fromJson(rawAnalyticsData, AnalyticsWidgetData::class.java) ?: null
+    val dataState = state[MediumAnalyticsWidgetReceiver.widgetStateKey]
     
     MediumAnalyticsWidgetUI(
         project = project,
@@ -108,11 +107,6 @@ fun MediumAnalyticsWidgetUI(
         }
     }
 
-    val chartImagePath = remember {
-        val bitmap = ChartGenerator.generateBitmap(context, analyticsData.data)
-        ChartGenerator.saveBitmap(context, bitmap)
-    }
-
     if (!analyticsData.isEnabled || !analyticsData.hasData) {
         return Column(
             modifier = GlanceModifier
@@ -135,6 +129,11 @@ fun MediumAnalyticsWidgetUI(
         }
     }
 
+    // drawn straight into the widget: the shared chart.png let two instances show each other's chart
+    val chartBitmap = remember(analyticsData) {
+        ChartGenerator.generateBitmap(context, analyticsData.data)
+    }
+
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -145,7 +144,7 @@ fun MediumAnalyticsWidgetUI(
                 .padding(top = 40.dp)
         ) {
             Image(
-                provider = ImageProvider(BitmapFactory.decodeFile(chartImagePath)),
+                provider = ImageProvider(chartBitmap),
                 contentDescription = "Device chart",
                 modifier = GlanceModifier
                     .padding(0.dp)
