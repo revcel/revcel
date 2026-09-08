@@ -2,10 +2,17 @@ package com.revcel.mobile
 
 import ProjectListItem
 import TeamProjectItem
+import WidgetIntentState
 import android.content.Context
-import android.content.SharedPreferences
+import androidx.glance.GlanceId
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.work.ListenableWorker
 import appGroupName
-import isSubscribedKey
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import connectionsKey
+import expo.modules.widgetkit.Connection
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -65,6 +72,18 @@ fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String {
     }
 
     return "revcel://?showPaywall=1"
+}
+
+/**
+ * Retry only what can recover. A 4xx (revoked token, deleted project) or an unparseable body will
+ * fail again in 15 minutes just the same, and backoff retries on top of the periodic schedule only
+ * burn battery.
+ */
+fun workerResultFor(error: Exception): ListenableWorker.Result = when {
+    error is HttpException && error.code in 400..499 -> ListenableWorker.Result.failure()
+    error is JsonSyntaxException -> ListenableWorker.Result.failure()
+    error.message?.startsWith("Missing") == true -> ListenableWorker.Result.failure()
+    else -> ListenableWorker.Result.retry()
 }
 
 fun formatNumber(value: Int?): String {

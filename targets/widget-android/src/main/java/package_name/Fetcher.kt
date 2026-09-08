@@ -20,6 +20,9 @@ enum class HTTPMethod(val value: String) {
     DELETE("DELETE")
 }
 
+/** Non-2xx answer; lets callers tell a permanent 4xx from a transient failure. */
+class HttpException(val code: Int, val body: String) : Exception("HTTP Error: $code. $body")
+
 data class FetchParams(
     val method: HTTPMethod,
     val url: String,
@@ -192,6 +195,7 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
         setRequestProperty("User-Agent", "")
         setRequestProperty("Accept", "application/json")
         setRequestProperty("Authorization", "Bearer ${params.connection.apiToken}")
+        if (isPOSTRequest) setRequestProperty("Content-Type", "application/json")
         connectTimeout = 15000
         readTimeout = 15000
     }
@@ -209,10 +213,9 @@ suspend fun fetch(params: FetchParams): ByteArray = withContext(Dispatchers.IO) 
         val responseCode = connection.responseCode
 
         if (responseCode !in 200..299) {
-            val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() }
-                ?: "HTTP Error: $responseCode"
+            val errorMsg = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
 
-            throw Exception("HTTP Error: $responseCode. $errorMsg")
+            throw HttpException(responseCode, errorMsg)
         }
 
         connection.inputStream.use { input ->
@@ -233,5 +236,6 @@ suspend inline fun <reified T> httpRequest(params: FetchParams): T {
     val data = fetch(params)
     val json = String(data, Charsets.UTF_8)
 
-    return Gson().fromJson(json, T::class.java)
+    // Gson returns null for an empty body, which would surface as an NPE far from here
+    return Gson().fromJson(json, T::class.java) ?: throw Exception("Empty response body")
 }
