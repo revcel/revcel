@@ -8,36 +8,6 @@ export const getAvatar = (teamId: string) => {
     return url
 }
 
-export const getDeploymentFavicon = async ({
-    deploymentId,
-    projectId,
-    teamId,
-}: {
-    deploymentId: string
-    projectId: string
-    teamId: string
-}) => {
-    try {
-        const params = new URLSearchParams({
-            project: projectId,
-            teamId,
-        })
-
-        const url = `https://vercel.com/api/v0/deployments/${deploymentId}/favicon?${params.toString()}`
-
-        // const response = await fetch(url);
-        // if (!response.headers.get("content-type")?.includes("image/png")) {
-        //     console.error("Error fetching deployment favicon", response);
-        //     return null;
-        // }
-
-        return url
-    } catch (error) {
-        console.error('Error fetching deployment favicon', error)
-        return null
-    }
-}
-
 export function getGitAuthorAvatar({
     uid,
     username,

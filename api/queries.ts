@@ -1,3 +1,4 @@
+import { resolveProjectFaviconUrl } from '@/lib/favicon'
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { TeamBillingCharge } from '@/types/billing'
@@ -25,10 +26,6 @@ import type { User } from '@/types/user'
 import type { Webhook } from '@/types/webhooks'
 import ms from 'ms'
 
-const TRAILING_SLASHES_REGEX = /\/+$/
-const ABSOLUTE_URL_REGEX = /^https?:\/\//i
-const LINK_ICON_HREF_REGEX =
-    /<link[^>]*rel=["'][^"']*(?:icon|shortcut icon|apple-touch-icon)[^"']*["'][^>]*href=["']([^"']+)["'][^>]*>/i
 
 function roundToGranularity(
     date: Date,
@@ -249,127 +246,21 @@ export async function fetchTeamProjects(
     }
 }
 
-export async function fetchTeamProjectFavicon({ projectId }: { projectId: string }) {
-    const currentConnection = usePersistedStore.getState().currentConnection
-
-    if (!currentConnection) {
-        throw new Error('Current connection not found')
-    }
-
-    const currentTeamId = currentConnection.currentTeamId
-
-    if (!currentTeamId) {
-        throw new Error('Current team not found')
-    }
-    const params = new URLSearchParams({
-        teamId: currentTeamId,
-    })
-
-    const readyDeployments = await fetchTeamDeployments({
-        projectId,
-        state: ['READY'],
-        limit: 1,
-    })
-
-    //! see VERCEL.md/API
-    //! some api endpoints return `id` others `uid`, this one is `uid`
-    //! thx G
-    const deploymentId = readyDeployments?.deployments?.[0]?.uid
-    const deploymentHost = readyDeployments?.deployments?.[0]?.url
-
-    if (!deploymentId && !deploymentHost) return null
-
-    // First attempt: Vercel deployment favicon endpoint
-    if (deploymentId) {
-        try {
-            const response = await fetch(
-                `https://vercel.com/api/v0/deployments/${deploymentId}/favicon?${params.toString()}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${currentConnection.apiToken}`,
-                    },
-                }
-            )
-
-            if (response.status === 200) {
-                return response.url
-            }
-        } catch (error) {
-            console.log('[Error] Error fetching deployment favicon', error)
-            // continue to website fallback below
-        }
-    }
-
-    // Fallback: try to resolve favicon from the website itself
-    if (deploymentHost) {
-        const websiteBaseUrl = `https://${deploymentHost}`
-        try {
-            const fallbackUrl = await resolveWebsiteFaviconUrl(websiteBaseUrl)
-            if (fallbackUrl) {
-                return fallbackUrl
-            }
-        } catch (error) {
-            console.log('[Error] Error resolving website favicon', error)
-        }
-    }
-
-    return null
-}
-
-async function resolveWebsiteFaviconUrl(siteBaseUrl: string): Promise<string | null> {
-    const base = siteBaseUrl.replace(TRAILING_SLASHES_REGEX, '')
-    const candidatePaths = [
-        '/favicon.ico',
-        '/favicon.png',
-        '/favicon.svg',
-        '/apple-touch-icon.png',
-        '/apple-touch-icon-precomposed.png',
-    ]
-
-    for (const path of candidatePaths) {
-        const url = `${base}${path}`
-        try {
-            const res = await fetch(url)
-            const contentType = res.headers.get('content-type') || ''
-            if (
-                res.status === 200 &&
-                (contentType.includes('image') ||
-                    path.endsWith('.ico') ||
-                    path.endsWith('.png') ||
-                    path.endsWith('.svg'))
-            ) {
-                return url
-            }
-        } catch (_e) {
-            // ignore and try next candidate
-        }
-    }
-
-    // As a last resort, try parsing the homepage for a <link rel="icon" ...>
+/**
+ * Favicon URL for a project card, resolved from the project's production website.
+ * See `lib/favicon.ts` for why the Vercel favicon endpoint is no longer used.
+ */
+export async function fetchTeamProjectFavicon({
+    project,
+}: {
+    project: Pick<Project, 'id' | 'name' | 'alias' | 'targets'>
+}) {
     try {
-        const homeRes = await fetch(base)
-        if (homeRes.status === 200) {
-            const html = await homeRes.text()
-            const href = extractIconHrefFromHtml(html)
-            if (href) {
-                if (ABSOLUTE_URL_REGEX.test(href)) {
-                    return href
-                }
-                const normalized = href.startsWith('/') ? `${base}${href}` : `${base}/${href}`
-                return normalized
-            }
-        }
-    } catch (_e) {
-        // ignore
+        return await resolveProjectFaviconUrl(project)
+    } catch (error) {
+        console.log('[Error] Error resolving project favicon', error)
+        return null
     }
-
-    return null
-}
-
-function extractIconHrefFromHtml(html: string): string | null {
-    const match = html.match(LINK_ICON_HREF_REGEX)
-    const href = match?.[1]
-    return href || null
 }
 
 /* ANALYTICS */

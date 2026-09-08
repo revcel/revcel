@@ -28,7 +28,7 @@ export default function ProjectCard({
 
     const faviconQuery = useQuery({
         queryKey: ['project', project.id, 'favicon'],
-        queryFn: () => fetchTeamProjectFavicon({ projectId: project.id }),
+        queryFn: () => fetchTeamProjectFavicon({ project }),
     })
 
     const primaryDomain = useMemo(() => {
