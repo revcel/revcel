@@ -190,13 +190,36 @@ export default function Environment() {
                     }}
                 >
                     <View style={{ flexDirection: 'column', gap: 4 }}>
-                        <Text
-                            // replace `maxWidth`
-                            style={{ color: COLORS.gray1000, maxWidth: 280, fontFamily: 'Geist' }}
-                            numberOfLines={1}
-                        >
-                            {env.key}
-                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text
+                                // replace `maxWidth`
+                                style={{ color: COLORS.gray1000, maxWidth: 280, fontFamily: 'Geist' }}
+                                numberOfLines={1}
+                            >
+                                {env.key}
+                            </Text>
+                            {/* the value of these is write-only, it is never returned by the API */}
+                            {(env.visibility === 'secret' || env.type === 'sensitive') && (
+                                <View
+                                    style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}
+                                >
+                                    <Ionicons
+                                        name="lock-closed-outline"
+                                        size={12}
+                                        color={COLORS.gray900}
+                                    />
+                                    <Text
+                                        style={{
+                                            color: COLORS.gray900,
+                                            fontSize: 12,
+                                            fontFamily: 'Geist',
+                                        }}
+                                    >
+                                        {env.visibility === 'secret' ? 'Secret' : 'Sensitive'}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                         <Text style={{ color: COLORS.gray900, fontFamily: 'Geist' }}>
                             {env.target.length === 3
                                 ? 'All Environments'
