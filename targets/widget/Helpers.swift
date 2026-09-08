@@ -106,6 +106,33 @@ struct TeamProjectItem: Identifiable, Codable {
   let faviconPath: String?
 }
 
+private let teamProjectCacheKey = "revcel::teamProjectItems"
+
+/// Last good item per project id, so a transient failure does not turn a live project into
+/// "No deployment" until the next reload.
+private func loadTeamProjectCache() -> [String: TeamProjectItem] {
+  guard let defaults = UserDefaults(suiteName: appGroupName),
+        let data = defaults.data(forKey: teamProjectCacheKey),
+        let cache = try? JSONDecoder().decode([String: TeamProjectItem].self, from: data) else {
+    return [:]
+  }
+  
+  return cache
+}
+
+private func saveTeamProjectCache(_ items: [TeamProjectItem]) {
+  guard let defaults = UserDefaults(suiteName: appGroupName) else { return }
+  
+  var cache = loadTeamProjectCache()
+  for item in items {
+    cache[item.project.id] = item
+  }
+  
+  if let data = try? JSONEncoder().encode(cache) {
+    defaults.set(data, forKey: teamProjectCacheKey)
+  }
+}
+
 private func fetchTeamProjectItem(_ project: ProjectListItem, index: Int) async -> TeamProjectItem? {
   guard let response = try? await fetchProductionDeployment(
     connection: project.connection,
@@ -130,8 +157,10 @@ private func fetchTeamProjectItem(_ project: ProjectListItem, index: Int) async 
 }
 
 /// Production deployment (and favicon) of every project, fetched in parallel, returned in the
-/// configured order.
+/// configured order. Projects that fail keep their last good data.
 func fetchTeamProjectItems(_ projects: [ProjectListItem]) async -> [TeamProjectItem] {
+  let cache = loadTeamProjectCache()
+  
   let fetched: [TeamProjectItem?] = await withTaskGroup(of: (Int, TeamProjectItem?).self) { group in
     for (index, project) in projects.enumerated() {
       group.addTask { (index, await fetchTeamProjectItem(project, index: index)) }
@@ -146,10 +175,22 @@ func fetchTeamProjectItems(_ projects: [ProjectListItem]) async -> [TeamProjectI
   }
   
   var items: [TeamProjectItem] = []
+  var fresh: [TeamProjectItem] = []
   
   for (index, project) in projects.enumerated() {
     if let item = fetched[index] {
       items.append(item)
+      fresh.append(item)
+    } else if let cached = cache[project.id] {
+      items.append(TeamProjectItem(
+        id: "\(project.id)-\(index)",
+        name: project.projectName,
+        commitMessage: cached.commitMessage,
+        createdAt: cached.createdAt,
+        status: cached.status,
+        project: project,
+        faviconPath: cached.faviconPath
+      ))
     } else {
       items.append(TeamProjectItem(
         id: "\(project.id)-\(index)",
@@ -161,6 +202,10 @@ func fetchTeamProjectItems(_ projects: [ProjectListItem]) async -> [TeamProjectI
         faviconPath: nil
       ))
     }
+  }
+  
+  if !fresh.isEmpty {
+    saveTeamProjectCache(fresh)
   }
   
   return items
