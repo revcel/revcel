@@ -1,13 +1,14 @@
 import { fetchProductionDeployment } from '@/api/queries'
 import { COLOR_FOR_BUILD_STATUS } from '@/lib/constants'
+import { formatEnvironmentLabel } from '@/lib/format'
 import { getGitAuthorAvatar } from '@/lib/utils'
 import { COLORS } from '@/theme/colors'
 import type { Deployment } from '@/types/deployments'
+import type { LatestDeployment } from '@/types/projects'
 import Octicons from '@expo/vector-icons/Octicons'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { useGlobalSearchParams } from 'expo-router'
-import { upperFirst } from 'lodash'
 import { useMemo } from 'react'
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 
@@ -17,7 +18,7 @@ export default function DeploymentCard({
     children,
     disableActiveBorder = false,
 }: {
-    deployment: Deployment // actually a LatestDeployment
+    deployment: Deployment | LatestDeployment
     onPress: () => void
     children?: React.ReactNode
     disableActiveBorder?: boolean
@@ -50,6 +51,9 @@ export default function DeploymentCard({
         }
     }, [disableActiveBorder, deployment.id, productionDeploymentQuery.data])
 
+    const authorName =
+        deployment.meta?.githubCommitAuthorName ?? deployment.creator?.username ?? 'Unknown'
+
     return (
         <TouchableOpacity
             onPress={onPress}
@@ -80,7 +84,7 @@ export default function DeploymentCard({
                             fontFamily: 'Geist',
                         }}
                     >
-                        {upperFirst(deployment.target ?? 'No target')}
+                        {formatEnvironmentLabel(deployment.target, deployment.readySubstate)}
                     </Text>
                 </View>
 
@@ -91,24 +95,25 @@ export default function DeploymentCard({
                         gap: 5,
                     }}
                 >
-                    <Image
-                        source={{
-                            uri: getGitAuthorAvatar({
-                                uid: deployment.creator.uid,
-                                username:
-                                    deployment.meta.githubCommitAuthorName ??
-                                    deployment.creator.username,
-                                gitHost: deployment.meta.githubCommitAuthorName
-                                    ? 'github'
-                                    : undefined,
-                            }),
-                        }}
-                        style={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: 8,
-                        }}
-                    />
+                    {/* `creator` is null for some integration-created deployments */}
+                    {(deployment.creator?.uid || deployment.meta?.githubCommitAuthorName) && (
+                        <Image
+                            source={{
+                                uri: getGitAuthorAvatar({
+                                    uid: deployment.creator?.uid ?? '',
+                                    username: authorName,
+                                    gitHost: deployment.meta?.githubCommitAuthorName
+                                        ? 'github'
+                                        : undefined,
+                                }),
+                            }}
+                            style={{
+                                width: 16,
+                                height: 16,
+                                borderRadius: 8,
+                            }}
+                        />
+                    )}
                     <Text
                         style={{
                             color: COLORS.gray1000,
@@ -117,8 +122,7 @@ export default function DeploymentCard({
                             fontFamily: 'Geist',
                         }}
                     >
-                        {deployment.meta.githubCommitAuthorName ?? deployment.creator.username} (
-                        {format(new Date(deployment.createdAt), 'dd/MM/yyyy')})
+                        {authorName} ({format(new Date(deployment.createdAt), 'dd/MM/yyyy')})
                     </Text>
                 </View>
             </View>
@@ -157,7 +161,7 @@ export default function DeploymentCard({
                                 fontFamily: 'Geist',
                             }}
                         >
-                            {deployment.meta.githubCommitRef ?? 'No branch set'}
+                            {deployment.meta?.githubCommitRef ?? 'No branch set'}
                         </Text>
                         <Text
                             style={{
@@ -166,7 +170,7 @@ export default function DeploymentCard({
                                 fontFamily: 'Geist',
                             }}
                         >
-                            (#{deployment.meta.githubCommitSha?.substring(0, 7)})
+                            (#{deployment.meta?.githubCommitSha?.substring(0, 7)})
                         </Text>
                     </View>
                     <Text
@@ -178,7 +182,7 @@ export default function DeploymentCard({
                         }}
                         numberOfLines={1}
                     >
-                        {deployment.meta.githubCommitMessage
+                        {deployment.meta?.githubCommitMessage
                             ? deployment.meta.githubCommitMessage
                             : 'No commit message'}
                     </Text>

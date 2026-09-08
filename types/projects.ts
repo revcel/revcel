@@ -1,12 +1,14 @@
 import type {
+    CommonAliasError,
+    CommonDeploymentCreator,
     CommonDeploymentMeta,
+    CommonDeploymentReadySubstate,
     CommonDeploymentStatus,
     CommonEnvironment,
     CommonEnvironmentVariable,
     CommonPlan,
     CommonRepositoryLink,
 } from './common'
-import type { Deployment } from './deployments'
 
 export interface Project {
     accountId: string
@@ -32,11 +34,16 @@ export interface Project {
     name: string
     nodeVersion: '22.x' | '20.x' | '18.x' | '16.x' | string | null
     outputDirectory: null | string
-    publicSource: null | string
     resourceConfig: {
         functionDefaultRegions: string[]
         functionDefaultRegion: string
-        functionDefaultMemoryType: string | 'standard_legacy'
+        functionDefaultMemoryType?: 'performance' | 'performance_xl' | 'standard' | 'standard_legacy'
+        functionDefaultTimeout?: number
+        fluid?: boolean
+        elasticConcurrencyEnabled?: boolean
+        buildMachineType?: 'basic' | 'enhanced' | 'standard' | 'turbo'
+        buildMachineSelection?: 'elastic' | 'fixed'
+        buildMachineElasticReason?: string
     }
     // everything is optional since only 1 user was tested
     defaultResourceConfig?: {
@@ -55,6 +62,9 @@ export interface Project {
         id: string
         hasData?: boolean
         enabledAt?: number
+        disabledAt?: number
+        canceledAt?: number
+        dataReceivedAt?: number
     }
     ssoProtection?: {
         deploymentType: string
@@ -73,10 +83,28 @@ export interface Project {
         canceledAt?: number
     }
     link?: CommonRepositoryLink
-    latestDeployments: Deployment[]
+    latestDeployments: LatestDeployment[]
     targets: {
-        [key: string]: Deployment
+        [key: string]: LatestDeployment
     }
+    rollingRelease?: {
+        target: string
+        stages?:
+            | {
+                  targetPercentage: number
+                  requireApproval?: boolean
+                  duration?: number
+              }[]
+            | null
+        canaryResponseHeader?: boolean
+        gate?: {
+            enabled: boolean
+        }
+    }
+    usageStatus?: {
+        teamThrottled?: boolean
+    }
+    tier?: 'advanced' | 'critical'
     security?: {
         firewallUpdatedAt: number
         firewallConfigVersion: number
@@ -99,7 +127,7 @@ interface Alias {
     configuredBy: 'A' | 'CNAME' | 'http'
     configuredChangedAt: number
     createdAt: number
-    deployment: Deployment | null
+    deployment: LatestDeployment | null
     domain: string
     environment: CommonEnvironment
     target: 'PRODUCTION'
@@ -108,32 +136,40 @@ interface Alias {
     redirectStatusCode?: number | null
 }
 
-interface LatestDeployment {
-    alias: string[]
-    aliasAssigned: number | null
-    builds: any[]
+/** Reduced deployment shape returned inside `Project.latestDeployments`, `targets` and `alias[].deployment`. */
+export interface LatestDeployment {
+    id: string
+    name: string
+    url: string
+    deploymentHostname: string
     createdAt: number
     createdIn: string
-    creator: {
-        uid: string
-        email: string
-        username: string
-        githubLogin?: string
-    }
-    deploymentHostname: string
-    forced: boolean
-    id: string
-    meta: CommonDeploymentMeta
-    name: string
+    creator: CommonDeploymentCreator | null
     plan: CommonPlan
     private: boolean
     readyState: CommonDeploymentStatus
-    target: CommonEnvironment | null
-    teamId: string
     type: 'LAMBDAS' | string
-    url: string
-    userId: string
-    withCache: boolean
+    alias?: string[]
+    aliasAssigned?: number | boolean | null
+    aliasError?: CommonAliasError | null
+    aliasFinal?: string | null
+    automaticAliases?: string[]
+    buildingAt?: number
+    readyAt?: number
+    deletedAt?: number
+    requestedAt?: number
+    checksState?: 'completed' | 'registered' | 'running'
+    checksConclusion?: 'canceled' | 'failed' | 'skipped' | 'succeeded'
+    readySubstate?: CommonDeploymentReadySubstate
+    target?: CommonEnvironment | null
+    teamId?: string | null
+    userId?: string
+    meta?: CommonDeploymentMeta
+    monorepoManager?: string | null
+    previewCommentsEnabled?: boolean
+    withCache?: boolean
+    forced?: boolean
+    builds?: any[]
 }
 
 interface FirewallRoute {

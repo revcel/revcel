@@ -11,6 +11,7 @@ export const COLOR_FOR_BUILD_STATUS: Record<CommonDeploymentStatus, string> = {
     READY: COLORS.green900,
     ERROR: COLORS.error,
     CANCELED: COLORS.error,
+    DELETED: COLORS.gray900,
 } as const
 
 export const COLOR_FOR_REQUEST_STATUS = (status: number) => {

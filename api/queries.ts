@@ -12,11 +12,13 @@ import type {
     DeploymentBuild,
     DeploymentBuildAsset,
     DeploymentBuildMetadata,
+    DeploymentEvent,
+    DeploymentListItem,
 } from '@/types/deployments'
 import type { Domain, DomainConfig } from '@/types/domains'
+import type { FirewallConfigResponse } from '@/types/firewall'
 import type { Flag, FlagState, ListFlagsResponse } from '@/types/flags'
 import type { Log } from '@/types/logs'
-import type { DeploymentBuildLog } from '@/types/old'
 import type { Project } from '@/types/projects'
 import type { Team } from '@/types/teams'
 import type { User } from '@/types/user'
@@ -272,8 +274,7 @@ export async function fetchTeamProjectFavicon({ projectId }: { projectId: string
     //! see VERCEL.md/API
     //! some api endpoints return `id` others `uid`, this one is `uid`
     //! thx G
-    // @ts-ignore
-    const deploymentId = readyDeployments?.deployments?.[0].uid
+    const deploymentId = readyDeployments?.deployments?.[0]?.uid
     const deploymentHost = readyDeployments?.deployments?.[0]?.url
 
     if (!deploymentId && !deploymentHost) return null
@@ -592,7 +593,7 @@ export async function fetchTeamDeployments(
 
     try {
         const response = await vercel.get<{
-            deployments: Deployment[]
+            deployments: DeploymentListItem[]
             pagination: {
                 count: number
                 next: string | null
@@ -790,7 +791,7 @@ async function fetchTeamDeploymenBuildLogs({ deploymentId }: { deploymentId: str
     })
 
     try {
-        const response = await vercel.get<DeploymentBuildLog[]>(
+        const response = await vercel.get<DeploymentEvent[]>(
             // this one *needs* to have the v3 prefix
             // otherwise we get a "infinite loop detected" error
             `/v3/deployments/${deploymentId}/events?${params.toString()}`
@@ -856,47 +857,7 @@ export async function fetchProjectFirewallRules({ projectId }: { projectId: stri
     })
 
     try {
-        const response = await vercel.get<{
-            active: {
-                version: number
-                crs: {
-                    [key: string]: {
-                        active: boolean
-                        action: string
-                    }
-                }
-                rules: {
-                    name: string
-                    active: boolean
-                    description: string
-                    action: {
-                        mitigate: {
-                            redirect: string | null
-                            action: string
-                            rateLimit: string | null
-                            actionDuration: string | null
-                        }
-                    }
-                    id: string
-                    conditionGroup: {
-                        conditions: {
-                            type: string
-                            op: string
-                            value: string
-                        }[]
-                    }[]
-                }[]
-                ips: string[]
-                firewallEnabled: boolean
-                ownerId: string
-                changes: any[]
-                updatedAt: string
-                id: string
-                projectKey: string
-            } | null
-            draft: null | any
-            versions: any[]
-        }>(`/v1/security/firewall/config?${params.toString()}`)
+        const response = await vercel.get<FirewallConfigResponse>(`/v1/security/firewall/config?${params.toString()}`)
 
         return response
     } catch (error) {
@@ -1614,17 +1575,7 @@ export async function fetchProjectLogs({
     projectId,
     deploymentId,
     startDate,
-    // NOTE: unlike /logs/request-logs (which happily accepts startDate alone), the
-    // /logs/request-logs/filter-values endpoint REQUIRES endDate. Omitting it returns
-    // `400 bad_request: Validation error: Expected number, received nan at "endDate"`
-    // (the server coerces a missing endDate to NaN). Verified live against api.vercel.com.
-    //
-    // We default it here instead of leaving it optional because the per-attribute fetch
-    // below swallows errors (returns `{ rows: [] }` on failure), so a missing endDate would
-    // NOT surface as an error — every filter would silently come back empty and the UI would
-    // just show "no filters available". Defaulting to now keeps the contract honest so a
-    // future caller can't accidentally re-introduce that silent failure.
-    endDate = Date.now().toString(),
+    endDate,
     page,
     attributes,
 }: {
@@ -1689,7 +1640,17 @@ export async function fetchProjectLogsFilters({
     projectId,
     attributes,
     startDate,
-    endDate,
+    // NOTE: unlike /logs/request-logs (which happily accepts startDate alone), the
+    // /logs/request-logs/filter-values endpoint REQUIRES endDate. Omitting it returns
+    // `400 bad_request: Validation error: Expected number, received nan at "endDate"`
+    // (the server coerces a missing endDate to NaN). Verified live against api.vercel.com.
+    //
+    // We default it here instead of leaving it optional because the per-attribute fetch
+    // below swallows errors (returns `{ rows: [] }` on failure), so a missing endDate would
+    // NOT surface as an error — every filter would silently come back empty and the UI would
+    // just show "no filters available". Defaulting to now keeps the contract honest so a
+    // future caller can't accidentally re-introduce that silent failure.
+    endDate = Date.now().toString(),
 }: {
     projectId: string
     attributes: string[]

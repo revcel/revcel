@@ -92,7 +92,24 @@ interface FlagSplitOutcome {
     defaultVariantId: string
 }
 
-type FlagOutcome = FlagVariantOutcome | FlagSplitOutcome
+interface FlagRolloutOutcome {
+    type: 'rollout'
+    base: FlagSplitOutcomeBase
+    defaultVariantId: string
+    startTimestamp: number
+    rollFromVariantId: string
+    rollToVariantId: string
+    slots: {
+        timestamp: number
+        percentage: number
+    }[]
+}
+
+interface FlagExperimentOutcome {
+    type: 'experiment'
+}
+
+type FlagOutcome = FlagVariantOutcome | FlagSplitOutcome | FlagRolloutOutcome | FlagExperimentOutcome
 
 interface FlagRule {
     id: string
@@ -140,9 +157,13 @@ export interface Flag {
     createdAt: number
     updatedAt: number
     createdBy: string
+    updatedBy?: string
     ownerId: string
     projectId: string
     typeName: 'flag'
+    maintainerIds?: string[]
+    permanent?: boolean
+    tags?: string[]
     metadata?: FlagMetadata
 }
 
@@ -158,6 +179,9 @@ export interface CreateFlagBody {
     seed?: number
     description?: string
     state?: FlagState
+    maintainerIds?: string[]
+    permanent?: boolean
+    tags?: string[]
 }
 
 export interface UpdateFlagBody {
@@ -168,4 +192,7 @@ export interface UpdateFlagBody {
     seed?: number
     description?: string
     state?: FlagState
+    maintainerIds?: string[]
+    permanent?: boolean
+    tags?: string[]
 }

@@ -1,7 +1,9 @@
 import vercel from '@/lib/vercel'
 import { usePersistedStore } from '@/store/persisted'
 import type { CommonEnvironment, CommonEnvironmentVariable } from '@/types/common'
+import type { Deployment } from '@/types/deployments'
 import type { CreateFlagBody, Flag, UpdateFlagBody } from '@/types/flags'
+import type { Webhook } from '@/types/webhooks'
 import * as Sentry from '@sentry/react-native'
 import ms from 'ms'
 import { Platform } from 'react-native'
@@ -23,7 +25,7 @@ export async function updateEnvironmentVariable({
               key?: string
               value?: string
               comment?: string
-              type?: 'encrypted'
+              type?: 'encrypted' | 'plain'
           }
         | {
               type: 'sensitive'
@@ -102,6 +104,22 @@ export async function deleteEnvironmentVariable({
     }
 }
 
+/** Response of `POST /v10/projects/{id}/env`. `created` is absent when every variable failed. */
+interface AddEnvironmentVariablesResponse {
+    created?: CommonEnvironmentVariable | CommonEnvironmentVariable[]
+    failed: {
+        error: {
+            code: string
+            message: string
+            key?: string
+            envVarId?: string
+            envVarKey?: string
+            target?: string[]
+            gitBranch?: string
+        }
+    }[]
+}
+
 export async function addEnvironmentVariable({
     projectId,
     data,
@@ -149,7 +167,7 @@ export async function addEnvironmentVariable({
     console.log('[addEnvironmentVariable] params', params.toString())
 
     try {
-        const response = await vercel.post<CommonEnvironmentVariable>(
+        const response = await vercel.post<AddEnvironmentVariablesResponse>(
             `/v10/projects/${projectId}/env?${params.toString()}`,
             [envVar]
         )
@@ -337,7 +355,7 @@ export async function cancelDeployment(deploymentId: string) {
     console.log('[cancelDeployment] params', params.toString())
 
     try {
-        const response = await vercel.patch(
+        const response = await vercel.patch<Deployment>(
             `/v12/deployments/${deploymentId}/cancel?${params.toString()}`
         )
         return response
@@ -771,7 +789,7 @@ export async function createWebhook({
 
         console.log('[registerWebhook] params', params.toString())
 
-        const response = (await vercel.post(
+        const response = await vercel.post<Webhook>(
             `/v1/webhooks?${params.toString()}`,
             {
                 url:
@@ -783,7 +801,7 @@ export async function createWebhook({
             undefined,
             undefined,
             connectionId
-        )) as { secret: string; id: string }
+        )
 
         return response
     } catch (error) {

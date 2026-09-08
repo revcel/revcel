@@ -284,7 +284,11 @@ export default function AddEnvironmentVariableScreen() {
                                     key: editableVariable.key,
                                     value: editableVariable.value,
                                     target: editableVariable.target,
-                                    type: editableVariable.type,
+                                    // the form only ever produces these two
+                                    type:
+                                        editableVariable.type === 'sensitive'
+                                            ? 'sensitive'
+                                            : 'encrypted',
                                     comment: editableVariable.comment,
                                 },
                             })

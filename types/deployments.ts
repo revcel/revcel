@@ -1,5 +1,10 @@
 import type {
+    CommonAliasError,
+    CommonAliasWarning,
+    CommonDeploymentCreator,
     CommonDeploymentMeta,
+    CommonDeploymentReadySubstate,
+    CommonDeploymentSource,
     CommonDeploymentStatus,
     CommonEnvironment,
     CommonPlan,
@@ -8,20 +13,18 @@ import type {
 export interface Deployment {
     alias: string[]
     aliasAssigned: boolean
-    aliasError: null
+    aliasError?: CommonAliasError | null
+    aliasWarning?: CommonAliasWarning | null
+    errorCode?: string
+    errorMessage?: string | null
     automaticAliases: string[]
     bootedAt: number
     buildingAt: number
     buildSkipped: boolean
     createdAt: number
-    creator: {
-        uid: string
-        email: string
-        username: string
-        githubLogin?: string
-    }
+    creator: CommonDeploymentCreator
     deletedAt: null
-    gitSource: {
+    gitSource?: {
         ref: string
         repoId: number
         sha: string
@@ -42,9 +45,9 @@ export interface Deployment {
     public: boolean
     ready: number
     readyState: CommonDeploymentStatus
-    readySubstate: string | 'PROMOTED' | 'STAGED' | 'ERROR'
+    readySubstate?: CommonDeploymentReadySubstate
     regions: string[]
-    source: string
+    source?: CommonDeploymentSource
     status: string
     target: CommonEnvironment | null
     team: {
@@ -89,8 +92,68 @@ export interface Deployment {
     teamId: string
     private: boolean
     deploymentHostname: string
-    userId: string
+    userId?: string
     withCache: boolean
+    isInstantStatic?: boolean
+    services?: DeploymentService[]
+    resourceConfig?: {
+        buildMachine?: {
+            purchaseType?: 'basic' | 'enhanced' | 'standard' | 'turbo'
+            defaultPurchaseType?: string
+            machineSelectionType?: string
+            selectionSource?: string
+            cores?: number
+            memory?: number
+        }
+    }
+    config?: {
+        version?: number
+        functionType: 'fluid' | 'standard'
+        functionMemoryType: 'performance' | 'performance_xl' | 'standard' | 'standard_legacy'
+        functionTimeout: number | null
+        secureComputePrimaryRegion?: string | null
+        secureComputeFallbackRegion?: string | null
+        isUsingActiveCPU?: boolean
+    }
+    customEnvironment?: {
+        id: string
+        slug?: string
+    }
+}
+
+export interface DeploymentService {
+    name: string
+    type?: string
+    framework?: string | null
+    runtime?: string
+    root?: string
+    entrypoint?: string
+}
+
+/** Item shape of `GET /v6/deployments`. Note the `uid` instead of `id`. */
+export interface DeploymentListItem {
+    uid: string
+    name: string
+    url: string
+    projectId: string
+    created: number
+    createdAt: number
+    readyState: CommonDeploymentStatus
+    state?: CommonDeploymentStatus
+    readySubstate?: CommonDeploymentReadySubstate
+    source?: CommonDeploymentSource
+    target?: CommonEnvironment | null
+    creator: CommonDeploymentCreator
+    meta?: CommonDeploymentMeta
+    inspectorUrl: string | null
+    aliasError?: CommonAliasError | null
+    aliasAssigned?: number | boolean | null
+    errorCode?: string
+    errorMessage?: string | null
+    checksState?: 'completed' | 'registered' | 'running'
+    checksConclusion?: 'canceled' | 'failed' | 'skipped' | 'succeeded'
+    buildingAt?: number
+    ready?: number
 }
 
 interface DeploymentImages {
@@ -125,29 +188,69 @@ interface ProjectSettings {
     commandForIgnoringBuildStep: null | string
     installCommand: null | string
     outputDirectory: null | string
-    speedInsights: {
+    speedInsights?: {
         id: string
-        hasData: boolean
+        hasData?: boolean
+        enabledAt?: number
+        disabledAt?: number
+        canceledAt?: number
+        dataReceivedAt?: number
+        paidAt?: number
     }
-    webAnalytics: {
+    webAnalytics?: {
         id: string
+        hasData?: boolean
+        enabledAt?: number
+        disabledAt?: number
+        canceledAt?: number
     }
 }
 
+/** Build log line from `GET /v3/deployments/{id}/events` */
 export interface DeploymentBuildLog {
     created: number
     date: number
     deploymentId: string
     id: string
     text: string
-    type: 'stdout' | 'stderr'
+    type:
+        | 'stdout'
+        | 'stderr'
+        | 'stdwarn'
+        | 'command'
+        | 'delimiter'
+        | 'deployment-state'
+        | 'exit'
+        | 'fatal'
+        | 'metric'
+        | 'middleware'
+        | 'report'
+        | (string & {})
     serial: string
     info: {
         type: 'build' | string
         name: string
-        entrypoint: string
+        entrypoint?: string
+        path?: string
+        step?: string
+        readyState?: string
+        // set for monorepo / multi-service deployments
+        serviceName?: string
     }
+    level?: 'error' | 'warning'
 }
+
+/** Emitted once the deployment's aliases are assigned. Has no `text` or `created`. */
+export interface DeploymentAliasAssignedEvent {
+    type: 'alias-assigned'
+    deploymentId: string
+    date: number
+    alias: string[]
+    aliasError: CommonAliasError | null
+    aliasWarning: CommonAliasWarning | null
+}
+
+export type DeploymentEvent = DeploymentBuildLog | DeploymentAliasAssignedEvent
 
 export interface DeploymentBuildMetadata {
     version: number

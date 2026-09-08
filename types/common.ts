@@ -12,7 +12,7 @@ export interface CommonBilling {
     name: string | null
     platform: string
     period: null
-    plan: string | 'pro'
+    plan: CommonPlan
     tax: null
     currency: string
     trial: null | boolean
@@ -31,6 +31,41 @@ export type CommonDeploymentStatus =
     | 'QUEUED'
     | 'CANCELED'
     | 'INITIALIZING'
+    | 'DELETED'
+
+export type CommonDeploymentReadySubstate = 'PROMOTED' | 'STAGED' | 'ROLLING'
+
+export type CommonDeploymentSource =
+    | 'api-trigger-git-deploy'
+    | 'cli'
+    | 'clone/repo'
+    | 'drop'
+    | 'git'
+    | 'git-deploy-hook'
+    | 'import'
+    | 'import/repo'
+    | 'redeploy'
+    | 'v0-web'
+
+export interface CommonDeploymentCreator {
+    uid: string
+    type?: 'app' | 'integration' | 'system' | 'user'
+    email?: string
+    username?: string
+    githubLogin?: string
+    gitlabLogin?: string
+    avatar?: string
+}
+
+export interface CommonAliasError {
+    code: string
+    message: string
+}
+
+export interface CommonAliasWarning extends CommonAliasError {
+    link?: string
+    action?: string
+}
 
 export interface CommonDeploymentMeta {
     githubCommitAuthorLogin?: string
@@ -65,10 +100,13 @@ export interface CommonEnvironmentVariable {
     key: string
     createdAt: number
     updatedAt: number
-    createdBy: string
+    createdBy: string | null
     updatedBy: string | null
-    type: 'encrypted' | 'sensitive'
+    type: 'encrypted' | 'plain' | 'secret' | 'sensitive' | 'system'
     value: string
+    // `secret` values are never returned by the API (write-only)
+    visibility?: 'config' | 'secret'
+    system?: boolean
     decrypted?: boolean
     lastEditedByDisplayName?: string
     comment?: string

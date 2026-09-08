@@ -195,7 +195,7 @@ export default function ProjectCard({
                             numberOfLines={2}
                         >
                             {project.latestDeployments[0]?.meta?.githubRepo
-                                ? `${project.latestDeployments[0].meta.githubOrg}/${project.latestDeployments[0].meta.githubRepo}`
+                                ? `${project.latestDeployments[0].meta?.githubOrg}/${project.latestDeployments[0].meta?.githubRepo}`
                                 : 'No source control'}
                         </Text>
                     </View>
@@ -209,7 +209,7 @@ export default function ProjectCard({
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
 
                     if (!project.latestDeployments?.[0]?.id) {
-						Alert.alert('This project has no deployments yet')
+                        Alert.alert('This project has no deployments yet')
                         return
                     }
 

@@ -4,7 +4,19 @@ export interface Webhook {
     url: string
     ownerId: string
     projectIds?: string[]
-    createdAt: string
-    updatedAt: string
-    createdFrom: string | 'account'
+    alertRuleIds?: string[]
+    // only present on the list endpoint
+    projectsMetadata?:
+        | {
+              id: string
+              name: string
+              framework?: string | null
+              latestDeployment?: string
+          }[]
+        | null
+    // only returned once, on creation
+    secret?: string
+    createdAt: number
+    updatedAt: number
+    createdFrom?: string
 }

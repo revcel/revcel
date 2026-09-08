@@ -27,6 +27,10 @@ export default function EditEnvironmentVariableScreen() {
 
     const [editableVariable, setEditableVariable] = useState<CommonEnvironmentVariable | null>(null)
 
+    // both are write-only: the API never returns their value
+    const isSecret =
+        editableVariable?.type === 'sensitive' || editableVariable?.visibility === 'secret'
+
     const environmentVariablesQuery = useQuery({
         queryKey: ['project', projectId, 'environmentVariables'],
         queryFn: async () => await fetchTeamProjectEnvironment({ projectId }),
@@ -154,14 +158,16 @@ export default function EditEnvironmentVariableScreen() {
                                     fontSize: 14,
                                     fontFamily: 'Geist',
                                 }}
-                                editable={editableVariable.type !== 'sensitive'}
+                                editable={!isSecret}
                                 autoCapitalize="none"
                                 autoComplete="off"
                                 autoCorrect={false}
                                 keyboardAppearance="dark"
                                 defaultValue={
-                                    editableVariable.type === 'sensitive'
-                                        ? '[Hidden] Sensitive Value'
+                                    isSecret
+                                        ? editableVariable.visibility === 'secret'
+                                            ? '[Hidden] Secret Value'
+                                            : '[Hidden] Sensitive Value'
                                         : editableVariable.value
                                 }
                                 onChangeText={(text) => {
@@ -318,12 +324,23 @@ export default function EditEnvironmentVariableScreen() {
                                         comment: editableVariable.comment,
                                     },
                                 })
+                            } else if (isSecret) {
+                                // never resend the hidden placeholder as the value
+                                await editEnvironmentVariableMutation.mutateAsync({
+                                    projectId,
+                                    id: variableId,
+                                    data: {
+                                        target: editableVariable.target,
+                                        key: editableVariable.key,
+                                        comment: editableVariable.comment,
+                                    },
+                                })
                             } else {
                                 await editEnvironmentVariableMutation.mutateAsync({
                                     projectId,
                                     id: variableId,
                                     data: {
-                                        type: editableVariable.type,
+                                        type: editableVariable.type === 'plain' ? 'plain' : 'encrypted',
                                         target: editableVariable.target,
                                         key: editableVariable.key,
                                         value: editableVariable.value,

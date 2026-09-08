@@ -21,7 +21,25 @@ export interface Team {
     stagingPrefix: string
     resourceConfig: {
         concurrentBuilds: number
+        elasticConcurrencyEnabled?: boolean
+        edgeConfigs?: number
+        edgeConfigSize?: number
+        kvDatabases?: number
+        blobStores?: number
+        postgresDatabases?: number
+        customEnvironmentsPerProject?: number
+        serverlessFunctionMaxMemorySize?: number
     }
+    strictPasswordProtectionSettings?: {
+        enabled: boolean
+        updatedAt: number
+    }
+    strictConnectors?: {
+        enabled: boolean
+        updatedAt: number
+    }
+    orgRootTeamId?: string
+    disjunctiveProductionSecretPolicy?: 'default' | 'off' | 'on' | null
     previewDeploymentSuffix: null
     softBlock: null
     remoteCaching: {
