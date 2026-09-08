@@ -1,23 +1,25 @@
 package com.revcel.mobile
 
 import ProjectListItem
-import TeamProjectItem
 import android.content.Context
-import androidx.glance.GlanceId
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.work.CoroutineWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 
 class LargeTeamProjectsWidgetDataWorker(context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
-        val boxedGlanceId = inputData.getString(glanceIdKey) ?: throw Exception("Missing glance id")
-        val glanceId = GlanceAppWidgetManager(context = applicationContext)
-            .getGlanceIds(LargeTeamProjectsWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt() }
+        val appWidgetId = inputData.getString(glanceIdKey)?.toIntOrNull() ?: return Result.failure()
+        val glanceId = findGlanceId(applicationContext, LargeTeamProjectsWidget::class.java, appWidgetId)
 
         if (glanceId == null) {
+            // the widget is gone, stop the periodic work that outlived it
+            WorkManager.getInstance(applicationContext)
+                .cancelUniqueWork(RevcelWidgetReceiver.periodicWorkName(appWidgetId))
             return Result.failure()
         }
+
+        val receiver = LargeTeamProjectsWidgetReceiver()
 
         return try {
             val rawProjects = inputData.getString(projectsKey) ?: "[]"
@@ -26,20 +28,13 @@ class LargeTeamProjectsWidgetDataWorker(context: Context, workerParams: WorkerPa
                 ?.toList() ?: emptyList()
 
             val items = fetchTeamProjectItems(applicationContext, projects)
-            updateWidget(applicationContext, glanceId, items)
+
+            receiver.onDataFetched(applicationContext, glanceId, items)
             Result.success()
         } catch (e: Exception) {
-            onFetchError(applicationContext, glanceId)
-            Result.retry()
+            receiver.onFetchError(applicationContext, glanceId)
+            workerResultFor(e)
         }
-    }
-
-    private fun updateWidget(context: Context, glanceId: GlanceId, items: Array<TeamProjectItem>) {
-        LargeTeamProjectsWidgetReceiver().onDataFetched(context, glanceId, items)
-    }
-
-    private fun onFetchError(context: Context, glanceId: GlanceId) {
-        LargeTeamProjectsWidgetReceiver().onFetchError(context, glanceId)
     }
 
     companion object {

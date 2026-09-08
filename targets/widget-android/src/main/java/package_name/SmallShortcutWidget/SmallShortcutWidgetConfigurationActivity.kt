@@ -18,8 +18,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.core.content.edit
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import expo.modules.widgetkit.Connection
 import isSubscribedKey
 import savedWidgetStateKey
@@ -115,8 +113,7 @@ class SmallShortcutWidgetConfigurationActivity: AppCompatActivity() {
                     val prefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
                     val isSubscribed = prefs.getBoolean(isSubscribedKey, false)
 
-                    val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
-                    SmallShortcutWidgetReceiver().onProjectSelected(applicationContext, glanceId, selectedProject, isSubscribed)
+                    SmallShortcutWidgetReceiver().onProjectSelected(applicationContext, appWidgetId, selectedProject, isSubscribed)
 
                     val resultValue = Intent().apply {
                         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)

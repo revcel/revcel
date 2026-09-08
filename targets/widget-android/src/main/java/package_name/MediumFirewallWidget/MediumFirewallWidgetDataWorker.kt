@@ -9,44 +9,45 @@ import FirewallMetricsValue
 import FirewallWidgetData
 import ProjectListItem
 import android.content.Context
-import androidx.glance.GlanceId
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.work.CoroutineWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 
 class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
-        val boxedGlanceId = inputData.getString(glanceIdKey) ?: throw Exception("Missing glance id")
-        val glanceId = GlanceAppWidgetManager(context = applicationContext)
-            .getGlanceIds(MediumFirewallWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
+        val appWidgetId = inputData.getString(glanceIdKey)?.toIntOrNull() ?: return Result.failure()
+        val glanceId = findGlanceId(applicationContext, MediumFirewallWidget::class.java, appWidgetId)
 
         if (glanceId == null) {
+            // the widget is gone, stop the periodic work that outlived it
+            WorkManager.getInstance(applicationContext)
+                .cancelUniqueWork(RevcelWidgetReceiver.periodicWorkName(appWidgetId))
             return Result.failure()
         }
 
-        return try {
-            val response = resolveFaviconPath(applicationContext)
-            val firewallData = fetchFirewallData()
+        val receiver = MediumFirewallWidgetReceiver()
 
-            updateWidget(applicationContext, glanceId, response, firewallData)
+        return try {
+            val project = selectedProject()
+            val firewallData = fetchFirewallData(project)
+            // best effort, never fails the data fetch
+            val faviconPath = fetchProjectFavicon(applicationContext, project) ?: ""
+
+            receiver.onDataFetched(applicationContext, glanceId, faviconPath, firewallData)
             Result.success()
         } catch (e: Exception) {
-            this.onFetchError(applicationContext, glanceId)
-            Result.retry()
+            receiver.onFetchError(applicationContext, glanceId)
+            workerResultFor(e)
         }
     }
 
-    private suspend fun resolveFaviconPath(context: Context): String {
+    private fun selectedProject(): ProjectListItem {
         val rawProject = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
-
-        return fetchProjectFavicon(context, selectedProject) ?: ""
+        return Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
     }
 
-    private suspend fun fetchFirewallData(): FirewallWidgetData {
-        val rawProject = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
+    private suspend fun fetchFirewallData(selectedProject: ProjectListItem): FirewallWidgetData {
         val now = Date()
         val endTime = roundToGranularity(
             date = now,
@@ -112,14 +113,6 @@ class MediumFirewallWidgetDataWorker(context: Context, workerParams: WorkerParam
             challenged = challenged,
             denied = denied
         )
-    }
-
-    private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String, firewallData: FirewallWidgetData) {
-        MediumFirewallWidgetReceiver().onDataFetched(context, glanceId, faviconPath, firewallData)
-    }
-
-    private fun onFetchError(context: Context, glanceId: GlanceId) {
-        MediumFirewallWidgetReceiver().onFetchError(context, glanceId)
     }
 
     companion object {

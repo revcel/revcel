@@ -74,6 +74,22 @@ fun getAppUrl(project: ProjectListItem?, isSubscribed: Boolean): String {
     return "revcel://?showPaywall=1"
 }
 
+/** Connections the app currently has; widgets configured with a removed one must stop calling Vercel. */
+fun currentConnections(context: Context): List<Connection> {
+    val raw = context.getSharedPreferences(appGroupName, Context.MODE_PRIVATE).getString(connectionsKey, "[]")
+    return try {
+        Gson().fromJson(raw, Array<Connection>::class.java)?.toList() ?: emptyList()
+    } catch (e: JsonSyntaxException) {
+        emptyList()
+    }
+}
+
+/** GlanceId of a still-bound widget, null once it was removed. Never use `getGlanceIdBy`, it throws. */
+suspend fun findGlanceId(context: Context, widgetClass: Class<out GlanceAppWidget>, appWidgetId: Int): GlanceId? {
+    val manager = GlanceAppWidgetManager(context)
+    return manager.getGlanceIds(widgetClass).firstOrNull { manager.getAppWidgetId(it) == appWidgetId }
+}
+
 /**
  * Retry only what can recover. A 4xx (revoked token, deleted project) or an unparseable body will
  * fail again in 15 minutes just the same, and backoff retries on top of the periodic schedule only

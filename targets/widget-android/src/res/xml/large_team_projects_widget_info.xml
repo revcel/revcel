@@ -6,7 +6,7 @@
     android:minHeight="180dp"
     android:targetCellWidth="5"
     android:targetCellHeight="3"
-    android:updatePeriodMillis="900000"
+    android:updatePeriodMillis="1800000"
     android:description="@string/large_team_projects_widget_description"
     android:widgetCategory="home_screen"
     android:configure="com.revcel.mobile.LargeTeamProjectsWidgetConfigurationActivity"

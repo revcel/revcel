@@ -4,39 +4,47 @@ import AnalyticsTimeseries
 import AnalyticsWidgetData
 import ProjectListItem
 import android.content.Context
-import androidx.glance.GlanceId
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.work.CoroutineWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import java.util.Date
 
 class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result {
-        val boxedGlanceId = inputData.getString(glanceIdKey) ?: throw Exception("Missing glance id")
-        val glanceId = GlanceAppWidgetManager(context = applicationContext)
-            .getGlanceIds(MediumAnalyticsWidget::class.java).firstOrNull { id -> id.hashCode() == boxedGlanceId.toInt()}
+        val appWidgetId = inputData.getString(glanceIdKey)?.toIntOrNull() ?: return Result.failure()
+        val glanceId = findGlanceId(applicationContext, MediumAnalyticsWidget::class.java, appWidgetId)
 
         if (glanceId == null) {
+            // the widget is gone, stop the periodic work that outlived it
+            WorkManager.getInstance(applicationContext)
+                .cancelUniqueWork(RevcelWidgetReceiver.periodicWorkName(appWidgetId))
             return Result.failure()
         }
 
-        return try {
-            val response = resolveFaviconPath(applicationContext)
-            val analyticsData = fetchAnalyticsData()
+        val receiver = MediumAnalyticsWidgetReceiver()
 
-            updateWidget(applicationContext, glanceId, response, analyticsData)
+        return try {
+            val project = selectedProject()
+            val analyticsData = fetchAnalyticsData(project)
+            // best effort, never fails the data fetch
+            val faviconPath = fetchProjectFavicon(applicationContext, project) ?: ""
+
+            receiver.onDataFetched(applicationContext, glanceId, faviconPath, analyticsData)
             Result.success()
         } catch (e: Exception) {
-            this.onFetchError(applicationContext, glanceId)
-            Result.retry()
+            receiver.onFetchError(applicationContext, glanceId)
+            workerResultFor(e)
         }
     }
 
-    private suspend fun fetchAnalyticsData(): AnalyticsWidgetData {
-        val now = Date()
+    private fun selectedProject(): ProjectListItem {
         val rawProject = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
+        return Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
+    }
+
+    private suspend fun fetchAnalyticsData(selectedProject: ProjectListItem): AnalyticsWidgetData {
+        val now = Date()
         val quickStatsEndTime = roundToGranularity(
             date = now,
             granularity = Granularity.FIVE_MINUTES,
@@ -72,21 +80,6 @@ class MediumAnalyticsWidgetDataWorker(context: Context, workerParams: WorkerPara
             hasData = availability.hasData,
             data = data
         )
-    }
-
-    private suspend fun resolveFaviconPath(context: Context): String {
-        val rawProject = inputData.getString(projectKey) ?: "null"
-        val selectedProject = Gson().fromJson(rawProject, ProjectListItem::class.java) ?: throw Exception("Missing selected project")
-
-        return fetchProjectFavicon(context, selectedProject) ?: ""
-    }
-
-    private fun updateWidget(context: Context, glanceId: GlanceId, faviconPath: String, analyticsWidgetData: AnalyticsWidgetData) {
-        MediumAnalyticsWidgetReceiver().onDataFetched(context, glanceId, faviconPath, analyticsWidgetData)
-    }
-
-    private fun onFetchError(context: Context, glanceId: GlanceId) {
-        MediumAnalyticsWidgetReceiver().onFetchError(context, glanceId)
     }
 
     companion object {

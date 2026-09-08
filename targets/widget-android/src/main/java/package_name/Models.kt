@@ -150,3 +150,12 @@ enum class WidgetIntentState(val value: Int) {
     HAS_PROJECTS(2),
     NO_PROJECTS(3)
 }
+
+/** Stored per widget instance under `widgetStateKey` and read by the composables. */
+enum class WidgetDataState {
+    LOADING,
+    OK,
+    FAILED,
+    // the account this widget was configured with was removed in the app
+    DISCONNECTED
+}

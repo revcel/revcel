@@ -18,8 +18,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.core.content.edit
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import expo.modules.widgetkit.Connection
 import isSubscribedKey
 import savedWidgetStateKey
@@ -119,39 +117,20 @@ class LargeTeamProjectsWidgetConfigurationActivity: AppCompatActivity() {
                 projects,
                 onProjectToggle,
                 onDone = {
-                    // Persist the selection, start background refresh, and load data now
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val configPrefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
-                            val isSubscribed = configPrefs.getBoolean(isSubscribedKey, false)
-                            val glanceId = GlanceAppWidgetManager(applicationContext).getGlanceIdBy(appWidgetId)
+                    val configPrefs = getSharedPreferences(appGroupName, Context.MODE_PRIVATE)
+                    val isSubscribed = configPrefs.getBoolean(isSubscribedKey, false)
 
-                            // Persist selection + schedule periodic background refresh
-                            LargeTeamProjectsWidgetReceiver().onProjectsSelected(
-                                applicationContext,
-                                glanceId,
-                                selectedProjects,
-                                isSubscribed
-                            )
+                    // persists the selection and schedules an immediate fetch; the worker fills the
+                    // data so the activity can finish right away instead of blocking on the network
+                    LargeTeamProjectsWidgetReceiver().onProjectsSelected(
+                        applicationContext,
+                        appWidgetId,
+                        selectedProjects,
+                        isSubscribed
+                    )
 
-                            // Immediate fetch so data appears right away
-                            val items = fetchTeamProjectItems(applicationContext, selectedProjects)
-                            LargeTeamProjectsWidgetReceiver().onDataFetched(
-                                applicationContext,
-                                glanceId,
-                                items
-                            )
-
-                            val resultValue = Intent().apply {
-                                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                            }
-
-                            setResult(RESULT_OK, resultValue)
-                            finish()
-                        } catch (e: Exception) {
-                            // Handle error - still finish activity
-                            finish()
-                        }
+                    val resultValue = Intent().apply {
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                     }
                 },
                 openApp = {
