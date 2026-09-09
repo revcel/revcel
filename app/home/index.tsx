@@ -26,7 +26,7 @@ import { usePlacement, useSuperwall, useUser } from 'expo-superwall'
 import * as WebBrowser from 'expo-web-browser'
 import ms from 'ms'
 import { useEffect, useLayoutEffect, useMemo } from 'react'
-import { Image, Linking, Platform } from 'react-native'
+import { Linking, Platform } from 'react-native'
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import ContextMenu from 'react-native-context-menu-view'
 import { SvgUri } from 'react-native-svg'
@@ -470,22 +470,14 @@ export default function HomeScreen() {
                             title: 'Rate',
                             systemIcon: 'star.fill',
                         },
-                        ...(Platform.OS === 'ios'
-                            ? [
-                                  {
-                                      title: '',
-                                      inlineChildren: true,
-                                      actions: [
-                                          {
-                                              title: 'Vercel v0',
-                                          },
-                                          {
-                                              title: 'Vercel Domains',
-                                          },
-                                      ],
-                                  },
-                              ]
-                            : []),
+                        {
+                            title: 'Vercel v0',
+                            systemIcon: 'sparkles',
+                        },
+                        {
+                            title: 'Vercel Domains',
+                            systemIcon: 'globe',
+                        },
                     ]}
                     dropdownMenuMode={true}
                     onPress={async (e) => {
@@ -638,10 +630,11 @@ export default function HomeScreen() {
                         }
                     }}
                 >
-                    <HeaderTouchableOpacity resetStyle={true}>
-                        <Image
-                            source={require('@/assets/v0.png')}
-                            style={{ width: 32, height: 16 }}
+                    <HeaderTouchableOpacity>
+                        <Ionicons
+                            name="ellipsis-horizontal-sharp"
+                            size={32}
+                            color={COLORS.gray1000}
                         />
                     </HeaderTouchableOpacity>
                 </ContextMenu>
