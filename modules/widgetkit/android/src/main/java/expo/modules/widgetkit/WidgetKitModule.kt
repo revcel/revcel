@@ -15,14 +15,29 @@ class WidgetKitModule : Module() {
         const val isSubscribedKey = "revcel::subscribed"
     }
 
+    private fun prefs() = appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)
+
     private fun getConnections(): List<Connection> {
-        val rawConnections = appContext.reactContext
-            ?.getSharedPreferences(groupName, Context.MODE_PRIVATE)
-            ?.getString(instancesKey, "[]")
+        val rawConnections = prefs()?.getString(instancesKey, "[]")
 
         return rawConnections?.let {
-            Gson().fromJson(it, Array<Connection>::class.java).toList()
+            runCatching { Gson().fromJson(it, Array<Connection>::class.java).toList() }.getOrNull()
         } ?: emptyList()
+    }
+
+    /** Writes the list and notifies the widgets only when the payload changed. */
+    private fun saveConnections(connections: List<Connection>) {
+        val prefs = prefs() ?: return
+        val serialized = Gson().toJson(connections)
+
+        if (prefs.getString(instancesKey, null) == serialized) return
+
+        prefs.edit {
+            putString(instancesKey, serialized)
+            apply()
+        }
+
+        notifyAllWidgets()
     }
 
     private fun notifyAllWidgets() {
@@ -41,8 +56,12 @@ class WidgetKitModule : Module() {
         Name("RevcelWidgetKit")
 
         Function("setIsSubscribed") { isSubscribed: Boolean ->
-            appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
-                prefs.edit() {
+            prefs()?.let { prefs ->
+                if (prefs.contains(isSubscribedKey) && prefs.getBoolean(isSubscribedKey, false) == isSubscribed) {
+                    return@let
+                }
+
+                prefs.edit {
                     putBoolean(isSubscribedKey, isSubscribed)
                     apply()
                 }
@@ -52,41 +71,25 @@ class WidgetKitModule : Module() {
         }
 
         Function("addConnection") { connection: Connection ->
-            appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
-                val connections = this@WidgetKitModule.getConnections().toMutableList()
+            val connections = this@WidgetKitModule.getConnections().toMutableList()
 
-                val index = connections.indexOfFirst { it.id == connection.id }
+            val index = connections.indexOfFirst { it.id == connection.id }
 
-                if (index != -1) {
-                    connections[index] = connection
-                } else {
-                    connections.add(connection)
-                }
-
-                prefs.edit() {
-                    putString(instancesKey, Gson().toJson(connections))
-                    apply()
-                }
-
-                notifyAllWidgets()
+            if (index != -1) {
+                connections[index] = connection
+            } else {
+                connections.add(connection)
             }
+
+            saveConnections(connections)
         }
 
         Function("removeConnection") { id: String ->
-            appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
-                val connections = this@WidgetKitModule.getConnections().toMutableList().filter { it.id != id}
-
-                prefs.edit() {
-                    putString(instancesKey, Gson().toJson(connections))
-                    apply()
-                }
-
-                notifyAllWidgets()
-            }
+            saveConnections(this@WidgetKitModule.getConnections().filter { it.id != id })
         }
 
         Function("clearAllConnections") {
-            appContext.reactContext?.getSharedPreferences(groupName, Context.MODE_PRIVATE)?.let { prefs ->
+            prefs()?.let { prefs ->
                 // only the connections: clearing everything also dropped the subscription flag
                 prefs.edit() {
                     remove(instancesKey)

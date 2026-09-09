@@ -5,7 +5,23 @@ const {
     withProjectBuildGradle,
 } = require('@expo/config-plugins')
 const { mergeContents } = require('@expo/config-plugins/build/utils/generateCode')
+const fs = require('node:fs')
+const path = require('node:path')
 const withAndroidSourceFiles = require('./withAndroidSourceFiles')
+
+// The Compose compiler Gradle plugin must match the Kotlin Gradle plugin version,
+// which React Native pins in its version catalog.
+const getKotlinVersion = (projectRoot) => {
+    const catalogPath = path.join(
+        projectRoot,
+        'node_modules/react-native/gradle/libs.versions.toml'
+    )
+    const match = fs.readFileSync(catalogPath, 'utf8').match(/^kotlin\s*=\s*"([^"]+)"/m)
+    if (!match) {
+        throw new Error(`withAndroidWidget: could not read the Kotlin version from ${catalogPath}`)
+    }
+    return match[1]
+}
 
 const withModifiedAppBuildGradle = (config, opts) =>
     withAppBuildGradle(config, (config) => {
@@ -67,11 +83,12 @@ android {
 const withRootKotlinComposeClasspath = (config, opts) =>
     withProjectBuildGradle(config, (config) => {
         let newFileContents = config.modResults.contents
+        const kotlinVersion = getKotlinVersion(config.modRequest.projectRoot)
 
         // Ensure the Kotlin Compose Gradle plugin is available on the buildscript classpath
         newFileContents = mergeContents({
             src: newFileContents,
-            newSrc: `    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:${opts.versions.kotlinExtension}')`,
+            newSrc: `    classpath('org.jetbrains.kotlin:compose-compiler-gradle-plugin:${kotlinVersion}')`,
             tag: 'KotlinComposeGradlePluginClasspath',
             anchor: /classpath\('org\.jetbrains\.kotlin:kotlin-gradle-plugin'\)/,
             offset: 1,
@@ -87,11 +104,16 @@ const withModifiedAndroidManifest = (config, opts) =>
     withAndroidManifest(config, (config) => {
         const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
 
-        mainApplication.receiver = mainApplication.receiver ? [...mainApplication.receiver] : []
+        // Replace instead of push: re-running prebuild without --clean must not
+        // register the same receiver twice
+        const receiverName = `.${opts.receiverName}`
+        mainApplication.receiver = (mainApplication.receiver ?? []).filter(
+            (receiver) => receiver.$['android:name'] !== receiverName
+        )
 
         mainApplication.receiver.push({
             $: {
-                'android:name': `.${opts.receiverName}`,
+                'android:name': receiverName,
                 'android:exported': 'true',
                 'android:label': `${opts.title}`,
             },
@@ -133,12 +155,14 @@ const withModifiedAndroidManifestActivity = (config, opts) =>
     withAndroidManifest(config, (config) => {
         const mainApplication = AndroidConfig.Manifest.getMainApplicationOrThrow(config.modResults)
 
-        // Ensure the activities array exists before pushing
-        mainApplication.activity = mainApplication.activity ? [...mainApplication.activity] : []
+        const activityName = `.${opts.configurationActivity}`
+        mainApplication.activity = (mainApplication.activity ?? []).filter(
+            (activity) => activity.$['android:name'] !== activityName
+        )
 
         mainApplication.activity.push({
             $: {
-                'android:name': `.${opts.configurationActivity}`,
+                'android:name': activityName,
                 'android:exported': 'true',
             },
             'intent-filter': [

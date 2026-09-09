@@ -21,12 +21,31 @@ public class WidgetKitModule: Module {
         
         WidgetCenter.shared.reloadAllTimelines()
     }
+
+    /// Writes the list and reloads the widgets only when the payload changed.
+    private func saveConnections(_ connections: [Connection]) throws {
+        guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
+
+        let encodedConnections = try JSONEncoder().encode(connections)
+
+        if sharedDefaults.data(forKey: _connectionsKey) == encodedConnections {
+            return
+        }
+
+        sharedDefaults.set(encodedConnections, forKey: _connectionsKey)
+        self.reloadWidgets()
+    }
     
     public func definition() -> ModuleDefinition {
         Name("RevcelWidgetKit")
         
         Function("setIsSubscribed") { (isSubscribed: Bool) -> Void in
             guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
+
+            if sharedDefaults.object(forKey: _isSubscribedKey) != nil,
+               sharedDefaults.bool(forKey: _isSubscribedKey) == isSubscribed {
+                return
+            }
             
             sharedDefaults.set(isSubscribed, forKey: _isSubscribedKey)
             
@@ -34,38 +53,19 @@ public class WidgetKitModule: Module {
         }
         
         Function("addConnection") { (connection: Connection) -> Void in
-            guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
-            
-            do {
-                var connections = self.getConnections()
-                
-                if let index = connections.firstIndex(where: { $0.id == connection.id }) {
-                    connections[index] = connection
-                } else {
-                    connections.append(connection)
-                }
-                
-                let encodedConnections = try JSONEncoder().encode(connections)
-                
-                sharedDefaults.set(encodedConnections, forKey: _connectionsKey)
-                
-                self.reloadWidgets()
-            } catch {
-                // for now do nothing
+            var connections = self.getConnections()
+
+            if let index = connections.firstIndex(where: { $0.id == connection.id }) {
+                connections[index] = connection
+            } else {
+                connections.append(connection)
             }
+
+            try? self.saveConnections(connections)
         }
         
         Function("removeConnection") { (id: String) in
-            guard let sharedDefaults = UserDefaults(suiteName: _groupName) else { return }
-            
-            do {
-                let connections = self.getConnections().filter { $0.id != id }
-                let encodedConnections = try JSONEncoder().encode(connections)
-                
-                sharedDefaults.set(encodedConnections, forKey: _connectionsKey)
-                
-                self.reloadWidgets()
-            }
+            try? self.saveConnections(self.getConnections().filter { $0.id != id })
         }
         
         Function("clearAllConnections") {

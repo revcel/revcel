@@ -113,7 +113,6 @@ module.exports = ({ config }) => {
                     src: './targets/widget-android',
                     versions: {
                         glance: '1.1.1',
-                        kotlinExtension: '2.0.0',
                         gson: '2.13.2',
                         activityCompose: '1.11.0',
                         composeUi: '1.9.3',
