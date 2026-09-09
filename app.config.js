@@ -36,9 +36,6 @@ module.exports = ({ config }) => {
             },
         },
 
-        androidNavigationBar: {
-            enforceContrast: false,
-        },
         android: {
             package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
             adaptiveIcon: {
@@ -66,13 +63,14 @@ module.exports = ({ config }) => {
                 {
                     android: {
                         minSdkVersion: 24,
-                        targetSdkVersion: 35,
                         // useDayNightTheme: true
                     },
                 },
             ],
             './plugins/withAndroidHeap',
             'expo-router',
+            ['expo-status-bar', { style: 'light' }],
+            ['expo-navigation-bar', { enforceContrast: false }],
             [
                 'expo-splash-screen',
                 {
@@ -199,6 +197,9 @@ module.exports = ({ config }) => {
                     },
                 ],
             ],
+            'react-native-navigation-mode',
+            ['react-native-file-viewer-turbo', { mimeTypes: ['*/*'] }],
+            'expo-localization',
             'expo-quick-actions',
             'expo-web-browser',
             'expo-asset',
