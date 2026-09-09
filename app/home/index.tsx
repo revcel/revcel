@@ -191,28 +191,36 @@ export default function HomeScreen() {
             return
         }
 
+        // The offer is shown after a short delay; cancel it if the screen goes away first
+        let offerTimer: ReturnType<typeof setTimeout> | undefined
+
         try {
-            getPresentationResult('LifetimeOffer_1').then((presentationResult) => {
-                if (
-                    ['placementnotfound', 'noaudiencematch'].includes(
-                        presentationResult.type.toLowerCase()
-                    )
-                ) {
-                    return
-                }
-                setTimeout(() => {
-                    registerPlacement({
-                        placement: 'LifetimeOffer_1',
-                        feature: () => {
-                            WidgetKitModule.setIsSubscribed(true)
-                            Alert.alert('Congrats!', 'You unlocked lifetime access to Rev.')
-                        },
-                    }).catch((error) => {
-                        Sentry.captureException(error)
-                        console.error('Error registering LifetimeOffer_1', error)
-                    })
-                }, 1000)
-            })
+            getPresentationResult('LifetimeOffer_1')
+                .then((presentationResult) => {
+                    // expo-superwall types this as its compat PresentationResult class, but the
+                    // native bridge resolves plain JSON such as { type: 'PlacementNotFound' }.
+                    const resultType = (presentationResult as { type?: string }).type ?? ''
+                    if (
+                        ['placementnotfound', 'noaudiencematch'].includes(resultType.toLowerCase())
+                    ) {
+                        return
+                    }
+                    offerTimer = setTimeout(() => {
+                        registerPlacement({
+                            placement: 'LifetimeOffer_1',
+                            feature: () => {
+                                WidgetKitModule.setIsSubscribed(true)
+                                Alert.alert('Congrats!', 'You unlocked lifetime access to Rev.')
+                            },
+                        }).catch((error) => {
+                            Sentry.captureException(error)
+                            console.error('Error registering LifetimeOffer_1', error)
+                        })
+                    }, 1000)
+                })
+                .catch((error) => {
+                    Sentry.captureException(error)
+                })
 
             QuickActions.isSupported().then((supported) => {
                 if (!supported) return
@@ -231,6 +239,10 @@ export default function HomeScreen() {
             })
         } catch (error) {
             Sentry.captureException(error)
+        }
+
+        return () => {
+            if (offerTimer) clearTimeout(offerTimer)
         }
     }, [registerPlacement, getPresentationResult, subscriptionStatus.status])
 

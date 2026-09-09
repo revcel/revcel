@@ -42,11 +42,16 @@ export const usePersistedStore = create<PersistedStoreState>()(
             currentConnection: null,
             removeConnection: (connectionId: string) => {
                 WidgetKitModule.removeConnection(connectionId)
-                const newConnections = get().connections.filter((c) => c.id !== connectionId)
+                const { connections, currentConnection } = get()
+                const newConnections = connections.filter((c) => c.id !== connectionId)
 
                 set({
                     connections: newConnections,
-                    currentConnection: newConnections[0] || null,
+                    // Only switch when the removed connection was the active one
+                    currentConnection:
+                        currentConnection?.id === connectionId
+                            ? newConnections[0] || null
+                            : currentConnection,
                 })
             },
             addConnection: (connection: Connection) => {
@@ -102,6 +107,15 @@ export const usePersistedStore = create<PersistedStoreState>()(
             name: 'rev-persisted-store',
             storage: createJSONStorage(() => mmkvStorage),
             version: 1,
+            // Repair a persisted state that has connections but no active one,
+            // instead of doing it during render in app/index.tsx
+            merge: (persisted, current) => {
+                const merged = { ...current, ...(persisted as Partial<typeof current>) }
+                if (merged.connections.length > 0 && !merged.currentConnection) {
+                    merged.currentConnection = merged.connections[0]
+                }
+                return merged
+            },
         }
     )
 )

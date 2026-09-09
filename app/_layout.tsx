@@ -81,7 +81,7 @@ function RootLayout() {
 
     useEffect(() => {
         SplashScreen.hide()
-        activateKeepAwakeAsync()
+        activateKeepAwakeAsync().catch((error) => Sentry.captureException(error))
     }, [])
 
     return (
