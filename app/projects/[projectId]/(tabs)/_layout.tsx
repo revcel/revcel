@@ -1,7 +1,7 @@
 import { COLORS } from '@/theme/colors'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { Tabs } from 'expo-router'
-import { Platform } from 'react-native'
+import { Platform, Pressable } from 'react-native'
 
 export default function TabsLayout() {
     return (
@@ -16,6 +16,17 @@ export default function TabsLayout() {
                     paddingBottom: 24,
                     height: 84,
                 },
+                // The default button is a PlatformPressable with a themed ripple;
+                // a plain Pressable without android_ripple has no press effect.
+                tabBarButton: ({
+                    android_ripple,
+                    pressColor,
+                    pressOpacity,
+                    hoverEffect,
+                    href,
+                    ref,
+                    ...props
+                }) => <Pressable {...props} android_ripple={null} />,
             }}
         >
             <Tabs.Screen

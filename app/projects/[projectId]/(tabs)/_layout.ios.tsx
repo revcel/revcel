@@ -8,19 +8,25 @@ export default function TabsLayout() {
         <NativeTabs disableTransparentOnScrollEdge={true} tintColor={COLORS.successLight}>
             <NativeTabs.Trigger name="home">
                 <Label>Deployments</Label>
-                <Icon src={<VectorIcon family={Ionicons} name="rocket" />} />
+                <Icon
+                    renderingMode="template"
+                    src={<VectorIcon family={Ionicons} name="rocket" />}
+                />
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="logs">
                 <Label>Logs</Label>
-                <Icon src={<VectorIcon family={Ionicons} name="document-text" />} />
+                <Icon
+                    renderingMode="template"
+                    src={<VectorIcon family={Ionicons} name="document-text" />}
+                />
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="environment">
                 <Label>Environment</Label>
-                <Icon src={<VectorIcon family={Ionicons} name="eye" />} />
+                <Icon renderingMode="template" src={<VectorIcon family={Ionicons} name="eye" />} />
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="domains">
                 <Label>Domains</Label>
-                <Icon src={<VectorIcon family={Ionicons} name="link" />} />
+                <Icon renderingMode="template" src={<VectorIcon family={Ionicons} name="link" />} />
             </NativeTabs.Trigger>
         </NativeTabs>
     )
