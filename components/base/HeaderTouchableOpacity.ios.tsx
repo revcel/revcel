@@ -1,5 +1,5 @@
-import { HeaderButton, type HeaderButtonProps } from '@react-navigation/elements'
 import * as Haptics from 'expo-haptics'
+import { HeaderButton, type HeaderButtonProps } from 'expo-router/react-navigation'
 import { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 

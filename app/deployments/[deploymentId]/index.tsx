@@ -362,7 +362,11 @@ export default function Deployment() {
             icon: 'person-outline',
             value: formatDeploymentCreator(deployment.creator),
         },
-        { label: 'Source', icon: 'cloud-upload-outline', value: formatDeploymentSource(deployment.source) },
+        {
+            label: 'Source',
+            icon: 'cloud-upload-outline',
+            value: formatDeploymentSource(deployment.source),
+        },
         {
             label: 'Framework',
             icon: 'color-wand-outline',
@@ -385,7 +389,11 @@ export default function Deployment() {
             icon: 'timer-outline',
             value: formatDuration(deployment.buildingAt, deployment.ready),
         },
-        { label: 'Functions', icon: 'flash-outline', value: formatFunctionConfig(deployment.config) },
+        {
+            label: 'Functions',
+            icon: 'flash-outline',
+            value: formatFunctionConfig(deployment.config),
+        },
         {
             label: 'Build machine',
             icon: 'hardware-chip-outline',
@@ -537,7 +545,7 @@ interface DeploymentInfoRow {
     value: string | null | undefined
 }
 
-function ButtonRow<T>({
+function ButtonRow({
     label,
     icon,
     route,
@@ -545,7 +553,7 @@ function ButtonRow<T>({
 }: {
     label: string
     icon: keyof typeof Ionicons.glyphMap
-    route: Href<T>
+    route: Href
     backgroundColor?: string
 }) {
     return (

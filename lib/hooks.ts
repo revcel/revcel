@@ -289,7 +289,12 @@ export function useNotificationHandler() {
 
                         if (!remoteMessage) return
 
-                        const extraData = JSON.parse(remoteMessage.data.extraData)
+                        const extraData = JSON.parse(remoteMessage.data.extraData) as {
+                            projectId?: string
+                            userId?: string
+                            teamId?: string
+                            event?: string
+                        }
 
                         projectId = extraData.projectId
                         userId = extraData.userId

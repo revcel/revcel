@@ -73,7 +73,7 @@ export default function ProjectCard({
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)
                     setLogsSelectedAttributes({ level: [] }) // reset logs filters
                     onPress?.()
-                    router.push(`/projects/${project.id}/home/`)
+                    router.push(`/projects/${project.id}/home`)
                 }}
             >
                 <View style={{ flexDirection: 'row' }}>

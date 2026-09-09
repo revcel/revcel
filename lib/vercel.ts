@@ -54,7 +54,7 @@ async function http<T>(path: string, config: RequestInit, connectionId?: string)
     }
 
     const textResponse = await response.text()
-    let parsed = {}
+    let parsed: unknown = {}
 
     try {
         parsed =

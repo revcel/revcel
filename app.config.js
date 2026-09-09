@@ -42,7 +42,8 @@ module.exports = ({ config }) => {
         android: {
             package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE,
             adaptiveIcon: {
-                foregroundImage: './assets/icon.png',
+                foregroundImage: './assets/icon-foreground-android.png',
+                backgroundColor: '#000000',
             },
             googleServicesFile: './google-services.json',
             playStoreUrl: process.env.EXPO_PUBLIC_ANDROID_STORE_URL,
