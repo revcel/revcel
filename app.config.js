@@ -100,7 +100,6 @@ module.exports = ({ config }) => {
                     },
                 },
             ],
-            './plugins/withHotUpdaterAndroidFix',
             [
                 '@hot-updater/react-native',
                 {

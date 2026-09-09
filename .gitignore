@@ -49,5 +49,9 @@ google-services.json
 !modules/widgetkit/ios
 !modules/widgetkit/android
 modules/widgetkit/android/build
-.hot-updater/output
+.hot-updater
 keys/
+# hot-updater
+.env.hotupdater
+.hot-updater/output
+.hot-updater/log

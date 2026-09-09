@@ -401,5 +401,4 @@ function RootLayout() {
 export default HotUpdater.wrap({
     baseURL: `${process.env.EXPO_PUBLIC_HOT_UPDATER_CLOUDFLARE_URL}/api/check-update`,
     updateStrategy: 'appVersion',
-    updateMode: 'auto',
 })(RootLayout)

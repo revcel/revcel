@@ -14,10 +14,14 @@ export default defineConfig({
             authToken: process.env.SENTRY_AUTH_TOKEN!,
         }
     ),
+    // R2 S3-compatible credentials (hot-updater 0.32+); the API-token path is deprecated
     storage: r2Storage({
         bucketName: process.env.HOT_UPDATER_CLOUDFLARE_R2_BUCKET_NAME!,
         accountId: process.env.HOT_UPDATER_CLOUDFLARE_ACCOUNT_ID!,
-        cloudflareApiToken: process.env.HOT_UPDATER_CLOUDFLARE_API_TOKEN!,
+        credentials: {
+            accessKeyId: process.env.HOT_UPDATER_CLOUDFLARE_R2_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.HOT_UPDATER_CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+        },
     }),
     database: d1Database({
         databaseId: process.env.HOT_UPDATER_CLOUDFLARE_D1_DATABASE_ID!,

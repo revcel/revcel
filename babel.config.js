@@ -11,7 +11,7 @@ module.exports = (api) => {
                     },
                 },
             ],
-            'hot-updater/babel-plugin',
+            '@hot-updater/expo/babel-plugin',
         ],
     }
 }
